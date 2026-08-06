@@ -147,35 +147,35 @@
   <header class="site">
     <a class="brand" href="index.html">VeloraPDF <span class="mark">CLIENT-SIDE</span></a>
     <nav class="site-links">
-      <a href="index.html">All tools</a>
-      <a href="about.html">About</a>
+      <a href="index.html" data-i18n="nav_tools">All tools</a>
+      <a href="about.html" data-i18n="nav_about">About</a>
     </nav>
   </header>
 
   <div class="tool-header">
-    <a class="back-link" href="index.html">&larr; Back to tools</a>
-    <h1>Merge PDF</h1>
-    <p>Add two or more PDFs, drag to set the order, then merge. Files are processed on your device only.</p>
+    <a class="back-link" href="index.html" data-i18n="merge_back">&larr; Back to tools</a>
+    <h1 data-i18n="merge_title">Merge PDF</h1>
+    <p data-i18n="merge_subtitle">Add two or more PDFs, drag to set the order, then merge. Files are processed on your device only.</p>
   </div>
 
   <label class="dropzone" id="dropzone">
-    <div class="dz-title">Drop PDFs here, or click to browse</div>
-    <div class="dz-sub">nothing is uploaded &middot; multiple files supported</div>
+    <div class="dz-title" data-i18n="merge_dz_title">Drop PDFs here, or click to browse</div>
+    <div class="dz-sub" data-i18n="merge_dz_sub">nothing is uploaded &middot; multiple files supported</div>
     <input type="file" id="fileInput" accept="application/pdf" multiple>
   </label>
 
   <div class="file-list" id="fileList"></div>
 
   <div class="actions-bar">
-    <button class="btn btn-primary" id="mergeBtn" disabled>Merge &amp; Download</button>
-    <button class="btn btn-ghost" id="clearBtn" style="display:none">Clear all</button>
+    <button class="btn btn-primary" id="mergeBtn" data-i18n="merge_btn" disabled>Merge &amp; Download</button>
+    <button class="btn btn-ghost" id="clearBtn" data-i18n="merge_clear_btn" style="display:none">Clear all</button>
     <span class="status-text" id="statusText"></span>
   </div>
 
   <footer class="site">
-    <span>VeloraPDF — part of the Velora toolkit</span>
+    <span data-i18n="footer_tagline">VeloraPDF — part of the Velora toolkit</span>
     <span class="footer-links">
-      <a href="about.html">About</a> · <a href="privacy.html">Privacy</a> · <a href="contact.html">Contact</a>
+      <a href="about.html" data-i18n="footer_about">About</a> · <a href="privacy.html" data-i18n="footer_privacy">Privacy</a> · <a href="contact.html" data-i18n="footer_contact">Contact</a>
     </span>
   </footer>
 </div>
@@ -186,5 +186,6 @@
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 </script>
 <script src="js/merge.js"></script>
+<script src="js/i18n.js"></script>
 </body>
 </html>

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Privacy — VeloraPDF</title>
+<title data-i18n="privacy_title">Privacy — VeloraPDF</title>
 <meta name="description" content="What VeloraPDF sees, stores, and sends — in plain terms.">
 <link rel="stylesheet" href="css/style.css">
 <style>
@@ -43,10 +43,11 @@
     padding: 12px 16px;
     border-bottom: 1px solid var(--line);
     font-size: 14px;
+    gap: 12px;
   }
   .check-row:last-child { border-bottom: none; }
   .check-row .label { color: var(--paper); }
-  .check-row .val { font-family: var(--font-mono); font-size: 12px; }
+  .check-row .val { font-family: var(--font-mono); font-size: 12px; white-space: nowrap; }
   .val.no { color: var(--blueprint); }
   .val.yes { color: var(--stamp); }
   .back-link { display: inline-block; font-size: 13px; color: var(--mist); margin-bottom: 4px; }
@@ -59,35 +60,35 @@
   <header class="site">
     <a class="brand" href="index.html">VeloraPDF <span class="mark">CLIENT-SIDE</span></a>
     <nav class="site-links">
-      <a href="index.html#tools">Tools</a>
-      <a href="about.html">About</a>
+      <a href="index.html#tools" data-i18n="nav_tools">Tools</a>
+      <a href="about.html" data-i18n="nav_about">About</a>
     </nav>
   </header>
 
   <div class="page-header">
-    <a class="back-link" href="index.html">&larr; Back home</a>
-    <h1>Privacy</h1>
+    <a class="back-link" href="index.html" data-i18n="privacy_back">&larr; Back home</a>
+    <h1 data-i18n="privacy_title">Privacy</h1>
   </div>
 
   <div class="prose">
-    <p class="updated">Last updated: August 2026</p>
+    <p class="updated" data-i18n="privacy_updated">Last updated: August 2026</p>
 
-    <p>
+    <p data-i18n="privacy_intro">
       The short version: your files stay on your device. Here's the exact
       breakdown of what happens when you use a tool on this site.
     </p>
 
     <div class="check-table">
-      <div class="check-row"><span class="label">Your PDF is uploaded to a server</span><span class="val no">No</span></div>
-      <div class="check-row"><span class="label">Your PDF's content is stored anywhere</span><span class="val no">No</span></div>
-      <div class="check-row"><span class="label">An account or sign-up is required</span><span class="val no">No</span></div>
-      <div class="check-row"><span class="label">File names are logged</span><span class="val no">No</span></div>
-      <div class="check-row"><span class="label">The site loads code from third-party CDNs</span><span class="val yes">Yes</span></div>
-      <div class="check-row"><span class="label">Cloudflare (our host) sees standard request logs</span><span class="val yes">Yes</span></div>
+      <div class="check-row"><span class="label" data-i18n="privacy_row1_label">Your PDF is uploaded to a server</span><span class="val no" data-i18n="privacy_no">No</span></div>
+      <div class="check-row"><span class="label" data-i18n="privacy_row2_label">Your PDF's content is stored anywhere</span><span class="val no" data-i18n="privacy_no">No</span></div>
+      <div class="check-row"><span class="label" data-i18n="privacy_row3_label">An account or sign-up is required</span><span class="val no" data-i18n="privacy_no">No</span></div>
+      <div class="check-row"><span class="label" data-i18n="privacy_row4_label">File names are logged</span><span class="val no" data-i18n="privacy_no">No</span></div>
+      <div class="check-row"><span class="label" data-i18n="privacy_row5_label">The site loads code from third-party CDNs</span><span class="val yes" data-i18n="privacy_yes">Yes</span></div>
+      <div class="check-row"><span class="label" data-i18n="privacy_row6_label">Cloudflare (our host) sees standard request logs</span><span class="val yes" data-i18n="privacy_yes">Yes</span></div>
     </div>
 
-    <h2>How a file is processed</h2>
-    <p>
+    <h2 data-i18n="privacy_h2_1">How a file is processed</h2>
+    <p data-i18n="privacy_p1">
       When you choose or drop a PDF, it's read into your browser's memory
       using the File API — the same mechanism any website uses to let you
       attach a file. The actual merge, split, or rotate operation runs
@@ -96,46 +97,48 @@
       content never becomes a network request.
     </p>
 
-    <h2>What does leave your device</h2>
-    <p>
+    <h2 data-i18n="privacy_h2_2">What does leave your device</h2>
+    <p data-i18n="privacy_p2">
       Two things, neither of which is your file:
     </p>
     <ul>
-      <li>
-        <strong>The page itself.</strong> Loading VeloraPDF means your
+      <li data-i18n="privacy_li1">
+        The page itself. Loading VeloraPDF means your
         browser requests the HTML, CSS, and JavaScript from Cloudflare's
-        servers, and two editing libraries (<code>pdf-lib</code>,
-        <code>pdf.js</code>) from a public code CDN (unpkg.com). This is
+        servers, and editing libraries from a public code CDN. This is
         just code, not your data — the same way loading any website
         downloads the site's own script files.
       </li>
-      <li>
-        <strong>Standard hosting logs.</strong> Cloudflare, who hosts this
+      <li data-i18n="privacy_li2">
+        Standard hosting logs. Cloudflare, who hosts this
         site, sees the same request metadata (IP address, browser type,
         page requested) that any web host sees for any site. We don't add
         analytics or tracking scripts on top of that.
       </li>
     </ul>
 
-    <h2>Cookies</h2>
-    <p>
+    <h2 data-i18n="privacy_h2_3">Cookies</h2>
+    <p data-i18n="privacy_p3">
       VeloraPDF doesn't set any cookies of its own. There's no login, so
       there's nothing to remember about you between visits.
     </p>
 
-    <h2>Questions</h2>
-    <p>
+    <h2 data-i18n="privacy_h2_4">Questions</h2>
+    <p data-i18n="privacy_p4">
       If anything here is unclear, or you've found a case where a tool
       behaves differently than described, reach out via the
-      <a href="contact.html">contact page</a>.
+      contact page.
     </p>
   </div>
 
   <footer class="site">
-    <span>VeloraPDF — part of the Velora toolkit</span>
-    <span>veloragif.online · veloravpn.online</span>
+    <span data-i18n="footer_tagline">VeloraPDF — part of the Velora toolkit</span>
+    <span class="footer-links">
+      <a href="about.html" data-i18n="footer_about">About</a> · <a href="privacy.html" data-i18n="footer_privacy">Privacy</a> · <a href="contact.html" data-i18n="footer_contact">Contact</a>
+    </span>
   </footer>
 </div>
 
+<script src="js/i18n.js"></script>
 </body>
 </html>

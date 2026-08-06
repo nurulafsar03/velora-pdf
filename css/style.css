@@ -337,6 +337,51 @@ footer.site .footer-links a:hover { color: var(--blueprint); }
 }
 .btn-danger-ghost:hover { background: rgba(193, 80, 46, 0.1); }
 
+/* ---------- language switcher ---------- */
+
+.lang-switcher {
+  background: var(--surface);
+  color: var(--paper-dim);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.lang-switcher:hover { border-color: var(--blueprint-dim); }
+.lang-switcher:focus-visible { outline: 2px solid var(--blueprint); outline-offset: 2px; }
+
+/* ---------- RTL (Arabic / Urdu) ---------- */
+
+body.rtl { direction: rtl; }
+
+body.rtl .hero-note,
+body.rtl .prose h2 { border-left: none; }
+
+body.rtl .hero-note {
+  border-right: 2px solid var(--blueprint-dim);
+  padding-right: 12px;
+  padding-left: 0;
+}
+
+body.rtl .stack .card:nth-child(1) { transform: rotate(9deg) translateX(46px); }
+body.rtl .stack .card:nth-child(2) { transform: rotate(3deg) translateX(15px); }
+body.rtl .stack .card:nth-child(3) { transform: rotate(-4deg) translateX(-20px); }
+body.rtl .stack .card:nth-child(4) { transform: rotate(-11deg) translateX(-52px); }
+
+body.rtl .stack:hover .card:nth-child(1) { transform: rotate(16deg) translateX(95px) translateY(-6px); }
+body.rtl .stack:hover .card:nth-child(2) { transform: rotate(6deg) translateX(32px) translateY(-2px); }
+body.rtl .stack:hover .card:nth-child(3) { transform: rotate(-6deg) translateX(-32px) translateY(-2px); }
+body.rtl .stack:hover .card:nth-child(4) { transform: rotate(-16deg) translateX(-95px) translateY(-6px); }
+
+body.rtl .tool-card .badge-soon { right: auto; left: 18px; }
+body.rtl .file-card .order-badge { left: auto; right: -8px; }
+body.rtl .file-card .remove-btn { right: auto; left: -8px; }
+body.rtl .back-link,
+body.rtl .prose ul { padding-left: 0; }
+body.rtl .prose ul { padding-right: 20px; }
+
 @media (max-width: 760px) {
   .hero { grid-template-columns: 1fr; padding-top: 20px; }
   .stack { height: 260px; order: -1; }

@@ -15,6 +15,10 @@
     en: {
       nav_tools: 'Tools',
       nav_about: 'About',
+      nav_more: 'More',
+      nav_group_organize: 'Organize',
+      nav_group_security: 'Security & marking',
+      nav_group_convert: 'Convert',
       footer_tagline: 'VeloraPDF — part of the Velora toolkit',
       footer_about: 'About',
       footer_privacy: 'Privacy',
@@ -114,6 +118,10 @@
     bn: {
       nav_tools: 'টুলস',
       nav_about: 'পরিচিতি',
+      nav_more: 'আরও',
+      nav_group_organize: 'অর্গানাইজ',
+      nav_group_security: 'সিকিউরিটি ও মার্কিং',
+      nav_group_convert: 'কনভার্ট',
       footer_tagline: 'ভেলোরাপিডিএফ — ভেলোরা টুলকিটের একটি অংশ',
       footer_about: 'পরিচিতি',
       footer_privacy: 'প্রাইভেসি',
@@ -213,6 +221,10 @@
     de: {
       nav_tools: 'Werkzeuge',
       nav_about: 'Über uns',
+      nav_more: 'Mehr',
+      nav_group_organize: 'Organisieren',
+      nav_group_security: 'Sicherheit & Markierung',
+      nav_group_convert: 'Konvertieren',
       footer_tagline: 'VeloraPDF — Teil des Velora-Toolkits',
       footer_about: 'Über uns',
       footer_privacy: 'Datenschutz',
@@ -312,6 +324,10 @@
     hi: {
       nav_tools: 'टूल्स',
       nav_about: 'परिचय',
+      nav_more: 'और',
+      nav_group_organize: 'व्यवस्थित करें',
+      nav_group_security: 'सुरक्षा और मार्किंग',
+      nav_group_convert: 'कन्वर्ट',
       footer_tagline: 'VeloraPDF — Velora टूलकिट का एक हिस्सा',
       footer_about: 'परिचय',
       footer_privacy: 'प्राइवेसी',
@@ -411,6 +427,10 @@
     ur: {
       nav_tools: 'ٹولز',
       nav_about: 'تعارف',
+      nav_more: 'مزید',
+      nav_group_organize: 'ترتیب دیں',
+      nav_group_security: 'سیکیورٹی اور مارکنگ',
+      nav_group_convert: 'تبدیلی',
       footer_tagline: 'VeloraPDF — Velora ٹول کٹ کا ایک حصہ',
       footer_about: 'تعارف',
       footer_privacy: 'پرائیویسی',
@@ -510,6 +530,10 @@
     ar: {
       nav_tools: 'الأدوات',
       nav_about: 'من نحن',
+      nav_more: 'المزيد',
+      nav_group_organize: 'تنظيم',
+      nav_group_security: 'الأمان والتمييز',
+      nav_group_convert: 'التحويل',
       footer_tagline: 'VeloraPDF — جزء من مجموعة أدوات Velora',
       footer_about: 'من نحن',
       footer_privacy: 'الخصوصية',
@@ -628,7 +652,7 @@
     });
 
     const switcher = document.getElementById('langSwitcher');
-    if (switcher) switcher.value = lang;
+    if (switcher) updateSwitcherUI(lang);
 
     try {
       localStorage.setItem(STORAGE_KEY, lang);
@@ -649,20 +673,64 @@
     const nav = document.querySelector('.site-links');
     if (!nav || document.getElementById('langSwitcher')) return;
 
-    const select = document.createElement('select');
-    select.id = 'langSwitcher';
-    select.className = 'lang-switcher';
-    select.setAttribute('aria-label', 'Language');
+    const wrap = document.createElement('div');
+    wrap.className = 'lang-switcher';
+    wrap.id = 'langSwitcher';
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'lang-switcher-btn';
+    btn.setAttribute('aria-haspopup', 'listbox');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.innerHTML = `<span class="lang-switcher-label"></span><svg class="lang-switcher-chevron" width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+    const menu = document.createElement('ul');
+    menu.className = 'lang-menu';
+    menu.setAttribute('role', 'listbox');
 
     Object.keys(LANG_NAMES).forEach((code) => {
-      const opt = document.createElement('option');
-      opt.value = code;
-      opt.textContent = LANG_NAMES[code];
-      select.appendChild(opt);
+      const li = document.createElement('li');
+      li.setAttribute('role', 'option');
+      li.dataset.lang = code;
+      li.textContent = LANG_NAMES[code];
+      li.addEventListener('click', () => {
+        applyLang(code);
+        closeMenu();
+      });
+      menu.appendChild(li);
     });
 
-    select.addEventListener('change', () => applyLang(select.value));
-    nav.appendChild(select);
+    function openMenu() {
+      wrap.classList.add('open');
+      btn.setAttribute('aria-expanded', 'true');
+    }
+    function closeMenu() {
+      wrap.classList.remove('open');
+      btn.setAttribute('aria-expanded', 'false');
+    }
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      wrap.classList.contains('open') ? closeMenu() : openMenu();
+    });
+    document.addEventListener('click', () => closeMenu());
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeMenu();
+    });
+
+    wrap.appendChild(btn);
+    wrap.appendChild(menu);
+    nav.appendChild(wrap);
+  }
+
+  function updateSwitcherUI(lang) {
+    const wrap = document.getElementById('langSwitcher');
+    if (!wrap) return;
+    const label = wrap.querySelector('.lang-switcher-label');
+    if (label) label.textContent = LANG_NAMES[lang] || LANG_NAMES.bn;
+    wrap.querySelectorAll('.lang-menu li').forEach((li) => {
+      li.classList.toggle('selected', li.dataset.lang === lang);
+    });
   }
 
   document.addEventListener('DOMContentLoaded', () => {

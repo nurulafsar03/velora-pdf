@@ -59,13 +59,51 @@
 </style>
 </head>
 <body>
+<div class="top-accent" aria-hidden="true"></div>
 
 <div class="wrap">
   <header class="site">
     <a class="brand" href="index.html">VeloraPDF <span class="mark">CLIENT-SIDE</span></a>
     <nav class="site-links">
-      <a href="index.html#tools" data-i18n="nav_tools">Tools</a>
-      <a href="about.html" data-i18n="nav_about">About</a>
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-btn" type="button" aria-haspopup="true" aria-expanded="false">
+          <span data-i18n="nav_tools">Tools</span>
+          <svg class="chevron" width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-dropdown-panel mega">
+          <div class="mega-col">
+            <div class="mega-label" data-i18n="nav_group_organize">Organize</div>
+            <a href="merge.html" data-i18n="home_tool_merge_title">Merge PDF</a>
+            <a href="split.html" data-i18n="home_tool_split_title">Split PDF</a>
+            <span class="soon-item"><span data-i18n="home_tool_rotate_title">Rotate PDF</span><span class="mini-soon" data-i18n="home_soon">soon</span></span>
+            <span class="soon-item"><span data-i18n="home_tool_organize_title">Organize Pages</span><span class="mini-soon" data-i18n="home_soon">soon</span></span>
+          </div>
+          <div class="mega-col">
+            <div class="mega-label tag-stamp" data-i18n="nav_group_security">Security &amp; marking</div>
+            <span class="soon-item"><span data-i18n="home_tool_watermark_title">Watermark</span><span class="mini-soon" data-i18n="home_soon">soon</span></span>
+            <span class="soon-item"><span data-i18n="home_tool_protect_title">Protect PDF</span><span class="mini-soon" data-i18n="home_soon">soon</span></span>
+            <span class="soon-item"><span data-i18n="home_tool_sign_title">Sign PDF</span><span class="mini-soon" data-i18n="home_soon">soon</span></span>
+          </div>
+          <div class="mega-col">
+            <div class="mega-label tag-ochre" data-i18n="nav_group_convert">Convert</div>
+            <span class="soon-item"><span data-i18n="home_tool_compress_title">Compress PDF</span><span class="mini-soon" data-i18n="home_soon">soon</span></span>
+            <span class="soon-item"><span data-i18n="home_tool_img2pdf_title">Image to PDF</span><span class="mini-soon" data-i18n="home_soon">soon</span></span>
+            <span class="soon-item"><span data-i18n="home_tool_pdf2jpg_title">PDF to JPG</span><span class="mini-soon" data-i18n="home_soon">soon</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-btn" type="button" aria-haspopup="true" aria-expanded="false">
+          <span data-i18n="nav_more">More</span>
+          <svg class="chevron" width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-dropdown-panel simple">
+          <a href="about.html" data-i18n="footer_about">About</a>
+          <a href="privacy.html" data-i18n="footer_privacy">Privacy</a>
+          <a href="contact.html" data-i18n="footer_contact">Contact</a>
+        </div>
+      </div>
     </nav>
   </header>
 
@@ -99,6 +137,7 @@
   </footer>
 </div>
 
+<script src="js/nav.js"></script>
 <script src="js/i18n.js"></script>
 </body>
 </html>

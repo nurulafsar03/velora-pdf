@@ -290,7 +290,12 @@ footer.site {
   color: var(--mist);
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
 }
+
+footer.site .footer-links a { color: var(--mist); }
+footer.site .footer-links a:hover { color: var(--blueprint); }
 
 /* ---------- shared: buttons ---------- */
 

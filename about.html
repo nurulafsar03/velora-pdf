@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — VeloraPDF</title>
+<meta name="description" content="Why VeloraPDF processes every file in your browser and never on a server.">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .page-header { padding: 40px 0 8px; }
+  .page-header h1 {
+    font-family: var(--font-display);
+    font-size: 34px;
+    font-weight: 500;
+    margin: 0 0 8px;
+  }
+  .prose { max-width: 62ch; padding-bottom: 90px; }
+  .prose p { color: var(--paper-dim); line-height: 1.7; font-size: 15px; margin: 0 0 18px; }
+  .prose h2 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 500;
+    margin: 34px 0 12px;
+    color: var(--paper);
+  }
+  .prose .stamp-line {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--stamp);
+    margin: 0 0 24px;
+  }
+  .back-link { display: inline-block; font-size: 13px; color: var(--mist); margin-bottom: 4px; }
+  .back-link:hover { color: var(--blueprint); }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="site">
+    <a class="brand" href="index.html">VeloraPDF <span class="mark">CLIENT-SIDE</span></a>
+    <nav class="site-links">
+      <a href="index.html#tools">Tools</a>
+      <a href="about.html">About</a>
+    </nav>
+  </header>
+
+  <div class="page-header">
+    <a class="back-link" href="index.html">&larr; Back home</a>
+    <h1>Why this exists</h1>
+  </div>
+
+  <div class="prose">
+    <p class="stamp-line">PART OF THE VELORA TOOLKIT</p>
+
+    <p>
+      Most free PDF tools work the same way: you upload your file to someone
+      else's server, it gets processed, and you download the result. That's
+      fine for a public flyer. It's a bad trade for a contract, a payslip,
+      or a scanned ID.
+    </p>
+
+    <p>
+      VeloraPDF does the same jobs — merge, split, rotate, compress — but
+      the file never leaves your browser tab. The PDF is read, edited, and
+      rebuilt entirely on your device using open-source libraries
+      (<code>pdf-lib</code> and <code>pdf.js</code>) that run in JavaScript,
+      the same way a spreadsheet formula runs locally in your browser.
+      Close the tab, and nothing of your file remains anywhere but your
+      own downloads folder.
+    </p>
+
+    <h2>What "client-side" actually means here</h2>
+    <p>
+      When you pick a file, it's read directly from your disk into the
+      page's memory. The merge, rotate, or compress operation happens in
+      that memory. The result is offered back to you as a download. At no
+      point does the file's content get sent over the network to us or
+      anyone else.
+    </p>
+
+    <h2>Where this fits</h2>
+    <p>
+      VeloraPDF is the second tool in the Velora toolkit, after
+      <a href="https://veloragif.online">VeloraGif</a>, a browser-based GIF
+      and image editor built on the same principle. Both exist because
+      everyday file editing shouldn't require trusting a stranger's server
+      with your documents.
+    </p>
+  </div>
+
+  <footer class="site">
+    <span>VeloraPDF — part of the Velora toolkit</span>
+    <span>veloragif.online · veloravpn.online</span>
+  </footer>
+</div>
+
+</body>
+</html>

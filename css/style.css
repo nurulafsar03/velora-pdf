@@ -198,6 +198,18 @@ header.site {
 
 .brand {
   display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-icon {
+  border-radius: 7px;
+  flex-shrink: 0;
+  display: block;
+}
+
+.brand-text {
+  display: flex;
   align-items: baseline;
   gap: 10px;
   font-family: var(--font-display);

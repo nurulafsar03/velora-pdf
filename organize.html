@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Split PDF — VeloraPDF</title>
-<meta name="description" content="Pull pages out of a PDF, or split it into separate files, entirely in your browser.">
+<title data-i18n="organize_title">Organize Pages — VeloraPDF</title>
+<meta name="description" content="Reorder and delete PDF pages entirely in your browser.">
 <link rel="icon" href="/favicon.ico?v=2" sizes="any">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
@@ -69,8 +69,8 @@
 
   .page-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 16px;
     margin: 20px 0;
   }
 
@@ -79,49 +79,63 @@
     border: 1px solid var(--line);
     border-radius: var(--radius);
     padding: 10px;
-    cursor: pointer;
     position: relative;
-    transition: border-color 0.15s ease, background 0.15s ease;
-    user-select: none;
+    cursor: grab;
+    transition: border-color 0.15s ease, opacity 0.15s ease;
   }
-  .page-card.selected {
-    border-color: var(--blueprint);
-    background: rgba(111, 151, 201, 0.08);
+  .page-card.dragging { opacity: 0.35; }
+  .page-card.drag-target { border-color: var(--blueprint); }
+
+  .page-card .order-badge {
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    background: var(--blueprint);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-  .page-card canvas {
-    width: 100%;
-    height: 120px;
-    object-fit: cover;
+  .page-card .remove-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--stamp);
+    color: var(--ink);
+    border: none;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .page-card .canvas-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 150px;
     background: var(--paper);
     border-radius: 2px;
-    display: block;
+    overflow: hidden;
     margin-bottom: 8px;
   }
+  .page-card canvas { max-width: 100%; max-height: 100%; display: block; }
   .page-card .page-num {
     font-family: var(--font-mono);
     font-size: 11px;
     color: var(--mist);
     text-align: center;
-  }
-  .page-card .check {
-    position: absolute;
-    top: -7px;
-    right: -7px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--ink);
-    border: 1.5px solid var(--line);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    color: transparent;
-  }
-  .page-card.selected .check {
-    background: var(--blueprint);
-    border-color: var(--blueprint);
-    color: var(--ink);
   }
 
   .actions-bar {
@@ -195,29 +209,26 @@
   </header>
 
   <div class="tool-header">
-    <a class="back-link" href="index.html" data-i18n="split_back">&larr; Back to tools</a>
-    <h1 data-i18n="split_title">Split PDF</h1>
-    <p data-i18n="split_subtitle">Load a PDF, pick the pages you want, then pull them out — either as one file or as separate files. Nothing leaves your browser.</p>
+    <a class="back-link" href="index.html" data-i18n="organize_back">&larr; Back to tools</a>
+    <h1 data-i18n="organize_title">Organize Pages</h1>
+    <p data-i18n="organize_subtitle">Load a PDF, drag pages to reorder, remove any you don't need, then download. Nothing leaves your browser.</p>
   </div>
 
   <label class="dropzone" id="dropzone">
-    <div class="dz-title" data-i18n="split_dz_title">Drop a PDF here, or click to browse</div>
-    <div class="dz-sub" data-i18n="split_dz_sub">one file at a time &middot; nothing is uploaded</div>
+    <div class="dz-title" data-i18n="organize_dz_title">Drop a PDF here, or click to browse</div>
+    <div class="dz-sub" data-i18n="organize_dz_sub">one file at a time &middot; nothing is uploaded</div>
     <input type="file" id="fileInput" accept="application/pdf">
   </label>
 
   <div class="toolbar" id="toolbar">
     <span class="doc-name" id="docName"></span>
-    <button class="btn btn-ghost" id="selectAllBtn" data-i18n="split_select_all">Select all</button>
-    <button class="btn btn-ghost" id="selectNoneBtn" data-i18n="split_select_none">Select none</button>
-    <button class="btn btn-ghost" id="changeFileBtn" data-i18n="split_change_file">Use a different file</button>
+    <button class="btn btn-ghost" id="changeFileBtn" data-i18n="organize_change_file">Use a different file</button>
   </div>
 
   <div class="page-grid" id="pageGrid"></div>
 
   <div class="actions-bar" id="actionsBar">
-    <button class="btn btn-primary" id="extractOneBtn" data-i18n="split_extract_one" disabled>Extract selected → one PDF</button>
-    <button class="btn btn-primary" id="extractZipBtn" data-i18n="split_extract_zip" disabled>Extract selected → separate PDFs (.zip)</button>
+    <button class="btn btn-primary" id="downloadBtn" data-i18n="organize_download_btn">Download organized PDF</button>
     <span class="status-text" id="statusText"></span>
   </div>
 
@@ -231,11 +242,10 @@
 
 <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
-<script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 </script>
-<script src="js/split.js"></script>
+<script src="js/organize.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/i18n.js"></script>
 </body>

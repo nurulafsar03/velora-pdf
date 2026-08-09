@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title data-i18n="compress_title">Compress PDF — VeloraPDF</title>
-<meta name="description" content="Shrink PDF file size entirely in your browser.">
+<title data-i18n="protect_title">Protect PDF — VeloraPDF</title>
+<meta name="description" content="Add a password to your PDF entirely in your browser.">
 <link rel="icon" href="/favicon.ico?v=2" sizes="any">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
@@ -50,8 +50,8 @@
   .dropzone .dz-sub { font-size: 13px; font-family: var(--font-mono); }
   .dropzone input { display: none; }
 
-  .workspace { display: none; margin-top: 28px; }
-  .workspace.active { display: grid; grid-template-columns: 1fr 1.3fr; gap: 32px; align-items: start; }
+  .workspace { display: none; margin-top: 28px; max-width: 420px; }
+  .workspace.active { display: block; }
 
   .doc-name {
     font-family: var(--font-mono);
@@ -61,72 +61,46 @@
     padding: 6px 10px;
     border-radius: var(--radius);
     display: inline-block;
-    margin-bottom: 18px;
+    margin-bottom: 22px;
   }
 
-  .level-label {
+  .field-group { margin-bottom: 18px; }
+  .field-label {
     font-family: var(--font-mono);
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--mist);
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
-
-  .level-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 22px; }
-  .level-option {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  .field-group input[type="password"] {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--paper);
     padding: 12px 14px;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    cursor: pointer;
-    background: var(--surface);
-    transition: border-color 0.15s ease, background 0.15s ease;
-  }
-  .level-option:hover { border-color: var(--blueprint-dim); }
-  .level-option.selected { border-color: var(--blueprint); background: rgba(111, 151, 201, 0.07); }
-  .level-option input { accent-color: var(--blueprint); }
-  .level-option .level-name { font-size: 14px; color: var(--paper); font-weight: 600; }
-  .level-option .level-note { font-size: 12px; color: var(--mist); margin-top: 2px; }
-
-  .size-row {
-    display: flex;
-    justify-content: space-between;
+    font-size: 15px;
     font-family: var(--font-mono);
-    font-size: 13px;
-    color: var(--paper-dim);
-    padding: 10px 0;
-    border-top: 1px solid var(--line);
+    letter-spacing: 0.05em;
   }
-  .size-row .val { color: var(--paper); }
-  .size-row .val.reduced { color: var(--blueprint); }
+  .field-group input[type="password"]:focus { outline: 2px solid var(--blueprint); outline-offset: 1px; }
+  .field-note {
+    font-size: 12px;
+    color: var(--stamp);
+    margin-top: 6px;
+    display: none;
+  }
+  .field-note.visible { display: block; }
 
-  .preview-panel {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 16px;
-  }
-  .preview-panel .preview-label {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+  .remember-note {
+    font-size: 12px;
     color: var(--mist);
-    margin-bottom: 12px;
+    border-left: 2px solid var(--stamp-dim);
+    padding-left: 12px;
+    margin: 20px 0 8px;
+    line-height: 1.6;
   }
-  .preview-canvas-wrap {
-    background: var(--paper);
-    border-radius: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 320px;
-    overflow: hidden;
-  }
-  .preview-canvas-wrap img { max-width: 100%; display: block; }
 
   .actions-bar {
     display: none;
@@ -139,18 +113,10 @@
   }
   .actions-bar.active { display: flex; }
 
-  .status-text {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--mist);
-  }
+  .status-text { font-family: var(--font-mono); font-size: 12px; color: var(--mist); }
 
   .back-link { display: inline-block; font-size: 13px; color: var(--mist); margin-bottom: 4px; }
   .back-link:hover { color: var(--blueprint); }
-
-  @media (max-width: 720px) {
-    .workspace.active { grid-template-columns: 1fr; }
-  }
 </style>
 </head>
 <body>
@@ -203,66 +169,37 @@
   </header>
 
   <div class="tool-header">
-    <a class="back-link" href="index.html" data-i18n="compress_back">&larr; Back to tools</a>
-    <h1 data-i18n="compress_title">Compress PDF</h1>
-    <p data-i18n="compress_subtitle">Shrink file size by re-rendering each page as a compressed image. Best for scanned or image-heavy PDFs — text will no longer be selectable afterward.</p>
+    <a class="back-link" href="index.html" data-i18n="protect_back">&larr; Back to tools</a>
+    <h1 data-i18n="protect_title">Protect PDF</h1>
+    <p data-i18n="protect_subtitle">Add a password so only people who know it can open the file. We never see or store your password — it stays in your browser.</p>
   </div>
 
   <label class="dropzone" id="dropzone">
-    <div class="dz-title" data-i18n="compress_dz_title">Drop a PDF here, or click to browse</div>
-    <div class="dz-sub" data-i18n="compress_dz_sub">one file at a time &middot; nothing is uploaded</div>
+    <div class="dz-title" data-i18n="protect_dz_title">Drop a PDF here, or click to browse</div>
+    <div class="dz-sub" data-i18n="protect_dz_sub">one file at a time &middot; nothing is uploaded</div>
     <input type="file" id="fileInput" accept="application/pdf">
   </label>
 
   <div class="workspace" id="workspace">
-    <div>
-      <div class="doc-name" id="docName"></div>
+    <div class="doc-name" id="docName"></div>
 
-      <div class="level-label" data-i18n="compress_level_label">Compression level</div>
-      <div class="level-group" id="levelGroup">
-        <label class="level-option" data-level="high">
-          <input type="radio" name="level" value="high">
-          <span>
-            <div class="level-name" data-i18n="compress_level_high">High quality</div>
-            <div class="level-note">~30–40% smaller</div>
-          </span>
-        </label>
-        <label class="level-option selected" data-level="balanced">
-          <input type="radio" name="level" value="balanced" checked>
-          <span>
-            <div class="level-name" data-i18n="compress_level_balanced">Balanced</div>
-            <div class="level-note">~55–70% smaller</div>
-          </span>
-        </label>
-        <label class="level-option" data-level="small">
-          <input type="radio" name="level" value="small">
-          <span>
-            <div class="level-name" data-i18n="compress_level_small">Smallest size</div>
-            <div class="level-note">~75–85% smaller</div>
-          </span>
-        </label>
-      </div>
-
-      <div class="size-row">
-        <span data-i18n="compress_original_label">Original</span>
-        <span class="val" id="originalSize">—</span>
-      </div>
-      <div class="size-row">
-        <span>Estimated</span>
-        <span class="val reduced" id="estimatedSize">—</span>
-      </div>
-
-      <button class="btn btn-ghost" id="changeFileBtn" data-i18n="compress_change_file" style="margin-top:16px">Use a different file</button>
+    <div class="field-group">
+      <div class="field-label" data-i18n="protect_password_label">Password</div>
+      <input type="password" id="pw1" autocomplete="new-password">
+    </div>
+    <div class="field-group">
+      <div class="field-label" data-i18n="protect_confirm_label">Confirm password</div>
+      <input type="password" id="pw2" autocomplete="new-password">
+      <div class="field-note" id="mismatchNote" data-i18n="protect_mismatch_note">Passwords don't match</div>
     </div>
 
-    <div class="preview-panel">
-      <div class="preview-label" data-i18n="compress_preview_label">Preview (page 1)</div>
-      <div class="preview-canvas-wrap" id="previewWrap"></div>
-    </div>
+    <div class="remember-note" data-i18n="protect_remember_note">There's no way to recover this password if it's lost — write it down somewhere safe.</div>
+
+    <button class="btn btn-ghost" id="changeFileBtn" data-i18n="protect_change_file">Use a different file</button>
   </div>
 
   <div class="actions-bar" id="actionsBar">
-    <button class="btn btn-primary" id="downloadBtn" data-i18n="compress_download_btn" disabled>Compress &amp; download</button>
+    <button class="btn btn-primary" id="downloadBtn" data-i18n="protect_download_btn" disabled>Protect &amp; download</button>
     <span class="status-text" id="statusText"></span>
   </div>
 
@@ -274,12 +211,8 @@
   </footer>
 </div>
 
-<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-<script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
-<script>
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
-</script>
-<script src="js/compress.js"></script>
+<script src="https://unpkg.com/@cantoo/pdf-lib@2.7.1/dist/pdf-lib.min.js"></script>
+<script src="js/protect.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/i18n.js"></script>
 </body>

@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title data-i18n="watermark_title">Watermark — VeloraPDF</title>
-<meta name="description" content="Stamp text or a logo across every page, entirely in your browser.">
+<title data-i18n="sign_title">Sign PDF — VeloraPDF</title>
+<meta name="description" content="Draw or type a signature and place it on a page, entirely in your browser.">
 <link rel="icon" href="/favicon.ico?v=2" sizes="any">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
@@ -12,6 +12,8 @@
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=2">
 <link rel="stylesheet" href="css/style.css">
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&display=swap');
+
   .tool-header { padding: 40px 0 8px; }
   .tool-header h1 {
     font-family: var(--font-display);
@@ -64,7 +66,7 @@
     margin-bottom: 18px;
   }
 
-  .mode-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+  .mode-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
   .mode-tab {
     flex: 1;
     text-align: center;
@@ -78,6 +80,30 @@
   }
   .mode-tab.selected { border-color: var(--blueprint); color: var(--paper); background: rgba(111, 151, 201, 0.08); }
 
+  .mode-panel { display: none; }
+  .mode-panel.active { display: block; }
+
+  .sig-pad-wrap {
+    background: var(--paper);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 10px;
+    touch-action: none;
+  }
+  #sigPad { display: block; width: 100%; height: 160px; cursor: crosshair; }
+
+  .type-input-wrap { margin-bottom: 10px; }
+  .type-input-wrap input {
+    width: 100%;
+    background: var(--paper);
+    border: none;
+    border-radius: var(--radius);
+    color: #16140f;
+    padding: 16px 14px;
+    font-size: 28px;
+    font-family: 'Caveat', cursive;
+  }
+
   .field-group { margin-bottom: 18px; }
   .field-label {
     font-family: var(--font-mono);
@@ -89,46 +115,27 @@
     display: flex;
     justify-content: space-between;
   }
-  .field-group input[type="text"] {
-    width: 100%;
+  .field-group input[type="range"] { width: 100%; accent-color: var(--blueprint); }
+  .field-group input[type="number"] {
+    width: 70px;
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius);
     color: var(--paper);
-    padding: 10px 12px;
-    font-size: 14px;
-    font-family: var(--font-body);
+    padding: 6px 10px;
+    font-size: 13px;
+    font-family: var(--font-mono);
   }
-  .field-group input[type="text"]:focus { outline: 2px solid var(--blueprint); outline-offset: 1px; }
-  .field-group input[type="range"] { width: 100%; accent-color: var(--blueprint); }
 
   .color-swatches { display: flex; gap: 8px; }
   .swatch {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
     cursor: pointer;
     border: 2px solid transparent;
   }
   .swatch.selected { border-color: var(--paper); }
-
-  .file-upload-btn {
-    display: inline-block;
-    font-size: 13px;
-    color: var(--paper-dim);
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    padding: 8px 14px;
-    cursor: pointer;
-  }
-  .file-upload-btn:hover { border-color: var(--blueprint-dim); color: var(--paper); }
-  .file-upload-btn input { display: none; }
-  .image-file-name {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--mist);
-    margin-top: 8px;
-  }
 
   .preview-panel {
     background: var(--surface);
@@ -136,25 +143,28 @@
     border-radius: var(--radius);
     padding: 16px;
   }
-  .preview-panel .preview-label {
+  .preview-panel .preview-hint {
     font-family: var(--font-mono);
     font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
     color: var(--mist);
     margin-bottom: 12px;
   }
   .preview-canvas-wrap {
     background: var(--paper);
     border-radius: 2px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 320px;
-    overflow: hidden;
     position: relative;
+    overflow: hidden;
+    user-select: none;
   }
-  .preview-canvas-wrap canvas { max-width: 100%; display: block; }
+  .preview-canvas-wrap canvas { display: block; width: 100%; height: auto; }
+  .sig-overlay {
+    position: absolute;
+    cursor: grab;
+    touch-action: none;
+    border: 1px dashed transparent;
+  }
+  .sig-overlay:active { cursor: grabbing; border-color: var(--blueprint); }
+  .sig-overlay img { width: 100%; height: 100%; display: block; pointer-events: none; }
 
   .actions-bar {
     display: none;
@@ -171,9 +181,6 @@
 
   .back-link { display: inline-block; font-size: 13px; color: var(--mist); margin-bottom: 4px; }
   .back-link:hover { color: var(--blueprint); }
-
-  .mode-panel { display: none; }
-  .mode-panel.active { display: block; }
 
   @media (max-width: 720px) {
     .workspace.active { grid-template-columns: 1fr; }
@@ -230,14 +237,14 @@
   </header>
 
   <div class="tool-header">
-    <a class="back-link" href="index.html" data-i18n="watermark_back">&larr; Back to tools</a>
-    <h1 data-i18n="watermark_title">Watermark</h1>
-    <p data-i18n="watermark_subtitle">Stamp text or a logo across every page. Text watermarks currently support Latin characters only — image watermarks work with any logo.</p>
+    <a class="back-link" href="index.html" data-i18n="sign_back">&larr; Back to tools</a>
+    <h1 data-i18n="sign_title">Sign PDF</h1>
+    <p data-i18n="sign_subtitle">Draw or type a signature, then drag it into place on any page.</p>
   </div>
 
   <label class="dropzone" id="dropzone">
-    <div class="dz-title" data-i18n="watermark_dz_title">Drop a PDF here, or click to browse</div>
-    <div class="dz-sub" data-i18n="watermark_dz_sub">one file at a time &middot; nothing is uploaded</div>
+    <div class="dz-title" data-i18n="sign_dz_title">Drop a PDF here, or click to browse</div>
+    <div class="dz-sub" data-i18n="sign_dz_sub">one file at a time &middot; nothing is uploaded</div>
     <input type="file" id="fileInput" accept="application/pdf">
   </label>
 
@@ -246,69 +253,54 @@
       <div class="doc-name" id="docName"></div>
 
       <div class="mode-tabs">
-        <div class="mode-tab selected" data-mode="text" data-i18n="watermark_mode_text">Text</div>
-        <div class="mode-tab" data-mode="image" data-i18n="watermark_mode_image">Image / logo</div>
+        <div class="mode-tab selected" data-mode="draw" data-i18n="sign_mode_draw">Draw</div>
+        <div class="mode-tab" data-mode="type" data-i18n="sign_mode_type">Type</div>
       </div>
 
-      <div class="mode-panel active" id="textPanel">
-        <div class="field-group">
-          <div class="field-label" data-i18n="watermark_text_label">Watermark text</div>
-          <input type="text" id="wmText" data-i18n-placeholder="watermark_text_placeholder" placeholder="e.g. CONFIDENTIAL, DRAFT" value="CONFIDENTIAL">
+      <div class="mode-panel active" id="drawPanel">
+        <div class="sig-pad-wrap">
+          <canvas id="sigPad"></canvas>
         </div>
-        <div class="field-group">
-          <div class="field-label" data-i18n="watermark_color_label">Color</div>
-          <div class="color-swatches" id="colorSwatches">
-            <div class="swatch selected" data-color="#6f97c9" style="background:#6f97c9"></div>
-            <div class="swatch" data-color="#c1502e" style="background:#c1502e"></div>
-            <div class="swatch" data-color="#c99a4a" style="background:#c99a4a"></div>
-            <div class="swatch" data-color="#16140f" style="background:#16140f"></div>
-            <div class="swatch" data-color="#8a8372" style="background:#8a8372"></div>
-          </div>
-        </div>
-        <div class="field-group">
-          <div class="field-label"><span data-i18n="watermark_size_label">Size</span><span id="sizeVal">48</span></div>
-          <input type="range" id="wmSize" min="16" max="120" value="48">
-        </div>
-        <div class="field-group">
-          <div class="field-label"><span data-i18n="watermark_opacity_label">Opacity</span><span id="opacityVal">30%</span></div>
-          <input type="range" id="wmOpacity" min="5" max="100" value="30">
-        </div>
-        <div class="field-group">
-          <div class="field-label"><span data-i18n="watermark_rotation_label">Rotation</span><span id="rotationVal">-45°</span></div>
-          <input type="range" id="wmRotation" min="-90" max="90" value="-45">
+        <button class="btn btn-ghost" id="clearSigBtn" data-i18n="sign_clear">Clear</button>
+      </div>
+
+      <div class="mode-panel" id="typePanel">
+        <div class="type-input-wrap">
+          <input type="text" id="sigTypeInput" data-i18n-placeholder="sign_type_placeholder" placeholder="Your name">
         </div>
       </div>
 
-      <div class="mode-panel" id="imagePanel">
-        <div class="field-group">
-          <div class="field-label" data-i18n="watermark_image_label">Logo image (PNG or JPG)</div>
-          <label class="file-upload-btn">
-            <span data-i18n="watermark_image_upload">Choose an image</span>
-            <input type="file" id="wmImageInput" accept="image/png,image/jpeg">
-          </label>
-          <div class="image-file-name" id="imageFileName"></div>
-        </div>
-        <div class="field-group">
-          <div class="field-label"><span data-i18n="watermark_opacity_label">Opacity</span><span id="imgOpacityVal">40%</span></div>
-          <input type="range" id="wmImgOpacity" min="5" max="100" value="40">
-        </div>
-        <div class="field-group">
-          <div class="field-label"><span data-i18n="watermark_scale_label">Size</span><span id="imgScaleVal">50%</span></div>
-          <input type="range" id="wmImgScale" min="10" max="90" value="50">
+      <div class="field-group">
+        <div class="field-label" data-i18n="sign_color_label">Ink color</div>
+        <div class="color-swatches" id="colorSwatches">
+          <div class="swatch selected" data-color="#16140f" style="background:#16140f"></div>
+          <div class="swatch" data-color="#6f97c9" style="background:#6f97c9"></div>
+          <div class="swatch" data-color="#c1502e" style="background:#c1502e"></div>
         </div>
       </div>
 
-      <button class="btn btn-ghost" id="changeFileBtn" data-i18n="watermark_change_file" style="margin-top:8px">Use a different file</button>
+      <div class="field-group">
+        <div class="field-label"><span data-i18n="sign_page_label">Page</span></div>
+        <input type="number" id="pageNum" min="1" value="1">
+        <span id="pageOf" style="font-family: var(--font-mono); font-size: 12px; color: var(--mist); margin-left: 8px;"></span>
+      </div>
+
+      <div class="field-group">
+        <div class="field-label"><span data-i18n="sign_scale_label">Signature size</span><span id="scaleVal">30%</span></div>
+        <input type="range" id="sigScale" min="10" max="60" value="30">
+      </div>
+
+      <button class="btn btn-ghost" id="changeFileBtn" data-i18n="sign_change_file">Use a different file</button>
     </div>
 
     <div class="preview-panel">
-      <div class="preview-label" data-i18n="watermark_preview_label">Preview (page 1)</div>
+      <div class="preview-hint" data-i18n="sign_preview_hint">Drag the signature to position it</div>
       <div class="preview-canvas-wrap" id="previewWrap"></div>
     </div>
   </div>
 
   <div class="actions-bar" id="actionsBar">
-    <button class="btn btn-primary" id="downloadBtn" data-i18n="watermark_download_btn" disabled>Add watermark &amp; download</button>
+    <button class="btn btn-primary" id="downloadBtn" data-i18n="sign_download_btn" disabled>Sign &amp; download</button>
     <span class="status-text" id="statusText"></span>
   </div>
 
@@ -325,7 +317,7 @@
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 </script>
-<script src="js/watermark.js"></script>
+<script src="js/sign.js"></script>
 <script src="js/nav.js"></script>
 <script src="js/i18n.js"></script>
 </body>

@@ -104,6 +104,24 @@
     font-family: 'Caveat', cursive;
   }
 
+  .file-upload-btn {
+    display: inline-block;
+    font-size: 13px;
+    color: var(--paper-dim);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 8px 14px;
+    cursor: pointer;
+  }
+  .file-upload-btn:hover { border-color: var(--blueprint-dim); color: var(--paper); }
+  .file-upload-btn input { display: none; }
+  .image-file-name {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--mist);
+    margin-top: 8px;
+  }
+
   .field-group { margin-bottom: 18px; }
   .field-label {
     font-family: var(--font-mono);
@@ -255,6 +273,7 @@
       <div class="mode-tabs">
         <div class="mode-tab selected" data-mode="draw" data-i18n="sign_mode_draw">Draw</div>
         <div class="mode-tab" data-mode="type" data-i18n="sign_mode_type">Type</div>
+        <div class="mode-tab" data-mode="upload" data-i18n="sign_mode_upload">Upload</div>
       </div>
 
       <div class="mode-panel active" id="drawPanel">
@@ -268,6 +287,18 @@
         <div class="type-input-wrap">
           <input type="text" id="sigTypeInput" data-i18n-placeholder="sign_type_placeholder" placeholder="Your name">
         </div>
+      </div>
+
+      <div class="mode-panel" id="uploadPanel">
+        <div class="field-group">
+          <div class="field-label" data-i18n="sign_upload_label">Signature image (PNG or JPG)</div>
+          <label class="file-upload-btn">
+            <span data-i18n="sign_upload_btn">Choose an image</span>
+            <input type="file" id="sigUploadInput" accept="image/png,image/jpeg">
+          </label>
+          <div class="image-file-name" id="uploadFileName"></div>
+        </div>
+        <p style="font-size:12px;color:var(--mist);line-height:1.5;margin:0 0 8px" data-i18n="sign_upload_hint">A photo of your signature on plain paper works well — light backgrounds are removed automatically.</p>
       </div>
 
       <div class="field-group">
@@ -317,8 +348,8 @@
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 </script>
-<script src="js/sign.js"></script>
-<script src="js/nav.js"></script>
-<script src="js/i18n.js"></script>
+<script src="js/sign.js?v=2"></script>
+<script src="js/nav.js?v=2"></script>
+<script src="js/i18n.js?v=2"></script>
 </body>
 </html>

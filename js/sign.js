@@ -14,9 +14,12 @@
   const modeTabs = document.querySelectorAll('.mode-tab');
   const drawPanel = document.getElementById('drawPanel');
   const typePanel = document.getElementById('typePanel');
+  const uploadPanel = document.getElementById('uploadPanel');
   const sigPad = document.getElementById('sigPad');
   const clearSigBtn = document.getElementById('clearSigBtn');
   const sigTypeInput = document.getElementById('sigTypeInput');
+  const sigUploadInput = document.getElementById('sigUploadInput');
+  const uploadFileName = document.getElementById('uploadFileName');
   const colorSwatches = document.getElementById('colorSwatches');
   const pageNumInput = document.getElementById('pageNum');
   const pageOfEl = document.getElementById('pageOf');
@@ -34,6 +37,7 @@
   let sigDataUrl = null;
   let sigAspect = 1; // height / width of the signature image
   let hasDrawing = false;
+  let uploadedCanvas = null; // background-cleaned canvas from an uploaded image
 
   // overlay position/size, in percentage of the preview container
   let posX = 30; // left %, top-left corner
@@ -53,6 +57,7 @@
       modeTabs.forEach((t) => t.classList.toggle('selected', t === tab));
       drawPanel.classList.toggle('active', mode === 'draw');
       typePanel.classList.toggle('active', mode === 'type');
+      uploadPanel.classList.toggle('active', mode === 'upload');
       regenerateSignature();
     });
   });
@@ -140,6 +145,48 @@
 
   sigTypeInput.addEventListener('input', () => regenerateSignature());
 
+  sigUploadInput.addEventListener('change', async () => {
+    const file = sigUploadInput.files[0];
+    if (!file) return;
+    uploadFileName.textContent = file.name;
+
+    const dataUrl = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.readAsDataURL(file);
+    });
+
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+
+      // Remove light/white backgrounds so a photographed signature
+      // overlays cleanly, similar to a transparent PNG.
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      const WHITE_CUTOFF = 235;
+      const FADE_START = 195;
+      for (let i = 0; i < data.length; i += 4) {
+        const luminance = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+        if (luminance >= WHITE_CUTOFF) {
+          data[i + 3] = 0;
+        } else if (luminance > FADE_START) {
+          const t = (luminance - FADE_START) / (WHITE_CUTOFF - FADE_START);
+          data[i + 3] = Math.round(data[i + 3] * (1 - t));
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+
+      uploadedCanvas = canvas;
+      regenerateSignature();
+    };
+    img.src = dataUrl;
+  });
+
   // ---- signature image generation ----
 
   function trimCanvas(canvas) {
@@ -178,6 +225,8 @@
 
     if (mode === 'draw' && hasDrawing) {
       canvas = trimCanvas(sigPad);
+    } else if (mode === 'upload' && uploadedCanvas) {
+      canvas = trimCanvas(uploadedCanvas);
     } else if (mode === 'type' && sigTypeInput.value.trim()) {
       try {
         await document.fonts.load("700 80px 'Caveat'");
@@ -362,6 +411,7 @@
     pageCount = 0;
     basePageCanvas = null;
     sigOverlayEl = null;
+    uploadedCanvas = null;
     previewWrap.innerHTML = '';
     workspace.classList.remove('active');
     actionsBar.classList.remove('active');

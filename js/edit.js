@@ -920,4 +920,8 @@
   printNowBtn.addEventListener('click', () => {
     window.print();
   });
+
+  if (window.VeloraHandoff) {
+    window.VeloraHandoff.checkAndLoad((file) => loadFile(file));
+  }
 })();

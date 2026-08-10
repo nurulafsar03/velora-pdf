@@ -197,4 +197,8 @@
       extractZipBtn.disabled = selected.size === 0;
     }
   });
+
+  if (window.VeloraHandoff) {
+    window.VeloraHandoff.checkAndLoad((file) => loadFile(file));
+  }
 })();

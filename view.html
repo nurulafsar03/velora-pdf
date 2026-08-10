@@ -69,6 +69,38 @@
 
   .status-text { font-family: var(--font-mono); font-size: 12px; color: var(--mist); }
 
+  .quick-actions {
+    display: none;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 4px 0 22px;
+  }
+  .quick-actions.active { display: flex; }
+  .quick-actions .qa-label {
+    width: 100%;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--mist);
+    margin-bottom: 2px;
+  }
+  .quick-actions .qa-btn {
+    font-size: 13px;
+    padding: 8px 14px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--paper-dim);
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  }
+  .quick-actions .qa-btn:hover {
+    border-color: var(--blueprint-dim);
+    color: var(--paper);
+    background: var(--surface-hi);
+  }
+
   .view-pages-wrap {
     display: flex;
     flex-direction: column;
@@ -86,7 +118,7 @@
   .back-link:hover { color: var(--blueprint); }
 
   @media print {
-    header.site, .top-accent, .tool-header, .dropzone, .toolbar, footer.site { display: none !important; }
+    header.site, .top-accent, .tool-header, .dropzone, .toolbar, .quick-actions, footer.site { display: none !important; }
     .wrap { max-width: none; padding: 0; }
     .view-pages-wrap { padding: 0; gap: 0; }
     .view-page-canvas {
@@ -167,6 +199,10 @@
     <span class="status-text" id="statusText"></span>
   </div>
 
+  <div class="quick-actions" id="quickActions">
+    <div class="qa-label" data-i18n="view_quick_actions_label">Or send this file to another tool</div>
+  </div>
+
   <div class="view-pages-wrap" id="viewPagesWrap"></div>
 
   <footer class="site">
@@ -181,7 +217,8 @@
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 </script>
-<script src="js/view.js?v=1"></script>
+<script src="js/handoff.js?v=1"></script>
+<script src="js/view.js?v=2"></script>
 <script src="js/nav.js?v=13"></script>
 <script src="js/i18n.js?v=14"></script>
 </body>

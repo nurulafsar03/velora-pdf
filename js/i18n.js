@@ -69,6 +69,7 @@
       view_dz_sub: 'one file at a time · nothing is uploaded',
       view_change_file: 'Use a different file',
       view_print_btn: 'Print',
+      view_quick_actions_label: 'Or send this file to another tool',
       home_tool_view_title: 'View & Print PDF',
       home_tool_view_desc: 'Preview any PDF and print it, no editing needed.',
 
@@ -306,6 +307,7 @@
       view_dz_sub: 'একবারে একটা ফাইল · কিছুই আপলোড হয় না',
       view_change_file: 'অন্য ফাইল ব্যবহার করুন',
       view_print_btn: 'প্রিন্ট করুন',
+      view_quick_actions_label: 'অথবা এই ফাইলটা অন্য টুলে পাঠান',
       home_tool_view_title: 'PDF দেখুন ও প্রিন্ট করুন',
       home_tool_view_desc: 'যেকোনো PDF প্রিভিউ করে প্রিন্ট করুন, এডিটিং লাগবে না।',
 
@@ -543,6 +545,7 @@
       view_dz_sub: 'jeweils eine Datei · nichts wird hochgeladen',
       view_change_file: 'Andere Datei verwenden',
       view_print_btn: 'Drucken',
+      view_quick_actions_label: 'Oder diese Datei an ein anderes Werkzeug senden',
       home_tool_view_title: 'PDF ansehen & drucken',
       home_tool_view_desc: 'Jedes PDF ansehen und drucken, keine Bearbeitung nötig.',
 
@@ -780,6 +783,7 @@
       view_dz_sub: 'एक बार में एक फ़ाइल · कुछ भी अपलोड नहीं होता',
       view_change_file: 'दूसरी फ़ाइल इस्तेमाल करें',
       view_print_btn: 'प्रिंट करें',
+      view_quick_actions_label: 'या इस फ़ाइल को किसी और टूल में भेजें',
       home_tool_view_title: 'PDF देखें और प्रिंट करें',
       home_tool_view_desc: 'किसी भी PDF को प्रीव्यू करें और प्रिंट करें, एडिटिंग की ज़रूरत नहीं।',
 
@@ -1017,6 +1021,7 @@
       view_dz_sub: 'ایک وقت میں ایک فائل · کچھ بھی اپ لوڈ نہیں ہوتا',
       view_change_file: 'دوسری فائل استعمال کریں',
       view_print_btn: 'پرنٹ کریں',
+      view_quick_actions_label: 'یا اس فائل کو کسی اور ٹول میں بھیجیں',
       home_tool_view_title: 'PDF دیکھیں اور پرنٹ کریں',
       home_tool_view_desc: 'کوئی بھی PDF دیکھیں اور پرنٹ کریں، ایڈیٹنگ کی ضرورت نہیں۔',
 
@@ -1254,6 +1259,7 @@
       view_dz_sub: 'ملف واحد في كل مرة · لا شيء يُرفع',
       view_change_file: 'استخدم ملفًا آخر',
       view_print_btn: 'طباعة',
+      view_quick_actions_label: 'أو أرسل هذا الملف إلى أداة أخرى',
       home_tool_view_title: 'عرض وطباعة PDF',
       home_tool_view_desc: 'عاين أي ملف PDF واطبعه، دون الحاجة للتحرير.',
 
@@ -1460,6 +1466,8 @@
 
     const switcher = document.getElementById('langSwitcher');
     if (switcher) updateSwitcherUI(lang);
+
+    window.veloraT = (key) => t(key, lang);
 
     try {
       localStorage.setItem(STORAGE_KEY, lang);

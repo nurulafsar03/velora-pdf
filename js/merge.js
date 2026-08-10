@@ -212,4 +212,8 @@
   });
 
   updateActionState();
+
+  if (window.VeloraHandoff) {
+    window.VeloraHandoff.checkAndLoad((file) => addFiles([file]));
+  }
 })();

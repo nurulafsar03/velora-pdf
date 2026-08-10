@@ -194,4 +194,8 @@
       downloadBtn.disabled = false;
     }
   });
+
+  if (window.VeloraHandoff) {
+    window.VeloraHandoff.checkAndLoad((file) => loadFile(file));
+  }
 })();

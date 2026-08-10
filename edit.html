@@ -91,6 +91,13 @@
     overflow: hidden;
     user-select: none;
     max-width: 720px;
+    min-height: 120px;
+  }
+  .btn-ghost:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    border-color: var(--line);
+    color: var(--mist);
   }
   .preview-canvas-wrap canvas { display: block; width: 100%; height: auto; }
 
@@ -305,8 +312,10 @@
     <span class="doc-name" id="docName"></span>
     <div class="page-nav">
       <span data-i18n="edit_page_label">Page</span>
+      <button type="button" class="btn btn-ghost" id="prevPageBtn" style="padding:6px 10px">&larr;</button>
       <input type="number" id="pageNum" min="1" value="1">
       <span id="pageOf"></span>
+      <button type="button" class="btn btn-ghost" id="nextPageBtn" style="padding:6px 10px">&rarr;</button>
     </div>
     <button class="btn btn-ghost" id="addTextBtn" data-i18n="edit_add_text_btn">+ Add text</button>
     <button class="btn btn-ghost" id="addWhiteoutBtn" data-i18n="edit_add_whiteout_btn">+ Add whiteout</button>
@@ -340,8 +349,8 @@
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 </script>
-<script src="js/edit.js?v=4"></script>
-<script src="js/nav.js?v=4"></script>
-<script src="js/i18n.js?v=4"></script>
+<script src="js/edit.js?v=5"></script>
+<script src="js/nav.js?v=5"></script>
+<script src="js/i18n.js?v=5"></script>
 </body>
 </html>

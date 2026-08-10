@@ -7,6 +7,8 @@
   const docNameEl = document.getElementById('docName');
   const pageNumInput = document.getElementById('pageNum');
   const pageOfEl = document.getElementById('pageOf');
+  const prevPageBtn = document.getElementById('prevPageBtn');
+  const nextPageBtn = document.getElementById('nextPageBtn');
   const addTextBtn = document.getElementById('addTextBtn');
   const addWhiteoutBtn = document.getElementById('addWhiteoutBtn');
   const changeFileBtn = document.getElementById('changeFileBtn');
@@ -38,16 +40,41 @@
   // ---- rendering base page ----
 
   async function renderBasePage(pageNum) {
-    const page = await pdfDocProxy.getPage(pageNum);
-    const viewport = page.getViewport({ scale: 1.3 });
-    const canvas = document.createElement('canvas');
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+    addTextBtn.disabled = true;
+    addWhiteoutBtn.disabled = true;
+    setStatus(`loading page ${pageNum}…`);
 
-    previewWrap.innerHTML = '';
-    previewWrap.appendChild(canvas);
-    renderPageElements();
+    try {
+      const page = await pdfDocProxy.getPage(pageNum);
+      const baseViewport = page.getViewport({ scale: 1 });
+
+      // Cap the rendered resolution so very large scanned pages don't
+      // blow past canvas memory limits and silently fail to render.
+      const MAX_DIM = 1700;
+      const longEdge = Math.max(baseViewport.width, baseViewport.height);
+      const scale = Math.max(0.3, Math.min(1.3, MAX_DIM / longEdge));
+
+      const viewport = page.getViewport({ scale });
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+
+      previewWrap.innerHTML = '';
+      previewWrap.style.minHeight = '';
+      previewWrap.appendChild(canvas);
+      renderPageElements();
+      addTextBtn.disabled = false;
+      addWhiteoutBtn.disabled = false;
+      setStatus('add text or a whiteout box, then download');
+      return true;
+    } catch (err) {
+      console.error('Failed to render page', pageNum, err);
+      previewWrap.innerHTML = '';
+      previewWrap.style.minHeight = '200px';
+      setStatus(`couldn't render page ${pageNum} — try a different page, or a smaller/re-saved copy of this PDF`);
+      return false;
+    }
   }
 
   function renderPageElements() {
@@ -336,13 +363,23 @@
     validateDownload();
   });
 
-  pageNumInput.addEventListener('change', () => {
-    let n = parseInt(pageNumInput.value, 10) || 1;
+  async function goToPage(n) {
     n = Math.max(1, Math.min(pageCount, n));
-    pageNumInput.value = n;
-    currentPage = n;
-    renderBasePage(n);
+    const ok = await renderBasePage(n);
+    if (ok) {
+      currentPage = n;
+      pageNumInput.value = n;
+    } else {
+      pageNumInput.value = currentPage;
+    }
+  }
+
+  pageNumInput.addEventListener('change', () => {
+    const n = parseInt(pageNumInput.value, 10) || currentPage;
+    goToPage(n);
   });
+  prevPageBtn.addEventListener('click', () => goToPage(currentPage - 1));
+  nextPageBtn.addEventListener('click', () => goToPage(currentPage + 1));
 
   // ---- file loading ----
 
@@ -370,7 +407,6 @@
 
     await renderBasePage(1);
     validateDownload();
-    setStatus('add text or a whiteout box, then download');
   }
 
   fileInput.addEventListener('change', () => {

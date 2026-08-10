@@ -19,6 +19,7 @@
 
   let pdfDocProxy = null;
   let sourceFileName = 'document';
+  let sourceArrayBuffer = null;
   let pageCount = 0;
   let currentQuality = 'standard';
 
@@ -60,13 +61,15 @@
     pageGrid.innerHTML = '';
 
     const arrayBuffer = await file.arrayBuffer();
+    sourceArrayBuffer = arrayBuffer;
     sourceFileName = file.name;
 
-    pdfDocProxy = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    pdfDocProxy = await pdfjsLib.getDocument({ data: arrayBuffer.slice(0) }).promise;
     pageCount = pdfDocProxy.numPages;
 
     docNameEl.textContent = `${file.name} · ${pageCount} pages`;
     toolbar.classList.add('active');
+    window.VeloraQuickActions.render(document.getElementById('quickActions'), 'pdf2jpg.html', () => sourceArrayBuffer, () => sourceFileName);
     actionsBar.classList.add('active');
     downloadBtn.disabled = false;
 
@@ -99,6 +102,7 @@
   });
 
   changeFileBtn.addEventListener('click', () => {
+    window.VeloraQuickActions.hide(document.getElementById('quickActions'));
     pdfDocProxy = null;
     pageCount = 0;
     pageGrid.innerHTML = '';

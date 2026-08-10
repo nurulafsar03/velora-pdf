@@ -59,6 +59,7 @@
 
     docNameEl.textContent = `${file.name} · ${pageCount} pages`;
     toolbar.classList.add('active');
+    window.VeloraQuickActions.render(document.getElementById('quickActions'), 'split.html', () => sourceArrayBuffer, () => sourceFileName);
     actionsBar.classList.add('active');
 
     for (let i = 1; i <= pageCount; i++) {
@@ -112,6 +113,7 @@
   });
 
   changeFileBtn.addEventListener('click', () => {
+    window.VeloraQuickActions.hide(document.getElementById('quickActions'));
     sourceArrayBuffer = null;
     pageCount = 0;
     selected = new Set();

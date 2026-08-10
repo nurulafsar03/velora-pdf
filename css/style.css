@@ -633,6 +633,40 @@ body.rtl .back-link,
 body.rtl .prose ul { padding-left: 0; }
 body.rtl .prose ul { padding-right: 20px; }
 
+/* ---------- quick actions (cross-tool handoff) ---------- */
+
+.quick-actions {
+  display: none;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 4px 0 22px;
+}
+.quick-actions.active { display: flex; }
+.quick-actions .qa-label {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--mist);
+  margin-bottom: 2px;
+}
+.quick-actions .qa-btn {
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--paper-dim);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+.quick-actions .qa-btn:hover {
+  border-color: var(--blueprint-dim);
+  color: var(--paper);
+  background: var(--surface-hi);
+}
+
 @media (max-width: 760px) {
   .hero { grid-template-columns: 1fr; padding-top: 20px; }
   .stack { height: 260px; order: -1; }

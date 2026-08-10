@@ -97,6 +97,7 @@
     docNameEl.textContent = `${file.name} · ${pageCount} pages`;
     originalSizeEl.textContent = fmtSize(originalBytes);
     workspace.classList.add('active');
+    window.VeloraQuickActions.render(document.getElementById('quickActions'), 'compress.html', () => sourceArrayBuffer, () => sourceFileName);
     actionsBar.classList.add('active');
     downloadBtn.disabled = false;
 
@@ -131,6 +132,7 @@
   });
 
   changeFileBtn.addEventListener('click', () => {
+    window.VeloraQuickActions.hide(document.getElementById('quickActions'));
     sourceArrayBuffer = null;
     pdfDocProxy = null;
     pageCount = 0;

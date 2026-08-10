@@ -11,38 +11,8 @@
   const viewPagesWrap = document.getElementById('viewPagesWrap');
   const quickActions = document.getElementById('quickActions');
 
-  const QUICK_TOOLS = [
-    { url: 'edit.html', labelKey: 'edit_title', fallback: 'Edit PDF' },
-    { url: 'merge.html', labelKey: 'home_tool_merge_title', fallback: 'Merge PDF' },
-    { url: 'split.html', labelKey: 'home_tool_split_title', fallback: 'Split PDF' },
-    { url: 'rotate.html', labelKey: 'home_tool_rotate_title', fallback: 'Rotate PDF' },
-    { url: 'organize.html', labelKey: 'home_tool_organize_title', fallback: 'Organize Pages' },
-    { url: 'watermark.html', labelKey: 'home_tool_watermark_title', fallback: 'Watermark' },
-    { url: 'protect.html', labelKey: 'home_tool_protect_title', fallback: 'Protect PDF' },
-    { url: 'sign.html', labelKey: 'home_tool_sign_title', fallback: 'Sign PDF' },
-    { url: 'compress.html', labelKey: 'home_tool_compress_title', fallback: 'Compress PDF' },
-    { url: 'pdf2jpg.html', labelKey: 'home_tool_pdf2jpg_title', fallback: 'PDF to JPG' },
-  ];
-
   let currentArrayBuffer = null;
   let currentFileName = 'document.pdf';
-
-  function buildQuickActions() {
-    quickActions.querySelectorAll('.qa-btn').forEach((b) => b.remove());
-    QUICK_TOOLS.forEach((tool) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'qa-btn';
-      btn.textContent = (window.veloraT && window.veloraT(tool.labelKey)) || tool.fallback;
-      btn.addEventListener('click', () => {
-        if (!currentArrayBuffer) return;
-        setStatus('opening…');
-        window.VeloraHandoff.navigateWithFile(currentArrayBuffer, currentFileName, tool.url);
-      });
-      quickActions.appendChild(btn);
-    });
-    quickActions.classList.add('active');
-  }
 
   function setStatus(msg) {
     statusText.textContent = msg;
@@ -61,7 +31,7 @@
 
       docNameEl.textContent = `${file.name} · ${doc.numPages} pages`;
       toolbar.classList.add('active');
-      buildQuickActions();
+      window.VeloraQuickActions.render(quickActions, 'view.html', () => currentArrayBuffer, () => currentFileName);
 
       const dpr = Math.max(2, window.devicePixelRatio || 1);
       for (let i = 1; i <= doc.numPages; i++) {
@@ -111,7 +81,7 @@
   changeFileBtn.addEventListener('click', () => {
     viewPagesWrap.innerHTML = '';
     toolbar.classList.remove('active');
-    quickActions.classList.remove('active');
+    window.VeloraQuickActions.hide(quickActions);
     currentArrayBuffer = null;
     setStatus('');
   });

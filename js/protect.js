@@ -45,6 +45,7 @@
 
     docNameEl.textContent = file.name;
     workspace.classList.add('active');
+    window.VeloraQuickActions.render(document.getElementById('quickActions'), 'protect.html', () => sourceArrayBuffer, () => sourceFileName);
     actionsBar.classList.add('active');
     pw1.value = '';
     pw2.value = '';
@@ -78,6 +79,7 @@
   });
 
   changeFileBtn.addEventListener('click', () => {
+    window.VeloraQuickActions.hide(document.getElementById('quickActions'));
     sourceArrayBuffer = null;
     workspace.classList.remove('active');
     actionsBar.classList.remove('active');

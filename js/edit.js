@@ -686,6 +686,7 @@
 
     toolbar.classList.add('active');
     workspace.classList.add('active');
+    window.VeloraQuickActions.render(document.getElementById('quickActions'), 'edit.html', () => sourceArrayBuffer, () => sourceFileName);
     actionsBar.classList.add('active');
 
     await renderBasePage(1);
@@ -717,6 +718,7 @@
   });
 
   changeFileBtn.addEventListener('click', () => {
+    window.VeloraQuickActions.hide(document.getElementById('quickActions'));
     sourceArrayBuffer = null;
     pdfDocProxy = null;
     pageCount = 0;

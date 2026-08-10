@@ -107,6 +107,7 @@
 
     docNameEl.textContent = `${file.name} · ${pageCount} pages`;
     toolbar.classList.add('active');
+    window.VeloraQuickActions.render(document.getElementById('quickActions'), 'organize.html', () => sourceArrayBuffer, () => sourceFileName);
     actionsBar.classList.add('active');
 
     for (let i = 0; i < pageCount; i++) {
@@ -155,6 +156,7 @@
   });
 
   changeFileBtn.addEventListener('click', () => {
+    window.VeloraQuickActions.hide(document.getElementById('quickActions'));
     sourceArrayBuffer = null;
     pages = [];
     pageGrid.innerHTML = '';

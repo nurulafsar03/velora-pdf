@@ -374,6 +374,7 @@
     pageOfEl.textContent = `of ${pageCount}`;
 
     workspace.classList.add('active');
+    window.VeloraQuickActions.render(document.getElementById('quickActions'), 'sign.html', () => sourceArrayBuffer, () => sourceFileName);
     actionsBar.classList.add('active');
 
     resizeSigPad();
@@ -406,6 +407,7 @@
   });
 
   changeFileBtn.addEventListener('click', () => {
+    window.VeloraQuickActions.hide(document.getElementById('quickActions'));
     sourceArrayBuffer = null;
     pdfDocProxy = null;
     pageCount = 0;

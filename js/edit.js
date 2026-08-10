@@ -16,7 +16,12 @@
   const previewWrap = document.getElementById('previewWrap');
   const actionsBar = document.getElementById('actionsBar');
   const downloadBtn = document.getElementById('downloadBtn');
+  const viewPrintBtn = document.getElementById('viewPrintBtn');
   const statusText = document.getElementById('statusText');
+  const printModal = document.getElementById('printModal');
+  const printPagesWrap = document.getElementById('printPagesWrap');
+  const closePrintModalBtn = document.getElementById('closePrintModalBtn');
+  const printNowBtn = document.getElementById('printNowBtn');
 
   const COLORS = ['#16140f', '#6f97c9', '#c1502e'];
   const WHITEOUT_COLORS = ['#ffffff', '#16140f', '#ede6d6'];
@@ -84,6 +89,7 @@
 
   function validateDownload() {
     downloadBtn.disabled = edits.length === 0;
+    viewPrintBtn.disabled = edits.length === 0;
   }
 
   // ---- rendering base page ----
@@ -724,127 +730,132 @@
 
   // ---- download ----
 
+  async function buildEditedPdf() {
+    const { PDFDocument, StandardFonts, rgb } = PDFLib;
+    const pdfDoc = await PDFDocument.load(sourceArrayBuffer.slice(0));
+    pdfDoc.registerFontkit(fontkit);
+    const pages = pdfDoc.getPages();
+
+    const STANDARD_SETS = {
+      Helvetica: [StandardFonts.Helvetica, StandardFonts.HelveticaBold, StandardFonts.HelveticaOblique, StandardFonts.HelveticaBoldOblique],
+      TimesRoman: [StandardFonts.TimesRoman, StandardFonts.TimesRomanBold, StandardFonts.TimesRomanItalic, StandardFonts.TimesRomanBoldItalic],
+      Courier: [StandardFonts.Courier, StandardFonts.CourierBold, StandardFonts.CourierOblique, StandardFonts.CourierBoldOblique],
+    };
+
+    const embeddedCache = {};
+    let anyFontFailed = false;
+
+    async function getEmbeddedSet(familyKey) {
+      if (embeddedCache[familyKey]) return embeddedCache[familyKey];
+
+      const entry = catalogEntry(familyKey);
+      if (entry.standard) {
+        const set = await Promise.all(STANDARD_SETS[entry.key].map((f) => pdfDoc.embedFont(f)));
+        embeddedCache[familyKey] = set;
+        return set;
+      }
+
+      try {
+        const order = ['r', 'b', 'i', 'bi'];
+        const bytesList = await Promise.all(
+          order.map((k) => {
+            const url = entry.urls[k] || entry.urls.r;
+            return fetch(url).then((res) => {
+              if (!res.ok) throw new Error(`fetch failed: ${url}`);
+              return res.arrayBuffer();
+            });
+          })
+        );
+        const set = await Promise.all(bytesList.map((bytes) => pdfDoc.embedFont(bytes, { subset: true })));
+        embeddedCache[familyKey] = set;
+        return set;
+      } catch (err) {
+        console.error(`Could not load font "${entry.label}", using Helvetica instead`, err);
+        anyFontFailed = true;
+        const fallback = await getEmbeddedSet('Helvetica');
+        embeddedCache[familyKey] = fallback;
+        return fallback;
+      }
+    }
+
+    async function pickFont(edit) {
+      const set = await getEmbeddedSet(edit.fontFamily);
+      const idx = (edit.bold ? 1 : 0) + (edit.italic ? 2 : 0);
+      return set[idx];
+    }
+
+    function hexToRgb(hex) {
+      const n = parseInt(hex.replace('#', ''), 16);
+      return { r: ((n >> 16) & 255) / 255, g: ((n >> 8) & 255) / 255, b: (n & 255) / 255 };
+    }
+
+    function wrapLines(text, font, fontSize, maxWidth) {
+      const lines = [];
+      text.split('\n').forEach((paragraph) => {
+        const words = paragraph.split(' ');
+        let current = '';
+        words.forEach((word) => {
+          const candidate = current ? `${current} ${word}` : word;
+          if (font.widthOfTextAtSize(candidate, fontSize) > maxWidth && current) {
+            lines.push(current);
+            current = word;
+          } else {
+            current = candidate;
+          }
+        });
+        lines.push(current);
+      });
+      return lines;
+    }
+
+    const BENGALI_RANGE = /[\u0980-\u09FF]/;
+    let skippedCount = 0;
+
+    for (const edit of edits) {
+      const page = pages[edit.pageNum - 1];
+      if (!page) continue;
+      const { width, height } = page.getSize();
+
+      try {
+        if (edit.type === 'whiteout') {
+          const x = width * (edit.xPct / 100);
+          const boxWidth = width * (edit.widthPct / 100);
+          const boxHeight = height * (edit.heightPct / 100);
+          const y = height - height * (edit.yPct / 100) - boxHeight;
+          const { r, g, b } = hexToRgb(edit.color || '#ffffff');
+          page.drawRectangle({ x, y, width: boxWidth, height: boxHeight, color: rgb(r, g, b) });
+        } else if (edit.type === 'text' && edit.text.trim()) {
+          const fontSize = width * (edit.fontSizePct / 100);
+          const { r, g, b } = hexToRgb(edit.color);
+          const effectiveFamily = BENGALI_RANGE.test(edit.text) ? 'HindSiliguri' : edit.fontFamily;
+          const font = await pickFont({ ...edit, fontFamily: effectiveFamily });
+          const x = width * (edit.xPct / 100);
+          const maxWidth = Math.max(fontSize * 3, width - x);
+          const lineHeight = fontSize * 1.25;
+          const lines = wrapLines(edit.text, font, fontSize, maxWidth);
+          let y = height - height * (edit.yPct / 100) - fontSize;
+          lines.forEach((line) => {
+            page.drawText(line, { x, y, size: fontSize, font, color: rgb(r, g, b) });
+            y -= lineHeight;
+          });
+        }
+      } catch (editErr) {
+        console.error('Skipped one edit that failed to render', edit, editErr);
+        skippedCount += 1;
+      }
+    }
+
+    const bytes = await pdfDoc.save();
+    return { bytes, anyFontFailed, skippedCount };
+  }
+
   downloadBtn.addEventListener('click', async () => {
     if (!sourceArrayBuffer || !edits.length) return;
     downloadBtn.disabled = true;
     setStatus('applying edits…');
 
     try {
-      const { PDFDocument, StandardFonts, rgb } = PDFLib;
-      const pdfDoc = await PDFDocument.load(sourceArrayBuffer.slice(0));
-      pdfDoc.registerFontkit(fontkit);
-      const pages = pdfDoc.getPages();
-
-      const STANDARD_SETS = {
-        Helvetica: [StandardFonts.Helvetica, StandardFonts.HelveticaBold, StandardFonts.HelveticaOblique, StandardFonts.HelveticaBoldOblique],
-        TimesRoman: [StandardFonts.TimesRoman, StandardFonts.TimesRomanBold, StandardFonts.TimesRomanItalic, StandardFonts.TimesRomanBoldItalic],
-        Courier: [StandardFonts.Courier, StandardFonts.CourierBold, StandardFonts.CourierOblique, StandardFonts.CourierBoldOblique],
-      };
-
-      const embeddedCache = {}; // fontFamily key -> [regular, bold, italic, boldItalic] embedded font objects
-      let anyFontFailed = false;
-
-      async function getEmbeddedSet(familyKey) {
-        if (embeddedCache[familyKey]) return embeddedCache[familyKey];
-
-        const entry = catalogEntry(familyKey);
-        if (entry.standard) {
-          const set = await Promise.all(STANDARD_SETS[entry.key].map((f) => pdfDoc.embedFont(f)));
-          embeddedCache[familyKey] = set;
-          return set;
-        }
-
-        try {
-          const order = ['r', 'b', 'i', 'bi'];
-          const bytesList = await Promise.all(
-            order.map((k) => {
-              const url = entry.urls[k] || entry.urls.r;
-              return fetch(url).then((res) => {
-                if (!res.ok) throw new Error(`fetch failed: ${url}`);
-                return res.arrayBuffer();
-              });
-            })
-          );
-          const set = await Promise.all(bytesList.map((bytes) => pdfDoc.embedFont(bytes, { subset: true })));
-          embeddedCache[familyKey] = set;
-          return set;
-        } catch (err) {
-          console.error(`Could not load font "${entry.label}", using Helvetica instead`, err);
-          anyFontFailed = true;
-          const fallback = await getEmbeddedSet('Helvetica');
-          embeddedCache[familyKey] = fallback;
-          return fallback;
-        }
-      }
-
-      async function pickFont(edit) {
-        const set = await getEmbeddedSet(edit.fontFamily);
-        const idx = (edit.bold ? 1 : 0) + (edit.italic ? 2 : 0);
-        return set[idx];
-      }
-
-      function hexToRgb(hex) {
-        const n = parseInt(hex.replace('#', ''), 16);
-        return { r: ((n >> 16) & 255) / 255, g: ((n >> 8) & 255) / 255, b: (n & 255) / 255 };
-      }
-
-      function wrapLines(text, font, fontSize, maxWidth) {
-        const lines = [];
-        text.split('\n').forEach((paragraph) => {
-          const words = paragraph.split(' ');
-          let current = '';
-          words.forEach((word) => {
-            const candidate = current ? `${current} ${word}` : word;
-            if (font.widthOfTextAtSize(candidate, fontSize) > maxWidth && current) {
-              lines.push(current);
-              current = word;
-            } else {
-              current = candidate;
-            }
-          });
-          lines.push(current);
-        });
-        return lines;
-      }
-
-      const BENGALI_RANGE = /[\u0980-\u09FF]/;
-      let skippedCount = 0;
-
-      for (const edit of edits) {
-        const page = pages[edit.pageNum - 1];
-        if (!page) continue;
-        const { width, height } = page.getSize();
-
-        try {
-          if (edit.type === 'whiteout') {
-            const x = width * (edit.xPct / 100);
-            const boxWidth = width * (edit.widthPct / 100);
-            const boxHeight = height * (edit.heightPct / 100);
-            const y = height - height * (edit.yPct / 100) - boxHeight;
-            const { r, g, b } = hexToRgb(edit.color || '#ffffff');
-            page.drawRectangle({ x, y, width: boxWidth, height: boxHeight, color: rgb(r, g, b) });
-          } else if (edit.type === 'text' && edit.text.trim()) {
-            const fontSize = width * (edit.fontSizePct / 100);
-            const { r, g, b } = hexToRgb(edit.color);
-            const effectiveFamily = BENGALI_RANGE.test(edit.text) ? 'HindSiliguri' : edit.fontFamily;
-            const font = await pickFont({ ...edit, fontFamily: effectiveFamily });
-            const x = width * (edit.xPct / 100);
-            const maxWidth = Math.max(fontSize * 3, width - x);
-            const lineHeight = fontSize * 1.25;
-            const lines = wrapLines(edit.text, font, fontSize, maxWidth);
-            let y = height - height * (edit.yPct / 100) - fontSize;
-            lines.forEach((line) => {
-              page.drawText(line, { x, y, size: fontSize, font, color: rgb(r, g, b) });
-              y -= lineHeight;
-            });
-          }
-        } catch (editErr) {
-          console.error('Skipped one edit that failed to render', edit, editErr);
-          skippedCount += 1;
-        }
-      }
-
-      const bytes = await pdfDoc.save();
+      const { bytes, anyFontFailed, skippedCount } = await buildEditedPdf();
       const blob = new Blob([bytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -865,5 +876,48 @@
     } finally {
       validateDownload();
     }
+  });
+
+  // ---- view & print ----
+
+  viewPrintBtn.addEventListener('click', async () => {
+    if (!sourceArrayBuffer || !edits.length) return;
+    viewPrintBtn.disabled = true;
+    setStatus('preparing preview…');
+
+    try {
+      const { bytes } = await buildEditedPdf();
+      const viewDoc = await pdfjsLib.getDocument({ data: bytes.slice(0) }).promise;
+
+      printPagesWrap.innerHTML = '';
+      const dpr = Math.max(2, window.devicePixelRatio || 1);
+      for (let i = 1; i <= viewDoc.numPages; i++) {
+        const page = await viewDoc.getPage(i);
+        const viewport = page.getViewport({ scale: dpr });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        canvas.className = 'print-page-canvas';
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+        printPagesWrap.appendChild(canvas);
+      }
+
+      printModal.classList.add('active');
+      setStatus('add text or a whiteout box, then download');
+    } catch (err) {
+      console.error(err);
+      setStatus('preview failed — check the console');
+    } finally {
+      viewPrintBtn.disabled = false;
+    }
+  });
+
+  closePrintModalBtn.addEventListener('click', () => {
+    printModal.classList.remove('active');
+    printPagesWrap.innerHTML = '';
+  });
+
+  printNowBtn.addEventListener('click', () => {
+    window.print();
   });
 })();

@@ -374,6 +374,63 @@
 
   .back-link { display: inline-block; font-size: 13px; color: var(--mist); margin-bottom: 4px; }
   .back-link:hover { color: var(--blueprint); }
+
+  .print-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--ink);
+    z-index: 100;
+    overflow-y: auto;
+  }
+  .print-modal.active { display: block; }
+  .print-modal-bar {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 24px;
+    z-index: 2;
+  }
+  .print-modal-bar span {
+    font-size: 12px;
+    color: var(--mist);
+    font-family: var(--font-mono);
+    max-width: 60ch;
+  }
+  .print-modal-actions { display: flex; gap: 10px; flex-shrink: 0; }
+  .print-pages-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 24px;
+  }
+  .print-page-canvas {
+    max-width: 100%;
+    box-shadow: 0 12px 30px -14px rgba(0, 0, 0, 0.6);
+    background: #fff;
+  }
+
+  @media print {
+    body > *:not(.print-modal) { display: none !important; }
+    .print-modal {
+      position: static;
+      background: #fff;
+      overflow: visible;
+    }
+    .print-modal-bar { display: none !important; }
+    .print-pages-wrap { padding: 0; gap: 0; }
+    .print-page-canvas {
+      box-shadow: none;
+      max-width: 100%;
+      page-break-after: always;
+    }
+  }
 </style>
 </head>
 <body>
@@ -463,6 +520,7 @@
 
   <div class="actions-bar" id="actionsBar">
     <button class="btn btn-primary" id="downloadBtn" data-i18n="edit_download_btn" disabled>Download edited PDF</button>
+    <button class="btn btn-ghost" id="viewPrintBtn" data-i18n="edit_view_print_btn" disabled>View &amp; print</button>
     <span class="status-text" id="statusText"></span>
   </div>
 
@@ -474,14 +532,25 @@
   </footer>
 </div>
 
+<div class="print-modal" id="printModal">
+  <div class="print-modal-bar">
+    <span data-i18n="edit_view_print_hint">This uses the same renderer as the editor, so it should match what you saw while editing.</span>
+    <div class="print-modal-actions">
+      <button class="btn btn-primary" id="printNowBtn" data-i18n="edit_print_now_btn">Print</button>
+      <button class="btn btn-ghost" id="closePrintModalBtn" data-i18n="edit_close_btn">Close</button>
+    </div>
+  </div>
+  <div class="print-pages-wrap" id="printPagesWrap"></div>
+</div>
+
 <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
 <script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 </script>
-<script src="js/edit.js?v=12"></script>
-<script src="js/nav.js?v=12"></script>
-<script src="js/i18n.js?v=12"></script>
+<script src="js/edit.js?v=13"></script>
+<script src="js/nav.js?v=13"></script>
+<script src="js/i18n.js?v=13"></script>
 </body>
 </html>

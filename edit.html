@@ -252,8 +252,11 @@
 
   .whiteout-el {
     background: #ffffff;
-    border: 1px dashed var(--blueprint-dim);
+    border: 1px dashed transparent;
     cursor: grab;
+  }
+  .whiteout-el:hover, .whiteout-el.active {
+    border-color: var(--blueprint-dim);
   }
   .whiteout-el .wo-controls {
     position: absolute;
@@ -313,7 +316,9 @@
     background: var(--blueprint);
     border-radius: 2px;
     cursor: nwse-resize;
+    display: none;
   }
+  .whiteout-el:hover .resize-handle, .whiteout-el.active .resize-handle { display: block; }
   .whiteout-el .del-btn-box {
     position: absolute;
     top: -10px;
@@ -469,8 +474,8 @@
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 </script>
-<script src="js/edit.js?v=9"></script>
-<script src="js/nav.js?v=9"></script>
-<script src="js/i18n.js?v=9"></script>
+<script src="js/edit.js?v=10"></script>
+<script src="js/nav.js?v=10"></script>
+<script src="js/i18n.js?v=10"></script>
 </body>
 </html>

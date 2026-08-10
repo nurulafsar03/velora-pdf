@@ -134,6 +134,17 @@
     });
   }
 
+  previewWrap.addEventListener('mousedown', (e) => {
+    if (!e.target.closest('.edit-el')) {
+      previewWrap.querySelectorAll('.edit-el').forEach((n) => n.classList.remove('active'));
+    }
+  });
+  previewWrap.addEventListener('touchstart', (e) => {
+    if (!e.target.closest('.edit-el')) {
+      previewWrap.querySelectorAll('.edit-el').forEach((n) => n.classList.remove('active'));
+    }
+  });
+
   // ---- drag helper (shared) ----
 
   function wireDrag(el, edit, onMove) {

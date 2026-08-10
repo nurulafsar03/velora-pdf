@@ -52,6 +52,8 @@
       home_tool_pdf2jpg_title: 'PDF to JPG',
       home_tool_pdf2jpg_desc: 'Export each page as an image.',
 
+      home_tool_edit_desc: 'Add text, or cover and relabel existing content.',
+
       merge_back: '← Back to tools',
       merge_title: 'Merge PDF',
       merge_subtitle: 'Add two or more PDFs, drag to set the order, then merge. Files are processed on your device only.',
@@ -59,6 +61,19 @@
       merge_dz_sub: 'nothing is uploaded · multiple files supported',
       merge_btn: 'Merge & Download',
       merge_clear_btn: 'Clear all',
+
+      edit_back: '← Back to tools',
+      edit_title: 'Edit PDF',
+      edit_subtitle: "Add new text anywhere, or cover existing content with a white box and type over it. This can't reflow or rewrite the PDF's original text directly — see the notes below for what that means.",
+      edit_dz_title: 'Drop a PDF here, or click to browse',
+      edit_dz_sub: 'one file at a time · nothing is uploaded',
+      edit_change_file: 'Use a different file',
+      edit_page_label: 'Page',
+      edit_add_text_btn: '+ Add text',
+      edit_add_whiteout_btn: '+ Add whiteout',
+      edit_note_latin: 'Added text supports Latin characters only (standard PDF fonts).',
+      edit_note_whiteout: "Whiteout visually covers content — the original text underneath still exists in the file and isn't securely removed. Don't rely on it for confidential redaction.",
+      edit_download_btn: 'Download edited PDF',
 
       img2pdf_back: '← Back to tools',
       img2pdf_title: 'Image to PDF',
@@ -260,6 +275,8 @@
       home_tool_pdf2jpg_title: 'PDF থেকে JPG',
       home_tool_pdf2jpg_desc: 'প্রতিটা পেজ ছবি হিসেবে এক্সপোর্ট করুন।',
 
+      home_tool_edit_desc: 'টেক্সট যোগ করুন, বা পুরনো কনটেন্ট ঢেকে নতুন করে লিখুন।',
+
       merge_back: '← টুলসে ফিরুন',
       merge_title: 'মার্জ PDF',
       merge_subtitle: 'দুই বা তার বেশি PDF যোগ করুন, ড্র্যাগ করে অর্ডার ঠিক করুন, তারপর মার্জ করুন। ফাইল শুধু আপনার ডিভাইসেই প্রসেস হয়।',
@@ -267,6 +284,19 @@
       merge_dz_sub: 'কিছুই আপলোড হয় না · একাধিক ফাইল সাপোর্ট করে',
       merge_btn: 'মার্জ ও ডাউনলোড',
       merge_clear_btn: 'সব মুছুন',
+
+      edit_back: '← টুলসে ফিরুন',
+      edit_title: 'এডিট PDF',
+      edit_subtitle: 'যেকোনো জায়গায় নতুন টেক্সট যোগ করুন, অথবা সাদা বক্স দিয়ে পুরনো কনটেন্ট ঢেকে তার উপর নতুন টেক্সট লিখুন। এটা PDF-এর আসল টেক্সট সরাসরি reflow বা rewrite করতে পারে না — নিচের নোটে বিস্তারিত আছে।',
+      edit_dz_title: 'এখানে একটা PDF ড্রপ করুন, অথবা ক্লিক করে বেছে নিন',
+      edit_dz_sub: 'একবারে একটা ফাইল · কিছুই আপলোড হয় না',
+      edit_change_file: 'অন্য ফাইল ব্যবহার করুন',
+      edit_page_label: 'পেজ',
+      edit_add_text_btn: '+ টেক্সট যোগ করুন',
+      edit_add_whiteout_btn: '+ Whiteout যোগ করুন',
+      edit_note_latin: 'যোগ করা টেক্সট শুধু ইংরেজি/ল্যাটিন অক্ষর সাপোর্ট করে (স্ট্যান্ডার্ড PDF ফন্ট)।',
+      edit_note_whiteout: 'Whiteout শুধু দৃশ্যমানভাবে কনটেন্ট ঢেকে দেয় — নিচের আসল টেক্সট ফাইলের ভেতরে থেকেই যায়, নিরাপদভাবে মুছে যায় না। কনফিডেনশিয়াল তথ্য মুছতে এটার উপর নির্ভর করবেন না।',
+      edit_download_btn: 'এডিট করা PDF ডাউনলোড করুন',
 
       img2pdf_back: '← টুলসে ফিরুন',
       img2pdf_title: 'ইমেজ থেকে PDF',
@@ -468,6 +498,8 @@
       home_tool_pdf2jpg_title: 'PDF zu JPG',
       home_tool_pdf2jpg_desc: 'Jede Seite als Bild exportieren.',
 
+      home_tool_edit_desc: 'Text hinzufügen oder vorhandenen Inhalt überdecken und neu beschriften.',
+
       merge_back: '← Zurück zu den Werkzeugen',
       merge_title: 'PDF zusammenführen',
       merge_subtitle: 'Fügen Sie zwei oder mehr PDFs hinzu, legen Sie die Reihenfolge per Drag fest und führen Sie sie zusammen. Dateien werden nur auf Ihrem Gerät verarbeitet.',
@@ -475,6 +507,19 @@
       merge_dz_sub: 'nichts wird hochgeladen · mehrere Dateien möglich',
       merge_btn: 'Zusammenführen & Herunterladen',
       merge_clear_btn: 'Alles löschen',
+
+      edit_back: '← Zurück zu den Werkzeugen',
+      edit_title: 'PDF bearbeiten',
+      edit_subtitle: 'Fügen Sie neuen Text hinzu oder überdecken Sie vorhandenen Inhalt mit einem weißen Feld und schreiben Sie darüber. Der ursprüngliche Text des PDFs kann dadurch nicht direkt umfließen oder überschrieben werden — siehe die Hinweise unten.',
+      edit_dz_title: 'PDF hier ablegen oder klicken zum Durchsuchen',
+      edit_dz_sub: 'jeweils eine Datei · nichts wird hochgeladen',
+      edit_change_file: 'Andere Datei verwenden',
+      edit_page_label: 'Seite',
+      edit_add_text_btn: '+ Text hinzufügen',
+      edit_add_whiteout_btn: '+ Weißfeld hinzufügen',
+      edit_note_latin: 'Hinzugefügter Text unterstützt nur lateinische Zeichen (Standard-PDF-Schriftarten).',
+      edit_note_whiteout: 'Das Weißfeld deckt Inhalte nur optisch ab — der ursprüngliche Text darunter bleibt in der Datei erhalten und wird nicht sicher entfernt. Verlassen Sie sich dafür nicht auf vertrauliche Schwärzung.',
+      edit_download_btn: 'Bearbeitetes PDF herunterladen',
 
       img2pdf_back: '← Zurück zu den Werkzeugen',
       img2pdf_title: 'Bild zu PDF',
@@ -676,6 +721,8 @@
       home_tool_pdf2jpg_title: 'PDF से JPG',
       home_tool_pdf2jpg_desc: 'हर पेज को इमेज के रूप में एक्सपोर्ट करें।',
 
+      home_tool_edit_desc: 'टेक्स्ट जोड़ें, या मौजूदा कंटेंट को ढककर दोबारा लिखें।',
+
       merge_back: '← टूल्स पर वापस जाएं',
       merge_title: 'PDF मर्ज करें',
       merge_subtitle: 'दो या ज़्यादा PDF जोड़ें, ड्रैग करके क्रम तय करें, फिर मर्ज करें। फ़ाइलें सिर्फ़ आपकी डिवाइस पर प्रोसेस होती हैं।',
@@ -683,6 +730,19 @@
       merge_dz_sub: 'कुछ भी अपलोड नहीं होता · कई फ़ाइलें एक साथ चलती हैं',
       merge_btn: 'मर्ज करें और डाउनलोड करें',
       merge_clear_btn: 'सब हटाएं',
+
+      edit_back: '← टूल्स पर वापस जाएं',
+      edit_title: 'PDF एडिट करें',
+      edit_subtitle: 'कहीं भी नया टेक्स्ट जोड़ें, या मौजूदा कंटेंट को सफ़ेद बॉक्स से ढककर उस पर लिखें। यह PDF के असली टेक्स्ट को सीधे रीफ़्लो या फिर से नहीं लिख सकता — नीचे नोट्स में विवरण देखें।',
+      edit_dz_title: 'यहां एक PDF ड्रॉप करें, या क्लिक करके चुनें',
+      edit_dz_sub: 'एक बार में एक फ़ाइल · कुछ भी अपलोड नहीं होता',
+      edit_change_file: 'दूसरी फ़ाइल इस्तेमाल करें',
+      edit_page_label: 'पेज',
+      edit_add_text_btn: '+ टेक्स्ट जोड़ें',
+      edit_add_whiteout_btn: '+ व्हाइटआउट जोड़ें',
+      edit_note_latin: 'जोड़ा गया टेक्स्ट सिर्फ़ लैटिन अक्षर सपोर्ट करता है (स्टैंडर्ड PDF फ़ॉन्ट)।',
+      edit_note_whiteout: 'व्हाइटआउट सिर्फ़ कंटेंट को दिखने से रोकता है — नीचे का असली टेक्स्ट फ़ाइल में बना रहता है, सुरक्षित रूप से हटता नहीं। गोपनीय जानकारी मिटाने के लिए इस पर निर्भर न रहें।',
+      edit_download_btn: 'एडिट की गई PDF डाउनलोड करें',
 
       img2pdf_back: '← टूल्स पर वापस जाएं',
       img2pdf_title: 'इमेज से PDF',
@@ -884,6 +944,8 @@
       home_tool_pdf2jpg_title: 'PDF سے JPG',
       home_tool_pdf2jpg_desc: 'ہر صفحے کو تصویر کے طور پر ایکسپورٹ کریں۔',
 
+      home_tool_edit_desc: 'متن شامل کریں، یا موجودہ مواد کو ڈھانپ کر دوبارہ لکھیں۔',
+
       merge_back: '← ٹولز پر واپس جائیں',
       merge_title: 'PDF مرج کریں',
       merge_subtitle: 'دو یا زیادہ PDF شامل کریں، ڈریگ کر کے ترتیب طے کریں، پھر مرج کریں۔ فائلیں صرف آپ کی ڈیوائس پر پروسیس ہوتی ہیں۔',
@@ -891,6 +953,19 @@
       merge_dz_sub: 'کچھ بھی اپ لوڈ نہیں ہوتا · کئی فائلیں ایک ساتھ چلتی ہیں',
       merge_btn: 'مرج کریں اور ڈاؤن لوڈ کریں',
       merge_clear_btn: 'سب صاف کریں',
+
+      edit_back: '← ٹولز پر واپس جائیں',
+      edit_title: 'PDF ایڈٹ کریں',
+      edit_subtitle: 'کہیں بھی نیا متن شامل کریں، یا موجودہ مواد کو سفید باکس سے ڈھانپ کر اس پر لکھیں۔ یہ PDF کے اصل متن کو براہ راست دوبارہ ترتیب یا تبدیل نہیں کر سکتا — تفصیل کے لیے نیچے نوٹس دیکھیں۔',
+      edit_dz_title: 'یہاں ایک PDF ڈراپ کریں، یا کلک کر کے منتخب کریں',
+      edit_dz_sub: 'ایک وقت میں ایک فائل · کچھ بھی اپ لوڈ نہیں ہوتا',
+      edit_change_file: 'دوسری فائل استعمال کریں',
+      edit_page_label: 'صفحہ',
+      edit_add_text_btn: '+ متن شامل کریں',
+      edit_add_whiteout_btn: '+ وائٹ آؤٹ شامل کریں',
+      edit_note_latin: 'شامل کردہ متن صرف لاطینی حروف سپورٹ کرتا ہے (معیاری PDF فونٹس)۔',
+      edit_note_whiteout: 'وائٹ آؤٹ صرف مواد کو بصری طور پر ڈھانپتا ہے — نیچے کا اصل متن فائل میں موجود رہتا ہے، محفوظ طریقے سے نہیں ہٹتا۔ خفیہ معلومات مٹانے کے لیے اس پر انحصار نہ کریں۔',
+      edit_download_btn: 'ایڈٹ شدہ PDF ڈاؤن لوڈ کریں',
 
       img2pdf_back: '← ٹولز پر واپس جائیں',
       img2pdf_title: 'تصویر سے PDF',
@@ -1092,6 +1167,8 @@
       home_tool_pdf2jpg_title: 'PDF إلى JPG',
       home_tool_pdf2jpg_desc: 'صدّر كل صفحة كصورة.',
 
+      home_tool_edit_desc: 'أضف نصًا، أو غطِّ المحتوى الحالي وأعد كتابته.',
+
       merge_back: '← العودة إلى الأدوات',
       merge_title: 'دمج PDF',
       merge_subtitle: 'أضف ملفي PDF أو أكثر، رتّبهما بالسحب، ثم ادمجهما. تتم معالجة الملفات على جهازك فقط.',
@@ -1099,6 +1176,19 @@
       merge_dz_sub: 'لا شيء يُرفع · يدعم عدة ملفات في آن واحد',
       merge_btn: 'دمج وتنزيل',
       merge_clear_btn: 'مسح الكل',
+
+      edit_back: '← العودة إلى الأدوات',
+      edit_title: 'تحرير PDF',
+      edit_subtitle: 'أضف نصًا جديدًا في أي مكان، أو غطِّ المحتوى الحالي بمربع أبيض واكتب فوقه. لا يمكن لهذا إعادة تدفق أو إعادة كتابة النص الأصلي لملف PDF مباشرة — راجع الملاحظات أدناه لمعرفة ما يعنيه ذلك.',
+      edit_dz_title: 'أفلت ملف PDF هنا، أو انقر للتصفح',
+      edit_dz_sub: 'ملف واحد في كل مرة · لا شيء يُرفع',
+      edit_change_file: 'استخدم ملفًا آخر',
+      edit_page_label: 'الصفحة',
+      edit_add_text_btn: '+ إضافة نص',
+      edit_add_whiteout_btn: '+ إضافة تغطية بيضاء',
+      edit_note_latin: 'النص المُضاف يدعم الأحرف اللاتينية فقط (خطوط PDF القياسية).',
+      edit_note_whiteout: 'التغطية البيضاء تخفي المحتوى بصريًا فقط — يبقى النص الأصلي أسفلها موجودًا في الملف ولا يُحذف بأمان. لا تعتمد عليها لإخفاء معلومات سرية.',
+      edit_download_btn: 'تنزيل PDF بعد التحرير',
 
       img2pdf_back: '← العودة إلى الأدوات',
       img2pdf_title: 'صورة إلى PDF',

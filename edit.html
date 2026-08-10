@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title data-i18n="img2pdf_title">Image to PDF — VeloraPDF</title>
-<meta name="description" content="Turn JPGs and PNGs into a single PDF, entirely in your browser.">
+<title data-i18n="edit_title">Edit PDF — VeloraPDF</title>
+<meta name="description" content="Add text or cover content on any PDF page, entirely in your browser.">
 <link rel="icon" href="/favicon.ico?v=2" sizes="any">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
@@ -21,7 +21,7 @@
   }
   .tool-header p {
     color: var(--paper-dim);
-    margin: 0 0 32px;
+    margin: 0 0 24px;
     font-size: 15px;
     border-left: 2px solid var(--blueprint-dim);
     padding-left: 14px;
@@ -50,92 +50,168 @@
   .dropzone .dz-sub { font-size: 13px; font-family: var(--font-mono); }
   .dropzone input { display: none; }
 
-  .file-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 16px;
-    margin: 28px 0;
+  .toolbar {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 0;
+    flex-wrap: wrap;
   }
-
-  .file-card {
+  .toolbar.active { display: flex; }
+  .toolbar .doc-name {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--paper-dim);
+    border: 1px solid var(--line);
+    padding: 6px 10px;
+    border-radius: var(--radius);
+  }
+  .toolbar .page-nav { display: flex; align-items: center; gap: 6px; }
+  .toolbar .page-nav input {
+    width: 55px;
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius);
-    padding: 12px;
-    cursor: grab;
-    position: relative;
-    transition: border-color 0.15s ease, opacity 0.15s ease;
-  }
-  .file-card.dragging { opacity: 0.35; }
-  .file-card.drag-target { border-color: var(--blueprint); }
-
-  .file-card .order-badge {
-    position: absolute;
-    top: -8px;
-    left: -8px;
-    background: var(--blueprint);
-    color: var(--ink);
+    color: var(--paper);
+    padding: 6px 8px;
+    font-size: 13px;
     font-family: var(--font-mono);
-    font-size: 11px;
-    font-weight: 600;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    text-align: center;
   }
+  .toolbar .page-nav span { font-family: var(--font-mono); font-size: 12px; color: var(--mist); }
 
-  .file-card img.thumb {
-    width: 100%;
-    height: 130px;
-    object-fit: cover;
+  .workspace { display: none; }
+  .workspace.active { display: block; }
+
+  .preview-canvas-wrap {
     background: var(--paper);
-    border-radius: 2px;
-    display: block;
-    margin-bottom: 10px;
-  }
-
-  .file-card .fname {
-    font-size: 12px;
-    color: var(--paper-dim);
-    white-space: nowrap;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    position: relative;
     overflow: hidden;
-    text-overflow: ellipsis;
+    user-select: none;
+    max-width: 720px;
   }
-  .file-card .fmeta {
-    font-family: var(--font-mono);
-    font-size: 10px;
-    color: var(--mist);
-    margin-top: 2px;
+  .preview-canvas-wrap canvas { display: block; width: 100%; height: auto; }
+
+  .edit-el {
+    position: absolute;
+    touch-action: none;
   }
 
-  .file-card .remove-btn {
+  .text-el {
+    display: flex;
+    flex-direction: column;
+    border: 1px dashed transparent;
+  }
+  .text-el:hover, .text-el.active { border-color: var(--blueprint); }
+  .text-el .drag-strip {
+    height: 12px;
+    background: rgba(111, 151, 201, 0.35);
+    cursor: grab;
+    display: none;
+  }
+  .text-el:hover .drag-strip, .text-el.active .drag-strip { display: block; }
+  .text-el input[type="text"] {
+    border: none;
+    background: transparent;
+    width: 100%;
+    padding: 0;
+    font-family: var(--font-body);
+    line-height: 1.1;
+  }
+  .text-el .el-controls {
     position: absolute;
-    top: -8px;
-    right: -8px;
-    width: 22px;
-    height: 22px;
+    top: -30px;
+    left: 0;
+    display: none;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 3px;
+  }
+  .text-el:hover .el-controls, .text-el.active .el-controls { display: flex; }
+  .el-controls button {
+    width: 20px;
+    height: 20px;
+    font-size: 11px;
+    background: none;
+    border: none;
+    color: var(--paper-dim);
+    cursor: pointer;
+  }
+  .el-controls button:hover { color: var(--paper); }
+  .el-controls .mini-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    cursor: pointer;
+    margin: 3px 2px;
+    border: 1px solid transparent;
+  }
+  .el-controls .mini-swatch.selected { border-color: var(--paper); }
+  .el-controls .del-btn { color: var(--stamp); font-weight: 700; }
+
+  .whiteout-el {
+    background: #ffffff;
+    border: 1px dashed var(--blueprint-dim);
+    cursor: grab;
+  }
+  .whiteout-el .resize-handle {
+    position: absolute;
+    right: -5px;
+    bottom: -5px;
+    width: 12px;
+    height: 12px;
+    background: var(--blueprint);
+    border-radius: 2px;
+    cursor: nwse-resize;
+  }
+  .whiteout-el .del-btn-box {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     background: var(--stamp);
     color: var(--ink);
     border: none;
-    font-size: 13px;
-    line-height: 1;
+    font-size: 12px;
     cursor: pointer;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
   }
+  .whiteout-el:hover .del-btn-box { display: flex; }
+
+  .notes {
+    max-width: 720px;
+    margin: 20px 0;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  .notes p {
+    font-size: 12px;
+    color: var(--mist);
+    line-height: 1.6;
+    margin: 0 0 6px;
+  }
+  .notes p:last-child { margin-bottom: 0; }
 
   .actions-bar {
-    display: flex;
+    display: none;
     align-items: center;
     gap: 14px;
     padding: 20px 0 80px;
     border-top: 1px solid var(--line);
     margin-top: 8px;
+    flex-wrap: wrap;
   }
+  .actions-bar.active { display: flex; }
 
   .status-text { font-family: var(--font-mono); font-size: 12px; color: var(--mist); }
 
@@ -194,22 +270,40 @@
   </header>
 
   <div class="tool-header">
-    <a class="back-link" href="index.html" data-i18n="img2pdf_back">&larr; Back to tools</a>
-    <h1 data-i18n="img2pdf_title">Image to PDF</h1>
-    <p data-i18n="img2pdf_subtitle">Add images, drag to set the order, then combine them into one PDF — one image per page.</p>
+    <a class="back-link" href="index.html" data-i18n="edit_back">&larr; Back to tools</a>
+    <h1 data-i18n="edit_title">Edit PDF</h1>
+    <p data-i18n="edit_subtitle">Add new text anywhere, or cover existing content with a white box and type over it. This can't reflow or rewrite the PDF's original text directly — see the notes below for what that means.</p>
   </div>
 
   <label class="dropzone" id="dropzone">
-    <div class="dz-title" data-i18n="img2pdf_dz_title">Drop images here, or click to browse</div>
-    <div class="dz-sub" data-i18n="img2pdf_dz_sub">JPG or PNG &middot; multiple files supported</div>
-    <input type="file" id="fileInput" accept="image/jpeg,image/png" multiple>
+    <div class="dz-title" data-i18n="edit_dz_title">Drop a PDF here, or click to browse</div>
+    <div class="dz-sub" data-i18n="edit_dz_sub">one file at a time &middot; nothing is uploaded</div>
+    <input type="file" id="fileInput" accept="application/pdf">
   </label>
 
-  <div class="file-list" id="fileList"></div>
+  <div class="toolbar" id="toolbar">
+    <span class="doc-name" id="docName"></span>
+    <div class="page-nav">
+      <span data-i18n="edit_page_label">Page</span>
+      <input type="number" id="pageNum" min="1" value="1">
+      <span id="pageOf"></span>
+    </div>
+    <button class="btn btn-ghost" id="addTextBtn" data-i18n="edit_add_text_btn">+ Add text</button>
+    <button class="btn btn-ghost" id="addWhiteoutBtn" data-i18n="edit_add_whiteout_btn">+ Add whiteout</button>
+    <button class="btn btn-ghost" id="changeFileBtn" data-i18n="edit_change_file">Use a different file</button>
+  </div>
 
-  <div class="actions-bar">
-    <button class="btn btn-primary" id="convertBtn" data-i18n="img2pdf_download_btn" disabled>Convert to PDF</button>
-    <button class="btn btn-ghost" id="clearBtn" data-i18n="img2pdf_clear_btn" style="display:none">Clear all</button>
+  <div class="workspace" id="workspace">
+    <div class="preview-canvas-wrap" id="previewWrap"></div>
+
+    <div class="notes">
+      <p data-i18n="edit_note_latin">Added text supports Latin characters only (standard PDF fonts).</p>
+      <p data-i18n="edit_note_whiteout">Whiteout visually covers content — the original text underneath still exists in the file and isn't securely removed. Don't rely on it for confidential redaction.</p>
+    </div>
+  </div>
+
+  <div class="actions-bar" id="actionsBar">
+    <button class="btn btn-primary" id="downloadBtn" data-i18n="edit_download_btn" disabled>Download edited PDF</button>
     <span class="status-text" id="statusText"></span>
   </div>
 
@@ -222,7 +316,11 @@
 </div>
 
 <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-<script src="js/img2pdf.js?v=2"></script>
+<script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+</script>
+<script src="js/edit.js?v=2"></script>
 <script src="js/nav.js?v=2"></script>
 <script src="js/i18n.js?v=2"></script>
 </body>

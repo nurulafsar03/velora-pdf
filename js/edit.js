@@ -358,6 +358,57 @@
 
   // ---- whiteout elements ----
 
+  function hexToRgbTuple(hex) {
+    const n = parseInt(hex.replace('#', ''), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+
+  function rgbToHex(r, g, b) {
+    return '#' + [r, g, b].map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('');
+  }
+
+  function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+    if (max === min) { h = s = 0; }
+    else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        default: h = (r - g) / d + 4;
+      }
+      h /= 6;
+    }
+    return [h * 360, s * 100, l * 100];
+  }
+
+  function hslToRgb(h, s, l) {
+    h /= 360; s /= 100; l /= 100;
+    if (s === 0) { const v = l * 255; return [v, v, v]; }
+    const hue2rgb = (p, q, t) => {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    };
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    return [hue2rgb(p, q, h + 1 / 3) * 255, hue2rgb(p, q, h) * 255, hue2rgb(p, q, h - 1 / 3) * 255];
+  }
+
+  function adjustLightness(hex, deltaPct) {
+    const [r, g, b] = hexToRgbTuple(hex);
+    const [h, s, l] = rgbToHsl(r, g, b);
+    const newL = Math.max(0, Math.min(100, l + deltaPct));
+    const [nr, ng, nb] = hslToRgb(h, s, newL);
+    return rgbToHex(nr, ng, nb);
+  }
+
   function createWhiteoutDom(edit) {
     const el = document.createElement('div');
     el.className = 'edit-el whiteout-el';
@@ -388,6 +439,9 @@
       sw.addEventListener('click', (e) => {
         e.stopPropagation();
         edit.color = c;
+        edit.baseColor = c;
+        edit.colorAdjust = 0;
+        adjustSlider.value = 0;
         el.style.background = c;
         controls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.toggle('selected', s === sw));
         colorPicker.value = c;
@@ -402,6 +456,9 @@
     colorPicker.title = 'Custom color';
     colorPicker.addEventListener('input', (e) => {
       edit.color = e.target.value;
+      edit.baseColor = e.target.value;
+      edit.colorAdjust = 0;
+      adjustSlider.value = 0;
       el.style.background = edit.color;
       controls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.remove('selected'));
     });
@@ -451,6 +508,9 @@
         try {
           const hex = sampleAt(clientX, clientY);
           edit.color = hex;
+          edit.baseColor = hex;
+          edit.colorAdjust = 0;
+          adjustSlider.value = 0;
           el.style.background = hex;
           colorPicker.value = hex;
           controls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.remove('selected'));
@@ -478,6 +538,23 @@
       document.addEventListener('keydown', onKey);
     });
     controls.appendChild(eyedropperBtn);
+
+    const adjustSlider = document.createElement('input');
+    adjustSlider.type = 'range';
+    adjustSlider.className = 'adjust-slider';
+    adjustSlider.min = '-50';
+    adjustSlider.max = '50';
+    adjustSlider.value = String(edit.colorAdjust || 0);
+    adjustSlider.title = 'Fine-tune: lighter / darker';
+    adjustSlider.addEventListener('mousedown', (e) => e.stopPropagation());
+    adjustSlider.addEventListener('click', (e) => e.stopPropagation());
+    adjustSlider.addEventListener('input', () => {
+      edit.colorAdjust = parseInt(adjustSlider.value, 10);
+      edit.color = adjustLightness(edit.baseColor, edit.colorAdjust);
+      el.style.background = edit.color;
+      colorPicker.value = edit.color;
+    });
+    controls.appendChild(adjustSlider);
 
     el.appendChild(controls);
 
@@ -555,6 +632,8 @@
       widthPct: 30,
       heightPct: 6,
       color: '#ffffff',
+      baseColor: '#ffffff',
+      colorAdjust: 0,
     };
     edits.push(edit);
     renderPageElements();

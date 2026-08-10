@@ -412,22 +412,70 @@
     const eyedropperBtn = document.createElement('button');
     eyedropperBtn.type = 'button';
     eyedropperBtn.className = 'eyedropper-btn';
-    eyedropperBtn.title = window.EyeDropper ? 'Pick a color from anywhere on screen' : 'Not supported in this browser (try Chrome or Edge)';
+    eyedropperBtn.title = 'Click anywhere on the page to pick that color';
     eyedropperBtn.textContent = '💧';
-    eyedropperBtn.disabled = !window.EyeDropper;
     eyedropperBtn.addEventListener('mousedown', (e) => e.stopPropagation());
-    eyedropperBtn.addEventListener('click', async (e) => {
+    eyedropperBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      if (!window.EyeDropper) return;
-      try {
-        const result = await new window.EyeDropper().open();
-        edit.color = result.sRGBHex;
-        el.style.background = edit.color;
-        colorPicker.value = edit.color;
-        controls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.remove('selected'));
-      } catch (err) {
-        // user cancelled the picker — nothing to do
+      const canvas = previewWrap.querySelector('canvas');
+      if (!canvas) return;
+
+      previewWrap.style.cursor = 'crosshair';
+      eyedropperBtn.classList.add('toggled');
+      document.querySelectorAll('.edit-el').forEach((n) => { n.style.pointerEvents = 'none'; });
+
+      function sampleAt(clientX, clientY) {
+        const rect = canvas.getBoundingClientRect();
+        const px = Math.round(((clientX - rect.left) / rect.width) * canvas.width);
+        const py = Math.round(((clientY - rect.top) / rect.height) * canvas.height);
+        const ctx = canvas.getContext('2d');
+        const radius = 3;
+        const x0 = Math.max(0, px - radius);
+        const y0 = Math.max(0, py - radius);
+        const w = Math.min(canvas.width, px + radius) - x0;
+        const h = Math.min(canvas.height, py + radius) - y0;
+        const data = ctx.getImageData(x0, y0, Math.max(1, w), Math.max(1, h)).data;
+        let r = 0, g = 0, b = 0, n = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          r += data[i]; g += data[i + 1]; b += data[i + 2]; n++;
+        }
+        r = Math.round(r / n); g = Math.round(g / n); b = Math.round(b / n);
+        return '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('');
       }
+
+      function onPick(ev) {
+        ev.stopPropagation();
+        ev.preventDefault();
+        const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+        const clientY = ev.touches ? ev.touches[0].clientY : ev.clientY;
+        try {
+          const hex = sampleAt(clientX, clientY);
+          edit.color = hex;
+          el.style.background = hex;
+          colorPicker.value = hex;
+          controls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.remove('selected'));
+        } catch (err) {
+          console.error('color sampling failed', err);
+        }
+        cleanup();
+      }
+
+      function onKey(ev) {
+        if (ev.key === 'Escape') cleanup();
+      }
+
+      function cleanup() {
+        previewWrap.style.cursor = '';
+        eyedropperBtn.classList.remove('toggled');
+        document.querySelectorAll('.edit-el').forEach((n) => { n.style.pointerEvents = ''; });
+        previewWrap.removeEventListener('click', onPick, true);
+        previewWrap.removeEventListener('touchstart', onPick, true);
+        document.removeEventListener('keydown', onKey);
+      }
+
+      previewWrap.addEventListener('click', onPick, { capture: true, once: true });
+      previewWrap.addEventListener('touchstart', onPick, { capture: true, once: true, passive: false });
+      document.addEventListener('keydown', onKey);
     });
     controls.appendChild(eyedropperBtn);
 

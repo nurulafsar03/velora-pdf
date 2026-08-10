@@ -16,6 +16,7 @@
   // pages: ordered array reflecting current visual order.
   // Each entry: { id, originalIndex (0-based in source pdf), thumbDataUrl }
   let pages = [];
+  let originalPageCount = 0;
   let dragSrcId = null;
 
   function setStatus(msg) {
@@ -104,10 +105,14 @@
 
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer.slice(0) }).promise;
     const pageCount = pdf.numPages;
+    originalPageCount = pageCount;
 
     docNameEl.textContent = `${file.name} · ${pageCount} pages`;
     toolbar.classList.add('active');
-    window.VeloraQuickActions.render(document.getElementById('quickActions'), 'organize.html', () => sourceArrayBuffer, () => sourceFileName);
+    window.VeloraQuickActions.render(document.getElementById('quickActions'), 'organize.html', async () => {
+      if (!hasPendingOrganizeChanges()) return sourceArrayBuffer;
+      return buildOrganizedPdf();
+    }, () => sourceFileName);
     actionsBar.classList.add('active');
 
     for (let i = 0; i < pageCount; i++) {
@@ -167,20 +172,29 @@
 
   // ---- download ----
 
+  async function buildOrganizedPdf() {
+    const { PDFDocument } = PDFLib;
+    const srcPdf = await PDFDocument.load(sourceArrayBuffer.slice(0));
+    const outPdf = await PDFDocument.create();
+
+    const indices = pages.map((p) => p.originalIndex);
+    const copiedPages = await outPdf.copyPages(srcPdf, indices);
+    copiedPages.forEach((p) => outPdf.addPage(p));
+
+    return outPdf.save();
+  }
+
+  function hasPendingOrganizeChanges() {
+    if (pages.length !== originalPageCount) return true;
+    return pages.some((p, i) => p.originalIndex !== i);
+  }
+
   downloadBtn.addEventListener('click', async () => {
     if (!pages.length) return;
     downloadBtn.disabled = true;
     setStatus('building PDF…');
     try {
-      const { PDFDocument } = PDFLib;
-      const srcPdf = await PDFDocument.load(sourceArrayBuffer.slice(0));
-      const outPdf = await PDFDocument.create();
-
-      const indices = pages.map((p) => p.originalIndex);
-      const copiedPages = await outPdf.copyPages(srcPdf, indices);
-      copiedPages.forEach((p) => outPdf.addPage(p));
-
-      const bytes = await outPdf.save();
+      const bytes = await buildOrganizedPdf();
       const blob = new Blob([bytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');

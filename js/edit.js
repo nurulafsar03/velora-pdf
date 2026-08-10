@@ -696,7 +696,11 @@
 
     toolbar.classList.add('active');
     workspace.classList.add('active');
-    window.VeloraQuickActions.render(document.getElementById('quickActions'), 'edit.html', () => sourceArrayBuffer, () => sourceFileName);
+    window.VeloraQuickActions.render(document.getElementById('quickActions'), 'edit.html', async () => {
+      if (edits.length === 0) return sourceArrayBuffer;
+      const { bytes } = await buildEditedPdf();
+      return bytes;
+    }, () => sourceFileName);
     actionsBar.classList.add('active');
 
     await renderBasePage(1);

@@ -159,7 +159,10 @@
 
     docNameEl.textContent = `${file.name} · ${pageCount} pages`;
     workspace.classList.add('active');
-    window.VeloraQuickActions.render(document.getElementById('quickActions'), 'watermark.html', () => sourceArrayBuffer, () => sourceFileName);
+    window.VeloraQuickActions.render(document.getElementById('quickActions'), 'watermark.html', async () => {
+      if (!hasWatermarkContent()) return sourceArrayBuffer;
+      return buildWatermarkedPdf();
+    }, () => sourceFileName);
     actionsBar.classList.add('active');
     downloadBtn.disabled = false;
 
@@ -213,59 +216,67 @@
 
   // ---- download ----
 
+  async function buildWatermarkedPdf() {
+    const { PDFDocument, StandardFonts, rgb, degrees } = PDFLib;
+    const pdfDoc = await PDFDocument.load(sourceArrayBuffer.slice(0));
+    const pages = pdfDoc.getPages();
+
+    if (mode === 'text' && wmText.value.trim()) {
+      const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      const text = wmText.value;
+      const size = parseFloat(wmSize.value);
+      const opacity = parseInt(wmOpacity.value, 10) / 100;
+      const rotation = parseInt(wmRotation.value, 10);
+      const { r, g, b } = hexToRgb(selectedColor);
+      const textWidth = font.widthOfTextAtSize(text, size);
+
+      pages.forEach((page) => {
+        const { width, height } = page.getSize();
+        page.drawText(text, {
+          x: width / 2 - textWidth / 2,
+          y: height / 2,
+          size,
+          font,
+          color: rgb(r, g, b),
+          opacity,
+          rotate: degrees(rotation),
+        });
+      });
+    } else if (mode === 'image' && logoImage) {
+      const embedded = logoImage.type === 'png'
+        ? await pdfDoc.embedPng(logoImage.arrayBuffer)
+        : await pdfDoc.embedJpg(logoImage.arrayBuffer);
+      const opacity = parseInt(wmImgOpacity.value, 10) / 100;
+      const scalePct = parseInt(wmImgScale.value, 10) / 100;
+
+      pages.forEach((page) => {
+        const { width, height } = page.getSize();
+        const targetW = width * scalePct;
+        const targetH = targetW * (logoImage.naturalH / logoImage.naturalW);
+        page.drawImage(embedded, {
+          x: (width - targetW) / 2,
+          y: (height - targetH) / 2,
+          width: targetW,
+          height: targetH,
+          opacity,
+        });
+      });
+    }
+
+    return pdfDoc.save();
+  }
+
+  function hasWatermarkContent() {
+    return (mode === 'text' && wmText.value.trim()) || (mode === 'image' && !!logoImage);
+  }
+
   downloadBtn.addEventListener('click', async () => {
     if (!sourceArrayBuffer) return;
     downloadBtn.disabled = true;
     setStatus('applying watermark…');
 
     try {
-      const { PDFDocument, StandardFonts, rgb, degrees } = PDFLib;
-      const pdfDoc = await PDFDocument.load(sourceArrayBuffer.slice(0));
-      const pages = pdfDoc.getPages();
-
-      if (mode === 'text' && wmText.value.trim()) {
-        const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-        const text = wmText.value;
-        const size = parseFloat(wmSize.value);
-        const opacity = parseInt(wmOpacity.value, 10) / 100;
-        const rotation = parseInt(wmRotation.value, 10);
-        const { r, g, b } = hexToRgb(selectedColor);
-        const textWidth = font.widthOfTextAtSize(text, size);
-
-        pages.forEach((page) => {
-          const { width, height } = page.getSize();
-          page.drawText(text, {
-            x: width / 2 - textWidth / 2,
-            y: height / 2,
-            size,
-            font,
-            color: rgb(r, g, b),
-            opacity,
-            rotate: degrees(rotation),
-          });
-        });
-      } else if (mode === 'image' && logoImage) {
-        const embedded = logoImage.type === 'png'
-          ? await pdfDoc.embedPng(logoImage.arrayBuffer)
-          : await pdfDoc.embedJpg(logoImage.arrayBuffer);
-        const opacity = parseInt(wmImgOpacity.value, 10) / 100;
-        const scalePct = parseInt(wmImgScale.value, 10) / 100;
-
-        pages.forEach((page) => {
-          const { width, height } = page.getSize();
-          const targetW = width * scalePct;
-          const targetH = targetW * (logoImage.naturalH / logoImage.naturalW);
-          page.drawImage(embedded, {
-            x: (width - targetW) / 2,
-            y: (height - targetH) / 2,
-            width: targetW,
-            height: targetH,
-            opacity,
-          });
-        });
-      }
-
-      const bytes = await pdfDoc.save();
+      const bytes = await buildWatermarkedPdf();
       const blob = new Blob([bytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');

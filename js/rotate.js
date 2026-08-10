@@ -68,7 +68,10 @@
 
     docNameEl.textContent = `${file.name} · ${pageCount} pages`;
     toolbar.classList.add('active');
-    window.VeloraQuickActions.render(document.getElementById('quickActions'), 'rotate.html', () => sourceArrayBuffer, () => sourceFileName);
+    window.VeloraQuickActions.render(document.getElementById('quickActions'), 'rotate.html', async () => {
+      if (!hasPendingRotation()) return sourceArrayBuffer;
+      return buildRotatedPdf();
+    }, () => sourceFileName);
     actionsBar.classList.add('active');
 
     for (let i = 1; i <= pageCount; i++) {
@@ -177,24 +180,32 @@
 
   // ---- download ----
 
+  async function buildRotatedPdf() {
+    const { PDFDocument, degrees } = PDFLib;
+    const pdfDoc = await PDFDocument.load(sourceArrayBuffer.slice(0));
+    const libPages = pdfDoc.getPages();
+
+    pages.forEach((p) => {
+      if (normalizeAngle(p.delta) === 0) return;
+      const libPage = libPages[p.pageNum - 1];
+      const current = libPage.getRotation().angle || 0;
+      const total = normalizeAngle(current + p.delta);
+      libPage.setRotation(degrees(total));
+    });
+
+    return pdfDoc.save();
+  }
+
+  function hasPendingRotation() {
+    return pages.some((p) => normalizeAngle(p.delta) !== 0);
+  }
+
   downloadBtn.addEventListener('click', async () => {
     if (!sourceArrayBuffer) return;
     downloadBtn.disabled = true;
     setStatus('applying rotation…');
     try {
-      const { PDFDocument, degrees } = PDFLib;
-      const pdfDoc = await PDFDocument.load(sourceArrayBuffer.slice(0));
-      const libPages = pdfDoc.getPages();
-
-      pages.forEach((p) => {
-        if (normalizeAngle(p.delta) === 0) return;
-        const libPage = libPages[p.pageNum - 1];
-        const current = libPage.getRotation().angle || 0;
-        const total = normalizeAngle(current + p.delta);
-        libPage.setRotation(degrees(total));
-      });
-
-      const bytes = await pdfDoc.save();
+      const bytes = await buildRotatedPdf();
       const blob = new Blob([bytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');

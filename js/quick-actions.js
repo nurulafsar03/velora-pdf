@@ -34,10 +34,19 @@ window.VeloraQuickActions = (() => {
       btn.type = 'button';
       btn.className = 'qa-btn';
       btn.textContent = (window.veloraT && window.veloraT(tool.labelKey)) || tool.fallback;
-      btn.addEventListener('click', () => {
-        const arrayBuffer = getArrayBuffer();
-        if (!arrayBuffer) return;
-        window.VeloraHandoff.navigateWithFile(arrayBuffer, getFileName() || 'document.pdf', tool.url);
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        const originalText = btn.textContent;
+        btn.textContent = '…';
+        try {
+          const arrayBuffer = await Promise.resolve(getArrayBuffer());
+          if (!arrayBuffer) return;
+          await window.VeloraHandoff.navigateWithFile(arrayBuffer, getFileName() || 'document.pdf', tool.url);
+        } catch (err) {
+          console.error('Quick action handoff failed', err);
+          btn.disabled = false;
+          btn.textContent = originalText;
+        }
       });
       containerEl.appendChild(btn);
     });

@@ -19,6 +19,11 @@
   const statusText = document.getElementById('statusText');
 
   const COLORS = ['#16140f', '#6f97c9', '#c1502e'];
+  const FONT_FAMILIES = [
+    { key: 'Helvetica', label: 'Sans', css: "'Helvetica Neue', Helvetica, Arial, sans-serif" },
+    { key: 'TimesRoman', label: 'Serif', css: "'Times New Roman', Times, serif" },
+    { key: 'Courier', label: 'Mono', css: "'Courier New', Courier, monospace" },
+  ];
 
   let sourceArrayBuffer = null;
   let sourceFileName = 'document';
@@ -143,6 +148,7 @@
     content.textContent = edit.text;
     content.style.color = edit.color;
     content.style.fontSize = `${edit.fontSizePct * 5}px`;
+    content.style.fontFamily = FONT_FAMILIES.find((f) => f.key === edit.fontFamily).css;
     content.style.fontWeight = edit.bold ? '700' : '400';
     content.style.fontStyle = edit.italic ? 'italic' : 'normal';
     content.addEventListener('input', () => {
@@ -203,6 +209,31 @@
 
     controls.appendChild(smallerBtn);
     controls.appendChild(biggerBtn);
+
+    const sepFont = document.createElement('div');
+    sepFont.className = 'ctrl-sep';
+    controls.appendChild(sepFont);
+
+    const fontSelect = document.createElement('select');
+    fontSelect.className = 'font-select';
+    FONT_FAMILIES.forEach((f) => {
+      const opt = document.createElement('option');
+      opt.value = f.key;
+      opt.textContent = f.label;
+      if (f.key === edit.fontFamily) opt.selected = true;
+      fontSelect.appendChild(opt);
+    });
+    fontSelect.addEventListener('click', (e) => e.stopPropagation());
+    fontSelect.addEventListener('change', () => {
+      edit.fontFamily = fontSelect.value;
+      content.style.fontFamily = FONT_FAMILIES.find((f) => f.key === edit.fontFamily).css;
+    });
+    controls.appendChild(fontSelect);
+
+    const sepBI = document.createElement('div');
+    sepBI.className = 'ctrl-sep';
+    controls.appendChild(sepBI);
+
     controls.appendChild(boldBtn);
     controls.appendChild(italicBtn);
 
@@ -339,7 +370,8 @@
       yPct: 15,
       text: 'Text',
       color: COLORS[0],
-      fontSizePct: 3,
+      fontSizePct: 5.5,
+      fontFamily: 'Helvetica',
       bold: false,
       italic: false,
     };
@@ -456,16 +488,21 @@
       const { PDFDocument, StandardFonts, rgb } = PDFLib;
       const pdfDoc = await PDFDocument.load(sourceArrayBuffer.slice(0));
       const pages = pdfDoc.getPages();
-      const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
-      const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-      const fontItalic = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
-      const fontBoldItalic = await pdfDoc.embedFont(StandardFonts.HelveticaBoldOblique);
+
+      const FONT_SETS = {
+        Helvetica: [StandardFonts.Helvetica, StandardFonts.HelveticaBold, StandardFonts.HelveticaOblique, StandardFonts.HelveticaBoldOblique],
+        TimesRoman: [StandardFonts.TimesRoman, StandardFonts.TimesRomanBold, StandardFonts.TimesRomanItalic, StandardFonts.TimesRomanBoldItalic],
+        Courier: [StandardFonts.Courier, StandardFonts.CourierBold, StandardFonts.CourierOblique, StandardFonts.CourierBoldOblique],
+      };
+      const embeddedFonts = {};
+      for (const family of Object.keys(FONT_SETS)) {
+        embeddedFonts[family] = await Promise.all(FONT_SETS[family].map((f) => pdfDoc.embedFont(f)));
+      }
 
       function pickFont(edit) {
-        if (edit.bold && edit.italic) return fontBoldItalic;
-        if (edit.bold) return fontBold;
-        if (edit.italic) return fontItalic;
-        return fontRegular;
+        const set = embeddedFonts[edit.fontFamily] || embeddedFonts.Helvetica;
+        const idx = (edit.bold ? 1 : 0) + (edit.italic ? 2 : 0);
+        return set[idx];
       }
 
       function hexToRgb(hex) {

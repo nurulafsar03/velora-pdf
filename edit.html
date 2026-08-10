@@ -109,17 +109,20 @@
   .text-el {
     display: inline-flex;
     flex-direction: column;
-    border: 1px dashed transparent;
+    border: 2px dashed #16140f;
+    background: rgba(255, 255, 255, 0.72);
+    border-radius: 3px;
+    padding: 2px 5px;
     max-width: 90%;
   }
-  .text-el:hover, .text-el.active { border-color: var(--blueprint); }
+  .text-el:hover, .text-el.active { border-color: var(--blueprint); background: rgba(255, 255, 255, 0.88); }
   .text-el .drag-strip {
-    height: 12px;
-    background: rgba(111, 151, 201, 0.35);
+    height: 10px;
+    margin: -2px -5px 4px;
+    background: rgba(111, 151, 201, 0.4);
     cursor: grab;
-    display: none;
+    border-radius: 3px 3px 0 0;
   }
-  .text-el:hover .drag-strip, .text-el.active .drag-strip { display: block; }
   .text-el .text-content {
     display: inline-block;
     background: transparent;
@@ -176,6 +179,17 @@
     padding: 0;
     cursor: pointer;
     flex-shrink: 0;
+  }
+  .el-controls .font-select {
+    background: var(--surface);
+    color: var(--paper-dim);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    font-size: 11px;
+    padding: 2px 3px;
+    cursor: pointer;
+    flex-shrink: 0;
+    max-width: 78px;
   }
   .el-controls .ctrl-sep { width: 1px; height: 16px; background: var(--line); margin: 0 2px; flex-shrink: 0; }
   .el-controls .del-btn { color: var(--stamp); font-weight: 700; }
@@ -349,8 +363,8 @@
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 </script>
-<script src="js/edit.js?v=5"></script>
-<script src="js/nav.js?v=5"></script>
-<script src="js/i18n.js?v=5"></script>
+<script src="js/edit.js?v=6"></script>
+<script src="js/nav.js?v=6"></script>
+<script src="js/i18n.js?v=6"></script>
 </body>
 </html>

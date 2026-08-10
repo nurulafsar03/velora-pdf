@@ -100,9 +100,10 @@
   }
 
   .text-el {
-    display: flex;
+    display: inline-flex;
     flex-direction: column;
     border: 1px dashed transparent;
+    max-width: 90%;
   }
   .text-el:hover, .text-el.active { border-color: var(--blueprint); }
   .text-el .drag-strip {
@@ -112,45 +113,62 @@
     display: none;
   }
   .text-el:hover .drag-strip, .text-el.active .drag-strip { display: block; }
-  .text-el input[type="text"] {
-    border: none;
+  .text-el .text-content {
+    display: inline-block;
     background: transparent;
-    width: 100%;
-    padding: 0;
-    font-family: var(--font-body);
-    line-height: 1.1;
+    outline: none;
+    white-space: pre;
+    line-height: 1.15;
+    min-width: 24px;
+    min-height: 1em;
   }
   .text-el .el-controls {
     position: absolute;
-    top: -30px;
+    top: -32px;
     left: 0;
     display: none;
-    gap: 4px;
+    align-items: center;
+    gap: 2px;
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: var(--radius);
     padding: 3px;
+    white-space: nowrap;
+    z-index: 5;
   }
   .text-el:hover .el-controls, .text-el.active .el-controls { display: flex; }
   .el-controls button {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     font-size: 11px;
     background: none;
     border: none;
     color: var(--paper-dim);
     cursor: pointer;
+    border-radius: 2px;
   }
-  .el-controls button:hover { color: var(--paper); }
+  .el-controls button:hover { color: var(--paper); background: var(--surface-hi); }
+  .el-controls button.toggled { color: var(--blueprint); background: rgba(111,151,201,0.15); }
   .el-controls .mini-swatch {
-    width: 14px;
-    height: 14px;
+    width: 15px;
+    height: 15px;
     border-radius: 50%;
     cursor: pointer;
-    margin: 3px 2px;
+    margin: 0 1px;
     border: 1px solid transparent;
+    flex-shrink: 0;
   }
   .el-controls .mini-swatch.selected { border-color: var(--paper); }
+  .el-controls .color-picker {
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .el-controls .ctrl-sep { width: 1px; height: 16px; background: var(--line); margin: 0 2px; flex-shrink: 0; }
   .el-controls .del-btn { color: var(--stamp); font-weight: 700; }
 
   .whiteout-el {
@@ -320,8 +338,8 @@
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 </script>
-<script src="js/edit.js?v=2"></script>
-<script src="js/nav.js?v=2"></script>
-<script src="js/i18n.js?v=2"></script>
+<script src="js/edit.js?v=3"></script>
+<script src="js/nav.js?v=3"></script>
+<script src="js/i18n.js?v=3"></script>
 </body>
 </html>

@@ -103,26 +103,80 @@
     el.className = 'edit-el text-el';
     el.style.left = `${edit.xPct}%`;
     el.style.top = `${edit.yPct}%`;
-    el.style.width = '40%';
+    el.style.maxWidth = `${Math.max(10, 98 - edit.xPct)}%`;
 
     const strip = document.createElement('div');
     strip.className = 'drag-strip';
     el.appendChild(strip);
 
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.value = edit.text;
-    input.style.color = edit.color;
-    input.style.fontSize = `${edit.fontSizePct * 5}px`;
-    input.addEventListener('input', () => { edit.text = input.value; });
-    el.appendChild(input);
+    const content = document.createElement('div');
+    content.className = 'text-content';
+    content.contentEditable = 'true';
+    content.spellcheck = false;
+    content.textContent = edit.text;
+    content.style.color = edit.color;
+    content.style.fontSize = `${edit.fontSizePct * 5}px`;
+    content.style.fontWeight = edit.bold ? '700' : '400';
+    content.style.fontStyle = edit.italic ? 'italic' : 'normal';
+    content.addEventListener('input', () => {
+      edit.text = content.textContent;
+    });
+    content.addEventListener('mousedown', (e) => e.stopPropagation());
+    content.addEventListener('touchstart', (e) => e.stopPropagation());
+    el.appendChild(content);
 
     const controls = document.createElement('div');
     controls.className = 'el-controls';
-    controls.innerHTML = `
-      <button data-act="smaller" title="Smaller">A-</button>
-      <button data-act="bigger" title="Bigger">A+</button>
-    `;
+
+    const smallerBtn = document.createElement('button');
+    smallerBtn.textContent = 'A-';
+    smallerBtn.title = 'Smaller';
+    const biggerBtn = document.createElement('button');
+    biggerBtn.textContent = 'A+';
+    biggerBtn.title = 'Bigger';
+    const boldBtn = document.createElement('button');
+    boldBtn.textContent = 'B';
+    boldBtn.style.fontWeight = '700';
+    boldBtn.title = 'Bold';
+    boldBtn.classList.toggle('toggled', !!edit.bold);
+    const italicBtn = document.createElement('button');
+    italicBtn.textContent = 'I';
+    italicBtn.style.fontStyle = 'italic';
+    italicBtn.title = 'Italic';
+    italicBtn.classList.toggle('toggled', !!edit.italic);
+
+    smallerBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      edit.fontSizePct = Math.max(1, edit.fontSizePct - 0.4);
+      content.style.fontSize = `${edit.fontSizePct * 5}px`;
+    });
+    biggerBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      edit.fontSizePct = Math.min(12, edit.fontSizePct + 0.4);
+      content.style.fontSize = `${edit.fontSizePct * 5}px`;
+    });
+    boldBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      edit.bold = !edit.bold;
+      content.style.fontWeight = edit.bold ? '700' : '400';
+      boldBtn.classList.toggle('toggled', edit.bold);
+    });
+    italicBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      edit.italic = !edit.italic;
+      content.style.fontStyle = edit.italic ? 'italic' : 'normal';
+      italicBtn.classList.toggle('toggled', edit.italic);
+    });
+
+    controls.appendChild(smallerBtn);
+    controls.appendChild(biggerBtn);
+    controls.appendChild(boldBtn);
+    controls.appendChild(italicBtn);
+
+    const sep1 = document.createElement('div');
+    sep1.className = 'ctrl-sep';
+    controls.appendChild(sep1);
+
     COLORS.forEach((c) => {
       const sw = document.createElement('span');
       sw.className = 'mini-swatch' + (c === edit.color ? ' selected' : '');
@@ -130,11 +184,30 @@
       sw.addEventListener('click', (e) => {
         e.stopPropagation();
         edit.color = c;
-        input.style.color = c;
+        content.style.color = c;
         controls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.toggle('selected', s === sw));
+        colorPicker.value = c;
       });
       controls.appendChild(sw);
     });
+
+    const colorPicker = document.createElement('input');
+    colorPicker.type = 'color';
+    colorPicker.className = 'color-picker';
+    colorPicker.value = edit.color;
+    colorPicker.title = 'Custom color';
+    colorPicker.addEventListener('input', (e) => {
+      edit.color = e.target.value;
+      content.style.color = edit.color;
+      controls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.remove('selected'));
+    });
+    colorPicker.addEventListener('click', (e) => e.stopPropagation());
+    controls.appendChild(colorPicker);
+
+    const sep2 = document.createElement('div');
+    sep2.className = 'ctrl-sep';
+    controls.appendChild(sep2);
+
     const delBtn = document.createElement('button');
     delBtn.className = 'del-btn';
     delBtn.textContent = '✕';
@@ -146,18 +219,13 @@
       validateDownload();
     });
     controls.appendChild(delBtn);
-    el.appendChild(controls);
 
-    controls.addEventListener('click', (e) => {
-      const act = e.target.dataset.act;
-      if (act === 'smaller') edit.fontSizePct = Math.max(1, edit.fontSizePct - 0.4);
-      if (act === 'bigger') edit.fontSizePct = Math.min(12, edit.fontSizePct + 0.4);
-      input.style.fontSize = `${edit.fontSizePct * 5}px`;
-    });
+    el.appendChild(controls);
 
     wireDrag(strip, edit, () => {
       el.style.left = `${edit.xPct}%`;
       el.style.top = `${edit.yPct}%`;
+      el.style.maxWidth = `${Math.max(10, 98 - edit.xPct)}%`;
     });
 
     previewWrap.appendChild(el);
@@ -239,6 +307,8 @@
       text: 'Text',
       color: COLORS[0],
       fontSizePct: 3,
+      bold: false,
+      italic: false,
     };
     edits.push(edit);
     renderPageElements();
@@ -344,7 +414,17 @@
       const { PDFDocument, StandardFonts, rgb } = PDFLib;
       const pdfDoc = await PDFDocument.load(sourceArrayBuffer.slice(0));
       const pages = pdfDoc.getPages();
-      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const fontRegular = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+      const fontItalic = await pdfDoc.embedFont(StandardFonts.HelveticaOblique);
+      const fontBoldItalic = await pdfDoc.embedFont(StandardFonts.HelveticaBoldOblique);
+
+      function pickFont(edit) {
+        if (edit.bold && edit.italic) return fontBoldItalic;
+        if (edit.bold) return fontBold;
+        if (edit.italic) return fontItalic;
+        return fontRegular;
+      }
 
       function hexToRgb(hex) {
         const n = parseInt(hex.replace('#', ''), 16);
@@ -367,7 +447,7 @@
           const { r, g, b } = hexToRgb(edit.color);
           const x = width * (edit.xPct / 100);
           const y = height - height * (edit.yPct / 100) - fontSize;
-          page.drawText(edit.text, { x, y, size: fontSize, font, color: rgb(r, g, b) });
+          page.drawText(edit.text, { x, y, size: fontSize, font: pickFont(edit), color: rgb(r, g, b) });
         }
       });
 

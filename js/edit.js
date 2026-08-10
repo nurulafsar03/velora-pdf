@@ -90,6 +90,16 @@
   function validateDownload() {
     downloadBtn.disabled = edits.length === 0;
     viewPrintBtn.disabled = edits.length === 0;
+
+    const counterEl = document.getElementById('editCount');
+    if (counterEl) {
+      if (edits.length === 0) {
+        counterEl.textContent = '';
+      } else {
+        const pagesUsed = new Set(edits.map((e) => e.pageNum)).size;
+        counterEl.textContent = `${edits.length} edit${edits.length > 1 ? 's' : ''} across ${pagesUsed} page${pagesUsed > 1 ? 's' : ''}`;
+      }
+    }
   }
 
   // ---- rendering base page ----

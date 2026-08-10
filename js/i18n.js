@@ -71,7 +71,7 @@
       edit_page_label: 'Page',
       edit_add_text_btn: '+ Add text',
       edit_add_whiteout_btn: '+ Add whiteout',
-      edit_note_latin: 'Added text supports Latin characters only (standard PDF fonts).',
+      edit_note_latin: 'Added text supports Latin and Bengali characters. Bengali text automatically uses the Hind Siliguri font.',
       edit_note_whiteout: "Whiteout visually covers content — the original text underneath still exists in the file and isn't securely removed. Don't rely on it for confidential redaction.",
       edit_download_btn: 'Download edited PDF',
 
@@ -294,7 +294,7 @@
       edit_page_label: 'পেজ',
       edit_add_text_btn: '+ টেক্সট যোগ করুন',
       edit_add_whiteout_btn: '+ Whiteout যোগ করুন',
-      edit_note_latin: 'যোগ করা টেক্সট শুধু ইংরেজি/ল্যাটিন অক্ষর সাপোর্ট করে (স্ট্যান্ডার্ড PDF ফন্ট)।',
+      edit_note_latin: 'যোগ করা টেক্সট ইংরেজি ও বাংলা দুটোই সাপোর্ট করে। বাংলা টেক্সটে স্বয়ংক্রিয়ভাবে Hind Siliguri ফন্ট ব্যবহার হবে।',
       edit_note_whiteout: 'Whiteout শুধু দৃশ্যমানভাবে কনটেন্ট ঢেকে দেয় — নিচের আসল টেক্সট ফাইলের ভেতরে থেকেই যায়, নিরাপদভাবে মুছে যায় না। কনফিডেনশিয়াল তথ্য মুছতে এটার উপর নির্ভর করবেন না।',
       edit_download_btn: 'এডিট করা PDF ডাউনলোড করুন',
 
@@ -517,7 +517,7 @@
       edit_page_label: 'Seite',
       edit_add_text_btn: '+ Text hinzufügen',
       edit_add_whiteout_btn: '+ Weißfeld hinzufügen',
-      edit_note_latin: 'Hinzugefügter Text unterstützt nur lateinische Zeichen (Standard-PDF-Schriftarten).',
+      edit_note_latin: 'Hinzugefügter Text unterstützt lateinische und bengalische Zeichen. Bengalischer Text verwendet automatisch die Schriftart Hind Siliguri.',
       edit_note_whiteout: 'Das Weißfeld deckt Inhalte nur optisch ab — der ursprüngliche Text darunter bleibt in der Datei erhalten und wird nicht sicher entfernt. Verlassen Sie sich dafür nicht auf vertrauliche Schwärzung.',
       edit_download_btn: 'Bearbeitetes PDF herunterladen',
 
@@ -740,7 +740,7 @@
       edit_page_label: 'पेज',
       edit_add_text_btn: '+ टेक्स्ट जोड़ें',
       edit_add_whiteout_btn: '+ व्हाइटआउट जोड़ें',
-      edit_note_latin: 'जोड़ा गया टेक्स्ट सिर्फ़ लैटिन अक्षर सपोर्ट करता है (स्टैंडर्ड PDF फ़ॉन्ट)।',
+      edit_note_latin: 'जोड़ा गया टेक्स्ट लैटिन और बंगाली दोनों अक्षर सपोर्ट करता है। बंगाली टेक्स्ट में अपने आप Hind Siliguri फ़ॉन्ट इस्तेमाल होगा।',
       edit_note_whiteout: 'व्हाइटआउट सिर्फ़ कंटेंट को दिखने से रोकता है — नीचे का असली टेक्स्ट फ़ाइल में बना रहता है, सुरक्षित रूप से हटता नहीं। गोपनीय जानकारी मिटाने के लिए इस पर निर्भर न रहें।',
       edit_download_btn: 'एडिट की गई PDF डाउनलोड करें',
 
@@ -963,7 +963,7 @@
       edit_page_label: 'صفحہ',
       edit_add_text_btn: '+ متن شامل کریں',
       edit_add_whiteout_btn: '+ وائٹ آؤٹ شامل کریں',
-      edit_note_latin: 'شامل کردہ متن صرف لاطینی حروف سپورٹ کرتا ہے (معیاری PDF فونٹس)۔',
+      edit_note_latin: 'شامل کردہ متن لاطینی اور بنگالی دونوں حروف سپورٹ کرتا ہے۔ بنگالی متن خودکار طور پر Hind Siliguri فونٹ استعمال کرے گا۔',
       edit_note_whiteout: 'وائٹ آؤٹ صرف مواد کو بصری طور پر ڈھانپتا ہے — نیچے کا اصل متن فائل میں موجود رہتا ہے، محفوظ طریقے سے نہیں ہٹتا۔ خفیہ معلومات مٹانے کے لیے اس پر انحصار نہ کریں۔',
       edit_download_btn: 'ایڈٹ شدہ PDF ڈاؤن لوڈ کریں',
 
@@ -1186,7 +1186,7 @@
       edit_page_label: 'الصفحة',
       edit_add_text_btn: '+ إضافة نص',
       edit_add_whiteout_btn: '+ إضافة تغطية بيضاء',
-      edit_note_latin: 'النص المُضاف يدعم الأحرف اللاتينية فقط (خطوط PDF القياسية).',
+      edit_note_latin: 'يدعم النص المُضاف الأحرف اللاتينية والبنغالية. يستخدم النص البنغالي تلقائيًا خط Hind Siliguri.',
       edit_note_whiteout: 'التغطية البيضاء تخفي المحتوى بصريًا فقط — يبقى النص الأصلي أسفلها موجودًا في الملف ولا يُحذف بأمان. لا تعتمد عليها لإخفاء معلومات سرية.',
       edit_download_btn: 'تنزيل PDF بعد التحرير',
 

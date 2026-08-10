@@ -50,6 +50,8 @@
     { key: 'Righteous', label: 'Righteous', category: 'Display', urls: { r: `${GH}/ofl/righteous/Righteous-Regular.ttf` } },
     { key: 'Lobster', label: 'Lobster', category: 'Display', urls: { r: `${GH}/ofl/lobster/Lobster-Regular.ttf` } },
     { key: 'OleoScript', label: 'Oleo Script', category: 'Display', urls: { r: `${GH}/ofl/oleoscript/OleoScript-Regular.ttf`, b: `${GH}/ofl/oleoscript/OleoScript-Bold.ttf` } },
+
+    { key: 'HindSiliguri', label: 'Hind Siliguri (বাংলা)', category: 'Bengali', urls: { r: `${GH}/ofl/hindsiliguri/HindSiliguri-Regular.ttf`, b: `${GH}/ofl/hindsiliguri/HindSiliguri-Bold.ttf` } },
   ];
 
   function catalogEntry(key) {
@@ -609,30 +611,39 @@
         return lines;
       }
 
+      const BENGALI_RANGE = /[\u0980-\u09FF]/;
+      let skippedCount = 0;
+
       for (const edit of edits) {
         const page = pages[edit.pageNum - 1];
         if (!page) continue;
         const { width, height } = page.getSize();
 
-        if (edit.type === 'whiteout') {
-          const x = width * (edit.xPct / 100);
-          const boxWidth = width * (edit.widthPct / 100);
-          const boxHeight = height * (edit.heightPct / 100);
-          const y = height - height * (edit.yPct / 100) - boxHeight;
-          page.drawRectangle({ x, y, width: boxWidth, height: boxHeight, color: rgb(1, 1, 1) });
-        } else if (edit.type === 'text' && edit.text.trim()) {
-          const fontSize = width * (edit.fontSizePct / 100);
-          const { r, g, b } = hexToRgb(edit.color);
-          const font = await pickFont(edit);
-          const x = width * (edit.xPct / 100);
-          const maxWidth = Math.max(fontSize * 3, width - x);
-          const lineHeight = fontSize * 1.25;
-          const lines = wrapLines(edit.text, font, fontSize, maxWidth);
-          let y = height - height * (edit.yPct / 100) - fontSize;
-          lines.forEach((line) => {
-            page.drawText(line, { x, y, size: fontSize, font, color: rgb(r, g, b) });
-            y -= lineHeight;
-          });
+        try {
+          if (edit.type === 'whiteout') {
+            const x = width * (edit.xPct / 100);
+            const boxWidth = width * (edit.widthPct / 100);
+            const boxHeight = height * (edit.heightPct / 100);
+            const y = height - height * (edit.yPct / 100) - boxHeight;
+            page.drawRectangle({ x, y, width: boxWidth, height: boxHeight, color: rgb(1, 1, 1) });
+          } else if (edit.type === 'text' && edit.text.trim()) {
+            const fontSize = width * (edit.fontSizePct / 100);
+            const { r, g, b } = hexToRgb(edit.color);
+            const effectiveFamily = BENGALI_RANGE.test(edit.text) ? 'HindSiliguri' : edit.fontFamily;
+            const font = await pickFont({ ...edit, fontFamily: effectiveFamily });
+            const x = width * (edit.xPct / 100);
+            const maxWidth = Math.max(fontSize * 3, width - x);
+            const lineHeight = fontSize * 1.25;
+            const lines = wrapLines(edit.text, font, fontSize, maxWidth);
+            let y = height - height * (edit.yPct / 100) - fontSize;
+            lines.forEach((line) => {
+              page.drawText(line, { x, y, size: fontSize, font, color: rgb(r, g, b) });
+              y -= lineHeight;
+            });
+          }
+        } catch (editErr) {
+          console.error('Skipped one edit that failed to render', edit, editErr);
+          skippedCount += 1;
         }
       }
 
@@ -647,9 +658,10 @@
       a.remove();
       URL.revokeObjectURL(url);
 
-      setStatus(anyFontFailed
-        ? 'done — downloaded (one or more fonts couldn\'t load and were substituted)'
-        : 'done — edited file downloaded');
+      const warnings = [];
+      if (anyFontFailed) warnings.push("some fonts couldn't load and were substituted");
+      if (skippedCount) warnings.push(`${skippedCount} edit${skippedCount > 1 ? 's' : ''} couldn't be applied`);
+      setStatus(warnings.length ? `done — downloaded (${warnings.join('; ')})` : 'done — edited file downloaded');
     } catch (err) {
       console.error(err);
       setStatus('failed — check the console');

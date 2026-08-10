@@ -88,8 +88,8 @@
   function newId() { return `e${++idCounter}`; }
 
   function validateDownload() {
-    downloadBtn.disabled = edits.length === 0;
-    viewPrintBtn.disabled = edits.length === 0;
+    downloadBtn.disabled = !sourceArrayBuffer;
+    viewPrintBtn.disabled = !sourceArrayBuffer;
 
     const counterEl = document.getElementById('editCount');
     if (counterEl) {
@@ -866,7 +866,7 @@
   }
 
   downloadBtn.addEventListener('click', async () => {
-    if (!sourceArrayBuffer || !edits.length) return;
+    if (!sourceArrayBuffer) return;
     downloadBtn.disabled = true;
     setStatus('applying edits…');
 
@@ -897,7 +897,7 @@
   // ---- view & print ----
 
   viewPrintBtn.addEventListener('click', async () => {
-    if (!sourceArrayBuffer || !edits.length) return;
+    if (!sourceArrayBuffer) return;
     viewPrintBtn.disabled = true;
     setStatus('preparing preview…');
 

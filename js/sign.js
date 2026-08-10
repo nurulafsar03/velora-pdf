@@ -259,7 +259,7 @@
   }
 
   function validateDownload() {
-    downloadBtn.disabled = !sigDataUrl || !basePageCanvas;
+    downloadBtn.disabled = !sourceArrayBuffer;
   }
 
   // ---- preview + drag ----
@@ -382,6 +382,7 @@
 
     resizeSigPad();
     await renderBasePage(1);
+    validateDownload();
     setStatus('draw or type your signature, then drag it into place');
   }
 
@@ -432,30 +433,33 @@
   async function buildSignedPdf() {
     const { PDFDocument } = PDFLib;
     const pdfDoc = await PDFDocument.load(sourceArrayBuffer.slice(0));
-    const pages = pdfDoc.getPages();
-    const targetPage = pages[currentPage - 1];
-    const { width, height } = targetPage.getSize();
 
-    const pngImage = await pdfDoc.embedPng(sigDataUrl);
-    const imgWidthPts = width * (widthPct / 100);
-    const imgHeightPts = imgWidthPts * sigAspect;
+    if (sigDataUrl) {
+      const pages = pdfDoc.getPages();
+      const targetPage = pages[currentPage - 1];
+      const { width, height } = targetPage.getSize();
 
-    const xPts = width * (posX / 100);
-    const yFromTopPts = height * (posY / 100);
-    const yPts = height - yFromTopPts - imgHeightPts;
+      const pngImage = await pdfDoc.embedPng(sigDataUrl);
+      const imgWidthPts = width * (widthPct / 100);
+      const imgHeightPts = imgWidthPts * sigAspect;
 
-    targetPage.drawImage(pngImage, {
-      x: xPts,
-      y: yPts,
-      width: imgWidthPts,
-      height: imgHeightPts,
-    });
+      const xPts = width * (posX / 100);
+      const yFromTopPts = height * (posY / 100);
+      const yPts = height - yFromTopPts - imgHeightPts;
+
+      targetPage.drawImage(pngImage, {
+        x: xPts,
+        y: yPts,
+        width: imgWidthPts,
+        height: imgHeightPts,
+      });
+    }
 
     return pdfDoc.save();
   }
 
   downloadBtn.addEventListener('click', async () => {
-    if (!sourceArrayBuffer || !sigDataUrl) return;
+    if (!sourceArrayBuffer) return;
     downloadBtn.disabled = true;
     setStatus('placing signature…');
 

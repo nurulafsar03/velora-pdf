@@ -902,20 +902,34 @@
       const viewDoc = await pdfjsLib.getDocument({ data: bytes.slice(0) }).promise;
 
       printPagesWrap.innerHTML = '';
-      const dpr = Math.max(2, window.devicePixelRatio || 1);
+      const desiredScale = Math.max(2, window.devicePixelRatio || 1);
+      const MAX_DIM = 2400;
+      let skippedPrintPages = 0;
+
       for (let i = 1; i <= viewDoc.numPages; i++) {
-        const page = await viewDoc.getPage(i);
-        const viewport = page.getViewport({ scale: dpr });
-        const canvas = document.createElement('canvas');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        canvas.className = 'print-page-canvas';
-        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-        printPagesWrap.appendChild(canvas);
+        try {
+          const page = await viewDoc.getPage(i);
+          const baseViewport = page.getViewport({ scale: 1 });
+          const longEdge = Math.max(baseViewport.width, baseViewport.height);
+          const scale = Math.min(desiredScale, MAX_DIM / longEdge);
+
+          const viewport = page.getViewport({ scale });
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          canvas.className = 'print-page-canvas';
+          await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+          printPagesWrap.appendChild(canvas);
+        } catch (pageErr) {
+          console.error(`Failed to render page ${i} for preview`, pageErr);
+          skippedPrintPages += 1;
+        }
       }
 
       printModal.classList.add('active');
-      setStatus('add text or a whiteout box, then download');
+      setStatus(skippedPrintPages
+        ? `${skippedPrintPages} page(s) couldn't render in the preview`
+        : 'add text or a whiteout box, then download');
     } catch (err) {
       console.error(err);
       setStatus('preview failed — check the console');

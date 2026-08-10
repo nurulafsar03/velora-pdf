@@ -33,21 +33,35 @@
       toolbar.classList.add('active');
       window.VeloraQuickActions.render(quickActions, 'view.html', () => currentArrayBuffer, () => currentFileName);
 
-      const dpr = Math.max(2, window.devicePixelRatio || 1);
+      const desiredScale = Math.max(2, window.devicePixelRatio || 1);
+      const MAX_DIM = 2400; // cap the long edge so large scanned pages don't exceed canvas memory limits
+      let skippedPages = 0;
+
       for (let i = 1; i <= doc.numPages; i++) {
         setStatus(`rendering page ${i} of ${doc.numPages}…`);
-        const page = await doc.getPage(i);
-        const viewport = page.getViewport({ scale: dpr });
-        const canvas = document.createElement('canvas');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        canvas.className = 'view-page-canvas';
-        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-        viewPagesWrap.appendChild(canvas);
+        try {
+          const page = await doc.getPage(i);
+          const baseViewport = page.getViewport({ scale: 1 });
+          const longEdge = Math.max(baseViewport.width, baseViewport.height);
+          const scale = Math.min(desiredScale, MAX_DIM / longEdge);
+
+          const viewport = page.getViewport({ scale });
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          canvas.className = 'view-page-canvas';
+          await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+          viewPagesWrap.appendChild(canvas);
+        } catch (pageErr) {
+          console.error(`Failed to render page ${i}`, pageErr);
+          skippedPages += 1;
+        }
       }
 
       printBtn.disabled = false;
-      setStatus(`${doc.numPages} pages loaded`);
+      setStatus(skippedPages
+        ? `${doc.numPages} pages loaded (${skippedPages} page${skippedPages > 1 ? 's' : ''} couldn't render)`
+        : `${doc.numPages} pages loaded`);
     } catch (err) {
       console.error(err);
       setStatus("couldn't open this file — is it a valid PDF?");

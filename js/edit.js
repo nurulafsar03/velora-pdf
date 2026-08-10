@@ -19,6 +19,7 @@
   const statusText = document.getElementById('statusText');
 
   const COLORS = ['#16140f', '#6f97c9', '#c1502e'];
+  const WHITEOUT_COLORS = ['#ffffff', '#16140f', '#ede6d6'];
   const GH = 'https://raw.githubusercontent.com/google/fonts/main';
 
   // Each custom entry's urls give the exact files that exist; missing
@@ -353,6 +354,7 @@
     el.style.top = `${edit.yPct}%`;
     el.style.width = `${edit.widthPct}%`;
     el.style.height = `${edit.heightPct}%`;
+    el.style.background = edit.color;
 
     const delBtn = document.createElement('button');
     delBtn.className = 'del-btn-box';
@@ -364,6 +366,61 @@
       validateDownload();
     });
     el.appendChild(delBtn);
+
+    const controls = document.createElement('div');
+    controls.className = 'wo-controls';
+
+    WHITEOUT_COLORS.forEach((c) => {
+      const sw = document.createElement('span');
+      sw.className = 'mini-swatch' + (c === edit.color ? ' selected' : '');
+      sw.style.background = c;
+      sw.addEventListener('click', (e) => {
+        e.stopPropagation();
+        edit.color = c;
+        el.style.background = c;
+        controls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.toggle('selected', s === sw));
+        colorPicker.value = c;
+      });
+      controls.appendChild(sw);
+    });
+
+    const colorPicker = document.createElement('input');
+    colorPicker.type = 'color';
+    colorPicker.className = 'color-picker';
+    colorPicker.value = edit.color;
+    colorPicker.title = 'Custom color';
+    colorPicker.addEventListener('input', (e) => {
+      edit.color = e.target.value;
+      el.style.background = edit.color;
+      controls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.remove('selected'));
+    });
+    colorPicker.addEventListener('click', (e) => e.stopPropagation());
+    colorPicker.addEventListener('mousedown', (e) => e.stopPropagation());
+    controls.appendChild(colorPicker);
+
+    const eyedropperBtn = document.createElement('button');
+    eyedropperBtn.type = 'button';
+    eyedropperBtn.className = 'eyedropper-btn';
+    eyedropperBtn.title = window.EyeDropper ? 'Pick a color from anywhere on screen' : 'Not supported in this browser (try Chrome or Edge)';
+    eyedropperBtn.textContent = '💧';
+    eyedropperBtn.disabled = !window.EyeDropper;
+    eyedropperBtn.addEventListener('mousedown', (e) => e.stopPropagation());
+    eyedropperBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (!window.EyeDropper) return;
+      try {
+        const result = await new window.EyeDropper().open();
+        edit.color = result.sRGBHex;
+        el.style.background = edit.color;
+        colorPicker.value = edit.color;
+        controls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.remove('selected'));
+      } catch (err) {
+        // user cancelled the picker — nothing to do
+      }
+    });
+    controls.appendChild(eyedropperBtn);
+
+    el.appendChild(controls);
 
     const handle = document.createElement('div');
     handle.className = 'resize-handle';
@@ -438,6 +495,7 @@
       yPct: 15,
       widthPct: 30,
       heightPct: 6,
+      color: '#ffffff',
     };
     edits.push(edit);
     renderPageElements();
@@ -625,7 +683,8 @@
             const boxWidth = width * (edit.widthPct / 100);
             const boxHeight = height * (edit.heightPct / 100);
             const y = height - height * (edit.yPct / 100) - boxHeight;
-            page.drawRectangle({ x, y, width: boxWidth, height: boxHeight, color: rgb(1, 1, 1) });
+            const { r, g, b } = hexToRgb(edit.color || '#ffffff');
+            page.drawRectangle({ x, y, width: boxWidth, height: boxHeight, color: rgb(r, g, b) });
           } else if (edit.type === 'text' && edit.text.trim()) {
             const fontSize = width * (edit.fontSizePct / 100);
             const { r, g, b } = hexToRgb(edit.color);

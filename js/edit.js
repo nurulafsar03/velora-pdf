@@ -19,11 +19,52 @@
   const statusText = document.getElementById('statusText');
 
   const COLORS = ['#16140f', '#6f97c9', '#c1502e'];
-  const FONT_FAMILIES = [
-    { key: 'Helvetica', label: 'Sans', css: "'Helvetica Neue', Helvetica, Arial, sans-serif" },
-    { key: 'TimesRoman', label: 'Serif', css: "'Times New Roman', Times, serif" },
-    { key: 'Courier', label: 'Mono', css: "'Courier New', Courier, monospace" },
+  const GH = 'https://raw.githubusercontent.com/google/fonts/main';
+
+  // Each custom entry's urls give the exact files that exist; missing
+  // bold/italic variants simply reuse the closest available file, both
+  // for the live preview (browser fake-bold/italic) and for the final
+  // embedded PDF (falls back to the nearest real style).
+  const FONT_CATALOG = [
+    { key: 'Helvetica', label: 'Helvetica', category: 'Sans', standard: true },
+    { key: 'Lato', label: 'Lato', category: 'Sans', urls: { r: `${GH}/ofl/lato/Lato-Regular.ttf`, b: `${GH}/ofl/lato/Lato-Bold.ttf`, i: `${GH}/ofl/lato/Lato-Italic.ttf`, bi: `${GH}/ofl/lato/Lato-BoldItalic.ttf` } },
+    { key: 'Poppins', label: 'Poppins', category: 'Sans', urls: { r: `${GH}/ofl/poppins/Poppins-Regular.ttf`, b: `${GH}/ofl/poppins/Poppins-Bold.ttf`, i: `${GH}/ofl/poppins/Poppins-Italic.ttf`, bi: `${GH}/ofl/poppins/Poppins-BoldItalic.ttf` } },
+
+    { key: 'TimesRoman', label: 'Times', category: 'Serif', standard: true },
+    { key: 'PTSerif', label: 'PT Serif', category: 'Serif', urls: { r: `${GH}/ofl/ptserif/PT_Serif-Web-Regular.ttf`, b: `${GH}/ofl/ptserif/PT_Serif-Web-Bold.ttf`, i: `${GH}/ofl/ptserif/PT_Serif-Web-Italic.ttf`, bi: `${GH}/ofl/ptserif/PT_Serif-Web-BoldItalic.ttf` } },
+
+    { key: 'Courier', label: 'Courier', category: 'Monospace', standard: true },
+    { key: 'CourierPrime', label: 'Courier Prime', category: 'Monospace', urls: { r: `${GH}/ofl/courierprime/CourierPrime-Regular.ttf`, b: `${GH}/ofl/courierprime/CourierPrime-Bold.ttf`, i: `${GH}/ofl/courierprime/CourierPrime-Italic.ttf`, bi: `${GH}/ofl/courierprime/CourierPrime-BoldItalic.ttf` } },
+    { key: 'SpaceMono', label: 'Space Mono', category: 'Monospace', urls: { r: `${GH}/ofl/spacemono/SpaceMono-Regular.ttf`, b: `${GH}/ofl/spacemono/SpaceMono-Bold.ttf`, i: `${GH}/ofl/spacemono/SpaceMono-Italic.ttf`, bi: `${GH}/ofl/spacemono/SpaceMono-BoldItalic.ttf` } },
+    { key: 'FiraMono', label: 'Fira Mono', category: 'Monospace', urls: { r: `${GH}/ofl/firamono/FiraMono-Regular.ttf`, b: `${GH}/ofl/firamono/FiraMono-Bold.ttf` } },
+
+    { key: 'Kalam', label: 'Kalam', category: 'Handwriting', urls: { r: `${GH}/ofl/kalam/Kalam-Regular.ttf`, b: `${GH}/ofl/kalam/Kalam-Bold.ttf` } },
+    { key: 'IndieFlower', label: 'Indie Flower', category: 'Handwriting', urls: { r: `${GH}/ofl/indieflower/IndieFlower-Regular.ttf` } },
+    { key: 'ArchitectsDaughter', label: 'Architects Daughter', category: 'Handwriting', urls: { r: `${GH}/ofl/architectsdaughter/ArchitectsDaughter-Regular.ttf` } },
+    { key: 'Pacifico', label: 'Pacifico', category: 'Handwriting', urls: { r: `${GH}/ofl/pacifico/Pacifico-Regular.ttf` } },
+    { key: 'GreatVibes', label: 'Great Vibes', category: 'Handwriting', urls: { r: `${GH}/ofl/greatvibes/GreatVibes-Regular.ttf` } },
+
+    { key: 'BebasNeue', label: 'Bebas Neue', category: 'Display', urls: { r: `${GH}/ofl/bebasneue/BebasNeue-Regular.ttf` } },
+    { key: 'Anton', label: 'Anton', category: 'Display', urls: { r: `${GH}/ofl/anton/Anton-Regular.ttf` } },
+    { key: 'AbrilFatface', label: 'Abril Fatface', category: 'Display', urls: { r: `${GH}/ofl/abrilfatface/AbrilFatface-Regular.ttf` } },
+    { key: 'Righteous', label: 'Righteous', category: 'Display', urls: { r: `${GH}/ofl/righteous/Righteous-Regular.ttf` } },
+    { key: 'Lobster', label: 'Lobster', category: 'Display', urls: { r: `${GH}/ofl/lobster/Lobster-Regular.ttf` } },
+    { key: 'OleoScript', label: 'Oleo Script', category: 'Display', urls: { r: `${GH}/ofl/oleoscript/OleoScript-Regular.ttf`, b: `${GH}/ofl/oleoscript/OleoScript-Bold.ttf` } },
   ];
+
+  function catalogEntry(key) {
+    return FONT_CATALOG.find((f) => f.key === key) || FONT_CATALOG[0];
+  }
+
+  function cssFontFamily(entry) {
+    if (entry.standard) {
+      if (entry.key === 'Helvetica') return 'Helvetica, Arial, sans-serif';
+      if (entry.key === 'TimesRoman') return "'Times New Roman', Times, serif";
+      if (entry.key === 'Courier') return "'Courier New', Courier, monospace";
+    }
+    const fallback = entry.category === 'Serif' ? 'serif' : entry.category === 'Monospace' ? 'monospace' : 'sans-serif';
+    return `'${entry.label}', ${fallback}`;
+  }
 
   let sourceArrayBuffer = null;
   let sourceFileName = 'document';
@@ -148,7 +189,7 @@
     content.textContent = edit.text;
     content.style.color = edit.color;
     content.style.fontSize = `${edit.fontSizePct * 5}px`;
-    content.style.fontFamily = FONT_FAMILIES.find((f) => f.key === edit.fontFamily).css;
+    content.style.fontFamily = cssFontFamily(catalogEntry(edit.fontFamily));
     content.style.fontWeight = edit.bold ? '700' : '400';
     content.style.fontStyle = edit.italic ? 'italic' : 'normal';
     content.addEventListener('input', () => {
@@ -216,17 +257,23 @@
 
     const fontSelect = document.createElement('select');
     fontSelect.className = 'font-select';
-    FONT_FAMILIES.forEach((f) => {
-      const opt = document.createElement('option');
-      opt.value = f.key;
-      opt.textContent = f.label;
-      if (f.key === edit.fontFamily) opt.selected = true;
-      fontSelect.appendChild(opt);
+    const categories = [...new Set(FONT_CATALOG.map((f) => f.category))];
+    categories.forEach((cat) => {
+      const group = document.createElement('optgroup');
+      group.label = cat;
+      FONT_CATALOG.filter((f) => f.category === cat).forEach((f) => {
+        const opt = document.createElement('option');
+        opt.value = f.key;
+        opt.textContent = f.label;
+        if (f.key === edit.fontFamily) opt.selected = true;
+        group.appendChild(opt);
+      });
+      fontSelect.appendChild(group);
     });
     fontSelect.addEventListener('click', (e) => e.stopPropagation());
     fontSelect.addEventListener('change', () => {
       edit.fontFamily = fontSelect.value;
-      content.style.fontFamily = FONT_FAMILIES.find((f) => f.key === edit.fontFamily).css;
+      content.style.fontFamily = cssFontFamily(catalogEntry(edit.fontFamily));
     });
     controls.appendChild(fontSelect);
 
@@ -487,20 +534,53 @@
     try {
       const { PDFDocument, StandardFonts, rgb } = PDFLib;
       const pdfDoc = await PDFDocument.load(sourceArrayBuffer.slice(0));
+      pdfDoc.registerFontkit(fontkit);
       const pages = pdfDoc.getPages();
 
-      const FONT_SETS = {
+      const STANDARD_SETS = {
         Helvetica: [StandardFonts.Helvetica, StandardFonts.HelveticaBold, StandardFonts.HelveticaOblique, StandardFonts.HelveticaBoldOblique],
         TimesRoman: [StandardFonts.TimesRoman, StandardFonts.TimesRomanBold, StandardFonts.TimesRomanItalic, StandardFonts.TimesRomanBoldItalic],
         Courier: [StandardFonts.Courier, StandardFonts.CourierBold, StandardFonts.CourierOblique, StandardFonts.CourierBoldOblique],
       };
-      const embeddedFonts = {};
-      for (const family of Object.keys(FONT_SETS)) {
-        embeddedFonts[family] = await Promise.all(FONT_SETS[family].map((f) => pdfDoc.embedFont(f)));
+
+      const embeddedCache = {}; // fontFamily key -> [regular, bold, italic, boldItalic] embedded font objects
+      let anyFontFailed = false;
+
+      async function getEmbeddedSet(familyKey) {
+        if (embeddedCache[familyKey]) return embeddedCache[familyKey];
+
+        const entry = catalogEntry(familyKey);
+        if (entry.standard) {
+          const set = await Promise.all(STANDARD_SETS[entry.key].map((f) => pdfDoc.embedFont(f)));
+          embeddedCache[familyKey] = set;
+          return set;
+        }
+
+        try {
+          const order = ['r', 'b', 'i', 'bi'];
+          const bytesList = await Promise.all(
+            order.map((k) => {
+              const url = entry.urls[k] || entry.urls.r;
+              return fetch(url).then((res) => {
+                if (!res.ok) throw new Error(`fetch failed: ${url}`);
+                return res.arrayBuffer();
+              });
+            })
+          );
+          const set = await Promise.all(bytesList.map((bytes) => pdfDoc.embedFont(bytes, { subset: true })));
+          embeddedCache[familyKey] = set;
+          return set;
+        } catch (err) {
+          console.error(`Could not load font "${entry.label}", using Helvetica instead`, err);
+          anyFontFailed = true;
+          const fallback = await getEmbeddedSet('Helvetica');
+          embeddedCache[familyKey] = fallback;
+          return fallback;
+        }
       }
 
-      function pickFont(edit) {
-        const set = embeddedFonts[edit.fontFamily] || embeddedFonts.Helvetica;
+      async function pickFont(edit) {
+        const set = await getEmbeddedSet(edit.fontFamily);
         const idx = (edit.bold ? 1 : 0) + (edit.italic ? 2 : 0);
         return set[idx];
       }
@@ -529,9 +609,9 @@
         return lines;
       }
 
-      edits.forEach((edit) => {
+      for (const edit of edits) {
         const page = pages[edit.pageNum - 1];
-        if (!page) return;
+        if (!page) continue;
         const { width, height } = page.getSize();
 
         if (edit.type === 'whiteout') {
@@ -543,7 +623,7 @@
         } else if (edit.type === 'text' && edit.text.trim()) {
           const fontSize = width * (edit.fontSizePct / 100);
           const { r, g, b } = hexToRgb(edit.color);
-          const font = pickFont(edit);
+          const font = await pickFont(edit);
           const x = width * (edit.xPct / 100);
           const maxWidth = Math.max(fontSize * 3, width - x);
           const lineHeight = fontSize * 1.25;
@@ -554,7 +634,7 @@
             y -= lineHeight;
           });
         }
-      });
+      }
 
       const bytes = await pdfDoc.save();
       const blob = new Blob([bytes], { type: 'application/pdf' });
@@ -567,7 +647,9 @@
       a.remove();
       URL.revokeObjectURL(url);
 
-      setStatus('done — edited file downloaded');
+      setStatus(anyFontFailed
+        ? 'done — downloaded (one or more fonts couldn\'t load and were substituted)'
+        : 'done — edited file downloaded');
     } catch (err) {
       console.error(err);
       setStatus('failed — check the console');

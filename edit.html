@@ -117,8 +117,10 @@
     display: inline-block;
     background: transparent;
     outline: none;
-    white-space: pre;
-    line-height: 1.15;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    line-height: 1.25;
     min-width: 24px;
     min-height: 1em;
   }
@@ -338,8 +340,8 @@
 <script>
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 </script>
-<script src="js/edit.js?v=3"></script>
-<script src="js/nav.js?v=3"></script>
-<script src="js/i18n.js?v=3"></script>
+<script src="js/edit.js?v=4"></script>
+<script src="js/nav.js?v=4"></script>
+<script src="js/i18n.js?v=4"></script>
 </body>
 </html>

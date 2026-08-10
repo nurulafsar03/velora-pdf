@@ -121,6 +121,12 @@
     content.addEventListener('input', () => {
       edit.text = content.textContent;
     });
+    content.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.execCommand('insertText', false, '\n');
+      }
+    });
     content.addEventListener('mousedown', (e) => e.stopPropagation());
     content.addEventListener('touchstart', (e) => e.stopPropagation());
     el.appendChild(content);
@@ -431,6 +437,25 @@
         return { r: ((n >> 16) & 255) / 255, g: ((n >> 8) & 255) / 255, b: (n & 255) / 255 };
       }
 
+      function wrapLines(text, font, fontSize, maxWidth) {
+        const lines = [];
+        text.split('\n').forEach((paragraph) => {
+          const words = paragraph.split(' ');
+          let current = '';
+          words.forEach((word) => {
+            const candidate = current ? `${current} ${word}` : word;
+            if (font.widthOfTextAtSize(candidate, fontSize) > maxWidth && current) {
+              lines.push(current);
+              current = word;
+            } else {
+              current = candidate;
+            }
+          });
+          lines.push(current);
+        });
+        return lines;
+      }
+
       edits.forEach((edit) => {
         const page = pages[edit.pageNum - 1];
         if (!page) return;
@@ -445,9 +470,16 @@
         } else if (edit.type === 'text' && edit.text.trim()) {
           const fontSize = width * (edit.fontSizePct / 100);
           const { r, g, b } = hexToRgb(edit.color);
+          const font = pickFont(edit);
           const x = width * (edit.xPct / 100);
-          const y = height - height * (edit.yPct / 100) - fontSize;
-          page.drawText(edit.text, { x, y, size: fontSize, font: pickFont(edit), color: rgb(r, g, b) });
+          const maxWidth = Math.max(fontSize * 3, width - x);
+          const lineHeight = fontSize * 1.25;
+          const lines = wrapLines(edit.text, font, fontSize, maxWidth);
+          let y = height - height * (edit.yPct / 100) - fontSize;
+          lines.forEach((line) => {
+            page.drawText(line, { x, y, size: fontSize, font, color: rgb(r, g, b) });
+            y -= lineHeight;
+          });
         }
       });
 

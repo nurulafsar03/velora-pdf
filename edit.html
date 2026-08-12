@@ -307,6 +307,20 @@
     border-radius: 2px;
     cursor: nwse-resize;
   }
+  .shape-el .rotate-handle, .image-el .rotate-handle {
+    position: absolute;
+    left: 50%;
+    top: -24px;
+    width: 12px;
+    height: 12px;
+    margin-left: -6px;
+    background: var(--ochre);
+    border-radius: 50%;
+    cursor: grab;
+    display: none;
+  }
+  .shape-el:hover .rotate-handle, .shape-el.active .rotate-handle,
+  .image-el:hover .rotate-handle, .image-el.active .rotate-handle { display: block; }
   .shape-el .del-btn-box, .image-el .del-btn-box {
     position: absolute;
     top: -10px;
@@ -733,8 +747,8 @@
 </script>
 <script src="js/handoff.js?v=1"></script>
 <script src="js/quick-actions.js?v=2"></script>
-<script src="js/edit.js?v=18"></script>
+<script src="js/edit.js?v=19"></script>
 <script src="js/nav.js?v=13"></script>
-<script src="js/i18n.js?v=14"></script>
+<script src="js/i18n.js?v=15"></script>
 </body>
 </html>

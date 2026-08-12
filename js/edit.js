@@ -789,53 +789,96 @@
 
   const SHAPE_COLORS = ['#16140f', '#c1502e', '#6f97c9'];
 
+  // Each shape's geometry as one or more polylines in local 0-100 space,
+  // relative to its own bounding box. Shared by the live preview (SVG)
+  // and the final PDF export, so rotation only needs to be handled once.
+  function getLocalShapePolylines(shapeKind) {
+    if (shapeKind === 'rect') return [[[2, 2], [98, 2], [98, 98], [2, 98], [2, 2]]];
+    if (shapeKind === 'circle') {
+      const pts = [];
+      const N = 40;
+      for (let i = 0; i <= N; i++) {
+        const a = (i / N) * 2 * Math.PI;
+        pts.push([50 + 46 * Math.cos(a), 50 + 46 * Math.sin(a)]);
+      }
+      return [pts];
+    }
+    if (shapeKind === 'line') return [[[5, 95], [95, 5]]];
+    if (shapeKind === 'arrow') return [[[5, 95], [92, 8]], [[92, 8], [72, 12]], [[92, 8], [88, 28]]];
+    if (shapeKind === 'cross') return [[[6, 6], [94, 94]], [[94, 6], [6, 94]]];
+    if (shapeKind === 'check') return [[[8, 55], [38, 85], [92, 12]]];
+    return [];
+  }
+
+  function rotateLocalPoint(x, y, angleDeg) {
+    const rad = (angleDeg * Math.PI) / 180;
+    const cos = Math.cos(rad);
+    const sin = Math.sin(rad);
+    const dx = x - 50;
+    const dy = y - 50;
+    return [50 + dx * cos - dy * sin, 50 + dx * sin + dy * cos];
+  }
+
   function buildShapeSvg(shapeKind, color, strokeWidthPx) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('viewBox', '0 0 100 100');
     svg.setAttribute('preserveAspectRatio', 'none');
     const ns = 'http://www.w3.org/2000/svg';
-    const sw = strokeWidthPx;
 
-    function line(x1, y1, x2, y2) {
-      const l = document.createElementNS(ns, 'line');
-      l.setAttribute('x1', x1); l.setAttribute('y1', y1);
-      l.setAttribute('x2', x2); l.setAttribute('y2', y2);
-      l.setAttribute('stroke', color);
-      l.setAttribute('stroke-width', sw);
-      l.setAttribute('stroke-linecap', 'round');
-      l.setAttribute('vector-effect', 'non-scaling-stroke');
-      svg.appendChild(l);
-    }
-
-    if (shapeKind === 'rect') {
-      const r = document.createElementNS(ns, 'rect');
-      r.setAttribute('x', 3); r.setAttribute('y', 3);
-      r.setAttribute('width', 94); r.setAttribute('height', 94);
-      r.setAttribute('fill', 'none'); r.setAttribute('stroke', color);
-      r.setAttribute('stroke-width', sw); r.setAttribute('vector-effect', 'non-scaling-stroke');
-      svg.appendChild(r);
-    } else if (shapeKind === 'circle') {
-      const c = document.createElementNS(ns, 'ellipse');
-      c.setAttribute('cx', 50); c.setAttribute('cy', 50);
-      c.setAttribute('rx', 46); c.setAttribute('ry', 46);
-      c.setAttribute('fill', 'none'); c.setAttribute('stroke', color);
-      c.setAttribute('stroke-width', sw); c.setAttribute('vector-effect', 'non-scaling-stroke');
-      svg.appendChild(c);
-    } else if (shapeKind === 'line') {
-      line(5, 95, 95, 5);
-    } else if (shapeKind === 'arrow') {
-      line(5, 95, 92, 8);
-      line(92, 8, 72, 12);
-      line(92, 8, 88, 28);
-    } else if (shapeKind === 'cross') {
-      line(6, 6, 94, 94);
-      line(94, 6, 6, 94);
-    } else if (shapeKind === 'check') {
-      line(8, 55, 38, 85);
-      line(38, 85, 92, 12);
-    }
+    getLocalShapePolylines(shapeKind).forEach((pts) => {
+      const poly = document.createElementNS(ns, 'polyline');
+      poly.setAttribute('points', pts.map((p) => p.join(',')).join(' '));
+      poly.setAttribute('fill', 'none');
+      poly.setAttribute('stroke', color);
+      poly.setAttribute('stroke-width', strokeWidthPx);
+      poly.setAttribute('stroke-linecap', 'round');
+      poly.setAttribute('stroke-linejoin', 'round');
+      poly.setAttribute('vector-effect', 'non-scaling-stroke');
+      svg.appendChild(poly);
+    });
 
     return svg;
+  }
+
+  // ---- rotate handle (shared by shapes and images) ----
+
+  function wireRotate(el, edit, onRotate) {
+    const handle = document.createElement('div');
+    handle.className = 'rotate-handle';
+    el.appendChild(handle);
+
+    let rotating = false;
+
+    function angleFromCenter(clientX, clientY) {
+      const rect = previewWrap.getBoundingClientRect();
+      const centerX = rect.left + ((edit.xPct + edit.widthPct / 2) / 100) * rect.width;
+      const centerY = rect.top + ((edit.yPct + edit.heightPct / 2) / 100) * rect.height;
+      let deg = (Math.atan2(clientY - centerY, clientX - centerX) * 180) / Math.PI + 90;
+      return ((deg % 360) + 360) % 360;
+    }
+
+    function down(e) {
+      rotating = true;
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    function move(e) {
+      if (!rotating) return;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      edit.rotation = angleFromCenter(clientX, clientY);
+      onRotate();
+    }
+    function up() { rotating = false; }
+
+    handle.addEventListener('mousedown', down);
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+    handle.addEventListener('touchstart', down, { passive: false });
+    window.addEventListener('touchmove', move, { passive: false });
+    window.addEventListener('touchend', up);
+
+    return handle;
   }
 
   function createShapeDom(edit) {
@@ -845,6 +888,7 @@
     el.style.top = `${edit.yPct}%`;
     el.style.width = `${edit.widthPct}%`;
     el.style.height = `${edit.heightPct}%`;
+    el.style.transform = `rotate(${edit.rotation || 0}deg)`;
 
     const strokePx = edit.strokeWidthPct * 6;
     const svg = buildShapeSvg(edit.shapeKind, edit.color, strokePx);
@@ -910,6 +954,10 @@
     handle.className = 'resize-handle';
     el.appendChild(handle);
 
+    wireRotate(el, edit, () => {
+      el.style.transform = `rotate(${edit.rotation}deg)`;
+    });
+
     wireDrag(el, edit, () => {
       el.style.left = `${edit.xPct}%`;
       el.style.top = `${edit.yPct}%`;
@@ -950,6 +998,7 @@
     el.style.top = `${edit.yPct}%`;
     el.style.width = `${edit.widthPct}%`;
     el.style.height = `${edit.heightPct}%`;
+    el.style.transform = `rotate(${edit.rotation || 0}deg)`;
 
     const img = document.createElement('img');
     img.src = edit.dataUrl;
@@ -969,6 +1018,10 @@
     const handle = document.createElement('div');
     handle.className = 'resize-handle';
     el.appendChild(handle);
+
+    wireRotate(el, edit, () => {
+      el.style.transform = `rotate(${edit.rotation}deg)`;
+    });
 
     wireDrag(el, edit, () => {
       el.style.left = `${edit.xPct}%`;
@@ -1065,6 +1118,7 @@
         heightPct: kind === 'line' || kind === 'arrow' ? 15 : 20,
         color: SHAPE_COLORS[0],
         strokeWidthPct: 0.6,
+        rotation: 0,
       };
       edits.push(edit);
       renderPageElements();
@@ -1107,6 +1161,7 @@
       imgType: file.type === 'image/png' ? 'png' : 'jpg',
       naturalW: dims.w,
       naturalH: dims.h,
+      rotation: 0,
     };
     edits.push(edit);
     renderPageElements();
@@ -1310,36 +1365,22 @@
           const bw = width * (edit.widthPct / 100);
           const by = height - height * (edit.yPct / 100) - height * (edit.heightPct / 100);
           const bh = height * (edit.heightPct / 100);
+          const rotation = edit.rotation || 0;
 
-          // Map the 0-100 local shape coordinates (see buildShapeSvg) into
-          // this box's absolute PDF coordinates (PDF y-axis points up).
-          const px = (lx) => bx + (lx / 100) * bw;
-          const py = (ly) => by + bh - (ly / 100) * bh;
-          const seg = (x1, y1, x2, y2) => page.drawLine({
-            start: { x: px(x1), y: py(y1) },
-            end: { x: px(x2), y: py(y2) },
-            thickness,
-            color: rgb(r, g, b),
-            lineCap: LineCapStyle.Round,
+          // Map a local 0-100 point (rotated around the box's own center)
+          // into this box's absolute PDF coordinates (PDF y-axis points up).
+          const toPdfPoint = ([lx, ly]) => {
+            const [rx, ry] = rotateLocalPoint(lx, ly, rotation);
+            return { x: bx + (rx / 100) * bw, y: by + bh - (ry / 100) * bh };
+          };
+
+          getLocalShapePolylines(edit.shapeKind).forEach((pts) => {
+            for (let i = 0; i < pts.length - 1; i++) {
+              const start = toPdfPoint(pts[i]);
+              const end = toPdfPoint(pts[i + 1]);
+              page.drawLine({ start, end, thickness, color: rgb(r, g, b), lineCap: LineCapStyle.Round });
+            }
           });
-
-          if (edit.shapeKind === 'rect') {
-            page.drawRectangle({ x: bx, y: by, width: bw, height: bh, borderColor: rgb(r, g, b), borderWidth: thickness });
-          } else if (edit.shapeKind === 'circle') {
-            page.drawEllipse({ x: bx + bw / 2, y: by + bh / 2, xScale: bw / 2, yScale: bh / 2, borderColor: rgb(r, g, b), borderWidth: thickness });
-          } else if (edit.shapeKind === 'line') {
-            seg(5, 95, 95, 5);
-          } else if (edit.shapeKind === 'arrow') {
-            seg(5, 95, 92, 8);
-            seg(92, 8, 72, 12);
-            seg(92, 8, 88, 28);
-          } else if (edit.shapeKind === 'cross') {
-            seg(6, 6, 94, 94);
-            seg(94, 6, 6, 94);
-          } else if (edit.shapeKind === 'check') {
-            seg(8, 55, 38, 85);
-            seg(38, 85, 92, 12);
-          }
         } else if (edit.type === 'image') {
           const embedded = edit.imgType === 'png'
             ? await pdfDoc.embedPng(edit.arrayBuffer)
@@ -1348,7 +1389,25 @@
           const bw = width * (edit.widthPct / 100);
           const bh = height * (edit.heightPct / 100);
           const by = height - height * (edit.yPct / 100) - bh;
-          page.drawImage(embedded, { x: bx, y: by, width: bw, height: bh });
+          const imgRotation = edit.rotation || 0;
+
+          if (imgRotation) {
+            const { pushGraphicsState, popGraphicsState, concatTransformationMatrix } = PDFLib;
+            const cx = bx + bw / 2;
+            const cy = by + bh / 2;
+            const rad = (imgRotation * Math.PI) / 180;
+            const cos = Math.cos(rad);
+            const sin = Math.sin(rad);
+            page.pushOperators(
+              pushGraphicsState(),
+              concatTransformationMatrix(1, 0, 0, 1, cx, cy),
+              concatTransformationMatrix(cos, sin, -sin, cos, 0, 0)
+            );
+            page.drawImage(embedded, { x: -bw / 2, y: -bh / 2, width: bw, height: bh });
+            page.pushOperators(popGraphicsState());
+          } else {
+            page.drawImage(embedded, { x: bx, y: by, width: bw, height: bh });
+          }
         } else if (edit.type === 'drawing') {
           edit.strokes.forEach((stroke) => {
             const { r, g, b } = hexToRgb(stroke.color);

@@ -881,6 +881,77 @@
     return handle;
   }
 
+  // ---- multi-point resize (shared by shapes and images) ----
+
+  const MIN_SIZE_PCT = 3;
+
+  function wireMultiResize(el, edit, opts, onResize) {
+    const aspectLocked = !!opts.aspectLocked;
+    const aspectRatio = aspectLocked ? edit.naturalH / edit.naturalW : null;
+
+    function addHandle(direction, className) {
+      const handle = document.createElement('div');
+      handle.className = `resize-handle-dot ${className}`;
+      el.appendChild(handle);
+
+      let dragging = false;
+      function down(e) { dragging = true; e.stopPropagation(); e.preventDefault(); }
+      function move(e) {
+        if (!dragging) return;
+        const rect = previewWrap.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const px = ((clientX - rect.left) / rect.width) * 100;
+        const py = ((clientY - rect.top) / rect.height) * 100;
+        const rightEdge = edit.xPct + edit.widthPct;
+        const bottomEdge = edit.yPct + edit.heightPct;
+
+        if (aspectLocked && (direction === 'corner')) {
+          const newWidth = Math.max(MIN_SIZE_PCT, px - edit.xPct);
+          edit.widthPct = newWidth;
+          edit.heightPct = newWidth * aspectRatio * (rect.width / rect.height);
+        } else {
+          if (direction === 'right' || direction === 'corner') {
+            edit.widthPct = Math.max(MIN_SIZE_PCT, px - edit.xPct);
+          }
+          if (direction === 'left') {
+            const newWidth = Math.max(MIN_SIZE_PCT, rightEdge - px);
+            edit.xPct = rightEdge - newWidth;
+            edit.widthPct = newWidth;
+          }
+          if (direction === 'bottom' || direction === 'corner') {
+            edit.heightPct = Math.max(MIN_SIZE_PCT, py - edit.yPct);
+          }
+          if (direction === 'top') {
+            const newHeight = Math.max(MIN_SIZE_PCT, bottomEdge - py);
+            edit.yPct = bottomEdge - newHeight;
+            edit.heightPct = newHeight;
+          }
+        }
+
+        el.style.left = `${edit.xPct}%`;
+        el.style.top = `${edit.yPct}%`;
+        el.style.width = `${edit.widthPct}%`;
+        el.style.height = `${edit.heightPct}%`;
+        onResize();
+      }
+      function up() { dragging = false; }
+
+      handle.addEventListener('mousedown', down);
+      window.addEventListener('mousemove', move);
+      window.addEventListener('mouseup', up);
+      handle.addEventListener('touchstart', down, { passive: false });
+      window.addEventListener('touchmove', move, { passive: false });
+      window.addEventListener('touchend', up);
+    }
+
+    addHandle('corner', 'corner');
+    addHandle('top', 'edge-top');
+    addHandle('bottom', 'edge-bottom');
+    addHandle('left', 'edge-left');
+    addHandle('right', 'edge-right');
+  }
+
   function createShapeDom(edit) {
     const el = document.createElement('div');
     el.className = 'edit-el shape-el';
@@ -950,10 +1021,6 @@
     controls.appendChild(strokeSel);
     el.appendChild(controls);
 
-    const handle = document.createElement('div');
-    handle.className = 'resize-handle';
-    el.appendChild(handle);
-
     wireRotate(el, edit, () => {
       el.style.transform = `rotate(${edit.rotation}deg)`;
     });
@@ -963,28 +1030,9 @@
       el.style.top = `${edit.yPct}%`;
     });
 
-    let resizing = false;
-    handle.addEventListener('mousedown', (e) => { resizing = true; e.stopPropagation(); e.preventDefault(); });
-    handle.addEventListener('touchstart', (e) => { resizing = true; e.stopPropagation(); e.preventDefault(); }, { passive: false });
-    window.addEventListener('mousemove', (e) => {
-      if (!resizing) return;
-      const rect = previewWrap.getBoundingClientRect();
-      edit.widthPct = Math.max(3, ((e.clientX - rect.left) / rect.width) * 100 - edit.xPct);
-      edit.heightPct = Math.max(3, ((e.clientY - rect.top) / rect.height) * 100 - edit.yPct);
-      el.style.width = `${edit.widthPct}%`;
-      el.style.height = `${edit.heightPct}%`;
+    wireMultiResize(el, edit, { aspectLocked: false }, () => {
+      el.replaceChild(buildShapeSvg(edit.shapeKind, edit.color, edit.strokeWidthPct * 6), el.querySelector('svg'));
     });
-    window.addEventListener('touchmove', (e) => {
-      if (!resizing) return;
-      const rect = previewWrap.getBoundingClientRect();
-      const t = e.touches[0];
-      edit.widthPct = Math.max(3, ((t.clientX - rect.left) / rect.width) * 100 - edit.xPct);
-      edit.heightPct = Math.max(3, ((t.clientY - rect.top) / rect.height) * 100 - edit.yPct);
-      el.style.width = `${edit.widthPct}%`;
-      el.style.height = `${edit.heightPct}%`;
-    }, { passive: false });
-    window.addEventListener('mouseup', () => { resizing = false; });
-    window.addEventListener('touchend', () => { resizing = false; });
 
     previewWrap.appendChild(el);
   }
@@ -1015,10 +1063,6 @@
     });
     el.appendChild(delBtn);
 
-    const handle = document.createElement('div');
-    handle.className = 'resize-handle';
-    el.appendChild(handle);
-
     wireRotate(el, edit, () => {
       el.style.transform = `rotate(${edit.rotation}deg)`;
     });
@@ -1028,30 +1072,7 @@
       el.style.top = `${edit.yPct}%`;
     });
 
-    let resizing = false;
-    handle.addEventListener('mousedown', (e) => { resizing = true; e.stopPropagation(); e.preventDefault(); });
-    handle.addEventListener('touchstart', (e) => { resizing = true; e.stopPropagation(); e.preventDefault(); }, { passive: false });
-    window.addEventListener('mousemove', (e) => {
-      if (!resizing) return;
-      const rect = previewWrap.getBoundingClientRect();
-      const newWidthPct = Math.max(3, ((e.clientX - rect.left) / rect.width) * 100 - edit.xPct);
-      edit.widthPct = newWidthPct;
-      edit.heightPct = newWidthPct * (edit.naturalH / edit.naturalW) * (rect.width / rect.height);
-      el.style.width = `${edit.widthPct}%`;
-      el.style.height = `${edit.heightPct}%`;
-    });
-    window.addEventListener('touchmove', (e) => {
-      if (!resizing) return;
-      const rect = previewWrap.getBoundingClientRect();
-      const t = e.touches[0];
-      const newWidthPct = Math.max(3, ((t.clientX - rect.left) / rect.width) * 100 - edit.xPct);
-      edit.widthPct = newWidthPct;
-      edit.heightPct = newWidthPct * (edit.naturalH / edit.naturalW) * (rect.width / rect.height);
-      el.style.width = `${edit.widthPct}%`;
-      el.style.height = `${edit.heightPct}%`;
-    }, { passive: false });
-    window.addEventListener('mouseup', () => { resizing = false; });
-    window.addEventListener('touchend', () => { resizing = false; });
+    wireMultiResize(el, edit, { aspectLocked: true }, () => {});
 
     previewWrap.appendChild(el);
   }

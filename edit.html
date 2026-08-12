@@ -297,16 +297,23 @@
     cursor: grab;
   }
   .shape-el svg { width: 100%; height: 100%; display: block; overflow: visible; }
-  .shape-el .resize-handle, .image-el .resize-handle {
+  .resize-handle-dot {
     position: absolute;
-    right: -5px;
-    bottom: -5px;
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     background: var(--blueprint);
-    border-radius: 2px;
-    cursor: nwse-resize;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    z-index: 7;
+    display: none;
   }
+  .shape-el:hover .resize-handle-dot, .shape-el.active .resize-handle-dot,
+  .image-el:hover .resize-handle-dot, .image-el.active .resize-handle-dot { display: block; }
+  .resize-handle-dot.corner { right: -5px; bottom: -5px; cursor: nwse-resize; }
+  .resize-handle-dot.edge-top { left: 50%; top: -5px; margin-left: -5px; cursor: ns-resize; }
+  .resize-handle-dot.edge-bottom { left: 50%; bottom: -5px; margin-left: -5px; cursor: ns-resize; }
+  .resize-handle-dot.edge-left { top: 50%; left: -5px; margin-top: -5px; cursor: ew-resize; }
+  .resize-handle-dot.edge-right { top: 50%; right: -5px; margin-top: -5px; cursor: ew-resize; }
   .shape-el .rotate-handle, .image-el .rotate-handle {
     position: absolute;
     right: -6px;
@@ -748,7 +755,7 @@
 </script>
 <script src="js/handoff.js?v=1"></script>
 <script src="js/quick-actions.js?v=2"></script>
-<script src="js/edit.js?v=19"></script>
+<script src="js/edit.js?v=20"></script>
 <script src="js/nav.js?v=13"></script>
 <script src="js/i18n.js?v=15"></script>
 </body>

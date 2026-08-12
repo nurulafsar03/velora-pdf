@@ -563,6 +563,53 @@
 
   .status-text { font-family: var(--font-mono); font-size: 12px; color: var(--mist); }
 
+  .password-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .password-modal.active { display: flex; }
+  .password-modal-box {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 24px;
+    width: 320px;
+  }
+  .password-modal-box h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    margin: 0 0 8px;
+    color: var(--paper);
+  }
+  .password-modal-box p {
+    font-size: 13px;
+    color: var(--mist);
+    margin: 0 0 16px;
+  }
+  .password-modal-box input {
+    width: 100%;
+    background: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--paper);
+    padding: 10px 12px;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .password-modal-box .pw-error {
+    color: var(--stamp);
+    font-size: 12px;
+    margin-bottom: 8px;
+    display: none;
+  }
+  .password-modal-box .pw-error.visible { display: block; }
+  .password-modal-actions { display: flex; gap: 10px; margin-top: 6px; }
+
   .back-link { display: inline-block; font-size: 13px; color: var(--mist); margin-bottom: 4px; }
   .back-link:hover { color: var(--blueprint); }
 
@@ -766,7 +813,20 @@
   <div class="print-pages-wrap" id="printPagesWrap"></div>
 </div>
 
-<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<div class="password-modal" id="passwordModal">
+  <div class="password-modal-box">
+    <h3 data-i18n="edit_pw_title">Password protected</h3>
+    <p data-i18n="edit_pw_subtitle">This PDF needs a password to open.</p>
+    <input type="password" id="passwordInput" autocomplete="off">
+    <div class="pw-error" id="passwordError" data-i18n="edit_pw_wrong">Incorrect password — try again.</div>
+    <div class="password-modal-actions">
+      <button class="btn btn-primary" id="passwordUnlockBtn" data-i18n="edit_pw_unlock">Unlock</button>
+      <button class="btn btn-ghost" id="passwordCancelBtn" data-i18n="edit_pw_cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/@cantoo/pdf-lib@2.7.1/dist/pdf-lib.min.js"></script>
 <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
 <script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
@@ -774,8 +834,8 @@
 </script>
 <script src="js/handoff.js?v=1"></script>
 <script src="js/quick-actions.js?v=2"></script>
-<script src="js/edit.js?v=25"></script>
+<script src="js/edit.js?v=26"></script>
 <script src="js/nav.js?v=13"></script>
-<script src="js/i18n.js?v=15"></script>
+<script src="js/i18n.js?v=16"></script>
 </body>
 </html>

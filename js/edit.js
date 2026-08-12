@@ -91,6 +91,7 @@
 
   let sourceArrayBuffer = null;
   let sourceFileName = 'document';
+  let sourcePassword = null;
   let pdfDocProxy = null;
   let pageCount = 0;
   let currentPage = 1;
@@ -1278,16 +1279,89 @@
 
   // ---- file loading ----
 
+  // ---- password-protected PDF handling ----
+
+  const passwordModal = document.getElementById('passwordModal');
+  const passwordInput = document.getElementById('passwordInput');
+  const passwordError = document.getElementById('passwordError');
+  const passwordUnlockBtn = document.getElementById('passwordUnlockBtn');
+  const passwordCancelBtn = document.getElementById('passwordCancelBtn');
+
+  function promptForPassword(isRetry) {
+    return new Promise((resolve) => {
+      passwordError.classList.toggle('visible', !!isRetry);
+      passwordInput.value = '';
+      passwordModal.classList.add('active');
+      setTimeout(() => passwordInput.focus(), 50);
+
+      function cleanup() {
+        passwordModal.classList.remove('active');
+        passwordUnlockBtn.removeEventListener('click', onUnlock);
+        passwordCancelBtn.removeEventListener('click', onCancel);
+        passwordInput.removeEventListener('keydown', onKeydown);
+      }
+      function onUnlock() {
+        cleanup();
+        resolve(passwordInput.value);
+      }
+      function onCancel() {
+        cleanup();
+        resolve(null);
+      }
+      function onKeydown(e) {
+        if (e.key === 'Enter') onUnlock();
+        if (e.key === 'Escape') onCancel();
+      }
+
+      passwordUnlockBtn.addEventListener('click', onUnlock);
+      passwordCancelBtn.addEventListener('click', onCancel);
+      passwordInput.addEventListener('keydown', onKeydown);
+    });
+  }
+
+  async function loadPdfWithPasswordSupport(arrayBuffer) {
+    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer.slice(0) });
+    let cancelled = false;
+
+    loadingTask.onPassword = (callback, reason) => {
+      promptForPassword(reason === 2).then((pwd) => {
+        if (pwd === null) {
+          cancelled = true;
+          loadingTask.destroy();
+          return;
+        }
+        sourcePassword = pwd;
+        callback(pwd);
+      });
+    };
+
+    try {
+      return await loadingTask.promise;
+    } catch (err) {
+      if (cancelled) throw new Error('cancelled');
+      throw err;
+    }
+  }
+
   async function loadFile(file) {
     setStatus('reading file…');
     previewWrap.innerHTML = '';
     edits = [];
+    sourcePassword = null;
 
     const arrayBuffer = await file.arrayBuffer();
     sourceArrayBuffer = arrayBuffer;
     sourceFileName = file.name;
 
-    pdfDocProxy = await pdfjsLib.getDocument({ data: arrayBuffer.slice(0) }).promise;
+    let doc;
+    try {
+      doc = await loadPdfWithPasswordSupport(arrayBuffer);
+    } catch (err) {
+      console.error(err);
+      setStatus(err.message === 'cancelled' ? '' : "couldn't open this file — is it a valid PDF?");
+      return;
+    }
+    pdfDocProxy = doc;
     pageCount = pdfDocProxy.numPages;
     currentPage = 1;
 
@@ -1336,6 +1410,7 @@
   changeFileBtn.addEventListener('click', () => {
     window.VeloraQuickActions.hide(document.getElementById('quickActions'));
     sourceArrayBuffer = null;
+    sourcePassword = null;
     pdfDocProxy = null;
     pageCount = 0;
     edits = [];
@@ -1356,7 +1431,8 @@
 
   async function buildEditedPdf() {
     const { PDFDocument, StandardFonts, rgb, LineCapStyle } = PDFLib;
-    const pdfDoc = await PDFDocument.load(sourceArrayBuffer.slice(0));
+    const loadOpts = sourcePassword ? { password: sourcePassword } : undefined;
+    const pdfDoc = await PDFDocument.load(sourceArrayBuffer.slice(0), loadOpts);
     pdfDoc.registerFontkit(fontkit);
     const pages = pdfDoc.getPages();
 

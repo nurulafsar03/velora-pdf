@@ -21,6 +21,7 @@
   });
   const clearDrawingBtn = document.getElementById('clearDrawingBtn');
   const doneDrawingBtn = document.getElementById('doneDrawingBtn');
+  const drawControlsGrip = document.getElementById('drawControlsGrip');
   const shapeToolBtn = document.getElementById('shapeToolBtn');
   const shapePopover = document.getElementById('shapePopover');
   const imageToolBtn = document.getElementById('imageToolBtn');
@@ -277,6 +278,44 @@
     if (liveDrawSvg) liveDrawSvg.innerHTML = '';
     validateDownload();
   }
+
+  // ---- draggable draw-controls panel ----
+
+  (() => {
+    let dragging = false;
+    let offsetX = 0, offsetY = 0;
+
+    function down(e) {
+      dragging = true;
+      const rect = drawControls.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      offsetX = clientX - rect.left;
+      offsetY = clientY - rect.top;
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    function move(e) {
+      if (!dragging) return;
+      const wrapRect = previewWrap.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      let left = clientX - wrapRect.left - offsetX;
+      let top = clientY - wrapRect.top - offsetY;
+      left = Math.max(0, Math.min(wrapRect.width - drawControls.offsetWidth, left));
+      top = Math.max(0, Math.min(wrapRect.height - drawControls.offsetHeight, top));
+      drawControls.style.left = `${left}px`;
+      drawControls.style.top = `${top}px`;
+    }
+    function up() { dragging = false; }
+
+    drawControlsGrip.addEventListener('mousedown', down);
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+    drawControlsGrip.addEventListener('touchstart', down, { passive: false });
+    window.addEventListener('touchmove', move, { passive: false });
+    window.addEventListener('touchend', up);
+  })();
 
   drawToolBtn.addEventListener('click', () => {
     drawMode = !drawMode;

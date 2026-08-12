@@ -837,7 +837,7 @@
   // Each shape's geometry as one or more polylines in local 0-100 space,
   // relative to its own bounding box. Shared by the live preview (SVG)
   // and the final PDF export, so rotation only needs to be handled once.
-  function getLocalShapePolylines(shapeKind) {
+  function getLocalShapePolylines(shapeKind, state) {
     if (shapeKind === 'rect') return [[[2, 2], [98, 2], [98, 98], [2, 98], [2, 2]]];
     if (shapeKind === 'circle') {
       const pts = [];
@@ -852,6 +852,13 @@
     if (shapeKind === 'arrow') return [[[5, 95], [92, 8]], [[92, 8], [72, 12]], [[92, 8], [88, 28]]];
     if (shapeKind === 'cross') return [[[6, 6], [94, 94]], [[94, 6], [6, 94]]];
     if (shapeKind === 'check') return [[[8, 55], [38, 85], [92, 12]]];
+    if (shapeKind === 'checkbox') {
+      const box = [[4, 4], [96, 4], [96, 96], [4, 96], [4, 4]];
+      const mark = state === 'cross'
+        ? [[[22, 22], [78, 78]], [[78, 22], [22, 78]]]
+        : [[[15, 52], [40, 78], [85, 15]]];
+      return [box, ...mark];
+    }
     return [];
   }
 
@@ -864,13 +871,13 @@
     return [50 + dx * cos - dy * sin, 50 + dx * sin + dy * cos];
   }
 
-  function buildShapeSvg(shapeKind, color, strokeWidthPx) {
+  function buildShapeSvg(shapeKind, color, strokeWidthPx, state) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('viewBox', '0 0 100 100');
     svg.setAttribute('preserveAspectRatio', 'none');
     const ns = 'http://www.w3.org/2000/svg';
 
-    getLocalShapePolylines(shapeKind).forEach((pts) => {
+    getLocalShapePolylines(shapeKind, state).forEach((pts) => {
       const poly = document.createElementNS(ns, 'polyline');
       poly.setAttribute('points', pts.map((p) => p.join(',')).join(' '));
       poly.setAttribute('fill', 'none');
@@ -1007,8 +1014,26 @@
     el.style.transform = `rotate(${edit.rotation || 0}deg)`;
 
     const strokePx = edit.strokeWidthPct * 6;
-    const svg = buildShapeSvg(edit.shapeKind, edit.color, strokePx);
+    const svg = buildShapeSvg(edit.shapeKind, edit.color, strokePx, edit.checkState);
     el.appendChild(svg);
+
+    if (edit.shapeKind === 'checkbox') {
+      el.style.cursor = 'pointer';
+      let downX = 0, downY = 0, downTime = 0;
+      el.addEventListener('mousedown', (e) => {
+        downX = e.clientX; downY = e.clientY; downTime = Date.now();
+      });
+      el.addEventListener('mouseup', (e) => {
+        const moved = Math.hypot(e.clientX - downX, e.clientY - downY);
+        if (moved < 4 && Date.now() - downTime < 400) {
+          edit.checkState = edit.checkState === 'cross' ? 'check' : 'cross';
+          el.replaceChild(
+            buildShapeSvg(edit.shapeKind, edit.color, edit.strokeWidthPct * 6, edit.checkState),
+            el.querySelector('svg')
+          );
+        }
+      });
+    }
 
     const delBtn = document.createElement('button');
     delBtn.className = 'del-btn-box';
@@ -1030,7 +1055,7 @@
       sw.addEventListener('click', (e) => {
         e.stopPropagation();
         edit.color = c;
-        el.replaceChild(buildShapeSvg(edit.shapeKind, edit.color, edit.strokeWidthPct * 6), el.querySelector('svg'));
+        el.replaceChild(buildShapeSvg(edit.shapeKind, edit.color, edit.strokeWidthPct * 6, edit.checkState), el.querySelector('svg'));
         controls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.toggle('selected', s === sw));
         colorPicker.value = c;
       });
@@ -1044,7 +1069,7 @@
     colorPicker.addEventListener('mousedown', (e) => e.stopPropagation());
     colorPicker.addEventListener('input', (e) => {
       edit.color = e.target.value;
-      el.replaceChild(buildShapeSvg(edit.shapeKind, edit.color, edit.strokeWidthPct * 6), el.querySelector('svg'));
+      el.replaceChild(buildShapeSvg(edit.shapeKind, edit.color, edit.strokeWidthPct * 6, edit.checkState), el.querySelector('svg'));
       controls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.remove('selected'));
     });
     controls.appendChild(colorPicker);
@@ -1061,7 +1086,7 @@
     strokeSel.addEventListener('mousedown', (e) => e.stopPropagation());
     strokeSel.addEventListener('input', () => {
       edit.strokeWidthPct = parseFloat(strokeSel.value);
-      el.replaceChild(buildShapeSvg(edit.shapeKind, edit.color, edit.strokeWidthPct * 6), el.querySelector('svg'));
+      el.replaceChild(buildShapeSvg(edit.shapeKind, edit.color, edit.strokeWidthPct * 6, edit.checkState), el.querySelector('svg'));
     });
     controls.appendChild(strokeSel);
     el.appendChild(controls);
@@ -1076,7 +1101,7 @@
     });
 
     wireMultiResize(el, edit, { aspectLocked: false }, () => {
-      el.replaceChild(buildShapeSvg(edit.shapeKind, edit.color, edit.strokeWidthPct * 6), el.querySelector('svg'));
+      el.replaceChild(buildShapeSvg(edit.shapeKind, edit.color, edit.strokeWidthPct * 6, edit.checkState), el.querySelector('svg'));
     });
 
     previewWrap.appendChild(el);
@@ -1209,6 +1234,7 @@
         color: SHAPE_COLORS[0],
         strokeWidthPct: 3,
         rotation: 0,
+        checkState: 'check',
       };
       edits.push(edit);
       renderPageElements();
@@ -1540,7 +1566,7 @@
             return { x: bx + (rx / 100) * bw, y: by + bh - (ry / 100) * bh };
           };
 
-          getLocalShapePolylines(edit.shapeKind).forEach((pts) => {
+          getLocalShapePolylines(edit.shapeKind, edit.checkState).forEach((pts) => {
             for (let i = 0; i < pts.length - 1; i++) {
               const start = toPdfPoint(pts[i]);
               const end = toPdfPoint(pts[i + 1]);

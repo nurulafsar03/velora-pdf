@@ -309,15 +309,16 @@
   }
   .shape-el .rotate-handle, .image-el .rotate-handle {
     position: absolute;
-    left: 50%;
-    top: -24px;
-    width: 12px;
-    height: 12px;
-    margin-left: -6px;
+    right: -6px;
+    top: -22px;
+    width: 14px;
+    height: 14px;
     background: var(--ochre);
+    border: 2px solid var(--ink);
     border-radius: 50%;
     cursor: grab;
     display: none;
+    z-index: 8;
   }
   .shape-el:hover .rotate-handle, .shape-el.active .rotate-handle,
   .image-el:hover .rotate-handle, .image-el.active .rotate-handle { display: block; }

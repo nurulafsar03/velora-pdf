@@ -1054,6 +1054,7 @@
 
     const img = document.createElement('img');
     img.src = edit.dataUrl;
+    img.style.opacity = (edit.opacity ?? 100) / 100;
     el.appendChild(img);
 
     const delBtn = document.createElement('button');
@@ -1066,6 +1067,29 @@
       validateDownload();
     });
     el.appendChild(delBtn);
+
+    const controls = document.createElement('div');
+    controls.className = 'shape-controls';
+    const opLabel = document.createElement('span');
+    opLabel.style.fontSize = '11px';
+    opLabel.style.color = 'var(--paper-dim)';
+    opLabel.textContent = 'Opacity';
+    controls.appendChild(opLabel);
+    const opSlider = document.createElement('input');
+    opSlider.type = 'range';
+    opSlider.min = '10';
+    opSlider.max = '100';
+    opSlider.step = '5';
+    opSlider.value = String(edit.opacity ?? 100);
+    opSlider.className = 'stroke-slider';
+    opSlider.addEventListener('click', (e) => e.stopPropagation());
+    opSlider.addEventListener('mousedown', (e) => e.stopPropagation());
+    opSlider.addEventListener('input', () => {
+      edit.opacity = parseInt(opSlider.value, 10);
+      img.style.opacity = edit.opacity / 100;
+    });
+    controls.appendChild(opSlider);
+    el.appendChild(controls);
 
     wireRotate(el, edit, () => {
       el.style.transform = `rotate(${edit.rotation}deg)`;
@@ -1187,6 +1211,7 @@
       naturalW: dims.w,
       naturalH: dims.h,
       rotation: 0,
+      opacity: 100,
     };
     edits.push(edit);
     renderPageElements();
@@ -1415,6 +1440,7 @@
           const bh = height * (edit.heightPct / 100);
           const by = height - height * (edit.yPct / 100) - bh;
           const imgRotation = edit.rotation || 0;
+          const imgOpacity = (edit.opacity ?? 100) / 100;
 
           if (imgRotation) {
             const { pushGraphicsState, popGraphicsState, concatTransformationMatrix } = PDFLib;
@@ -1428,10 +1454,10 @@
               concatTransformationMatrix(1, 0, 0, 1, cx, cy),
               concatTransformationMatrix(cos, sin, -sin, cos, 0, 0)
             );
-            page.drawImage(embedded, { x: -bw / 2, y: -bh / 2, width: bw, height: bh });
+            page.drawImage(embedded, { x: -bw / 2, y: -bh / 2, width: bw, height: bh, opacity: imgOpacity });
             page.pushOperators(popGraphicsState());
           } else {
-            page.drawImage(embedded, { x: bx, y: by, width: bw, height: bh });
+            page.drawImage(embedded, { x: bx, y: by, width: bw, height: bh, opacity: imgOpacity });
           }
         } else if (edit.type === 'drawing') {
           edit.strokes.forEach((stroke) => {

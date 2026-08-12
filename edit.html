@@ -373,6 +373,7 @@
   .shape-controls .mini-swatch.selected { border-color: var(--blueprint); border-width: 2px; }
   .shape-controls .color-picker { width: 18px; height: 18px; border: none; background: none; padding: 0; cursor: pointer; }
   .shape-controls select { background: var(--ink); color: var(--paper-dim); border: 1px solid var(--line); border-radius: 2px; font-size: 11px; padding: 2px; }
+  .shape-controls .stroke-slider { width: 60px; accent-color: var(--blueprint); }
 
   .image-el img { width: 100%; height: 100%; display: block; pointer-events: none; }
 
@@ -416,6 +417,16 @@
     border-radius: 2px;
     font-size: 12px;
     padding: 3px 4px;
+  }
+  .draw-controls .stroke-slider {
+    width: 70px;
+    accent-color: var(--blueprint);
+  }
+  .draw-controls .stroke-val {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--paper-dim);
+    min-width: 26px;
   }
   .draw-controls button {
     font-size: 12px;
@@ -705,11 +716,8 @@
         <div class="mini-swatch" data-color="#6f97c9" style="background:#6f97c9"></div>
         <input type="color" id="drawColorPicker" class="color-picker" value="#c1502e" title="Custom color">
         <div class="draw-sep"></div>
-        <select class="stroke-select" id="strokeSelect">
-          <option value="1.5">Thin</option>
-          <option value="3" selected>Medium</option>
-          <option value="5">Thick</option>
-        </select>
+        <input type="range" class="stroke-slider" id="strokeSelect" min="0.5" max="10" step="0.5" value="3" title="Stroke width">
+        <span class="stroke-val" id="strokeVal">3pt</span>
         <div class="draw-sep"></div>
         <button type="button" id="clearDrawingBtn" data-i18n="edit_draw_clear">Clear</button>
         <button type="button" id="doneDrawingBtn" data-i18n="edit_draw_done">Done</button>
@@ -755,7 +763,7 @@
 </script>
 <script src="js/handoff.js?v=1"></script>
 <script src="js/quick-actions.js?v=2"></script>
-<script src="js/edit.js?v=21"></script>
+<script src="js/edit.js?v=22"></script>
 <script src="js/nav.js?v=13"></script>
 <script src="js/i18n.js?v=15"></script>
 </body>

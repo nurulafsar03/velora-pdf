@@ -15,6 +15,10 @@
   const drawControls = document.getElementById('drawControls');
   const drawColorPicker = document.getElementById('drawColorPicker');
   const strokeSelect = document.getElementById('strokeSelect');
+  const strokeVal = document.getElementById('strokeVal');
+  strokeSelect.addEventListener('input', () => {
+    strokeVal.textContent = `${strokeSelect.value}pt`;
+  });
   const clearDrawingBtn = document.getElementById('clearDrawingBtn');
   const doneDrawingBtn = document.getElementById('doneDrawingBtn');
   const shapeToolBtn = document.getElementById('shapeToolBtn');
@@ -1004,17 +1008,17 @@
     });
     controls.appendChild(colorPicker);
 
-    const strokeSel = document.createElement('select');
-    [['1.5', 'Thin'], ['3', 'Medium'], ['5', 'Thick']].forEach(([val, label]) => {
-      const opt = document.createElement('option');
-      opt.value = val;
-      opt.textContent = label;
-      if (parseFloat(val) === edit.strokeWidthPct) opt.selected = true;
-      strokeSel.appendChild(opt);
-    });
+    const strokeSel = document.createElement('input');
+    strokeSel.type = 'range';
+    strokeSel.min = '0.5';
+    strokeSel.max = '10';
+    strokeSel.step = '0.5';
+    strokeSel.value = String(edit.strokeWidthPct);
+    strokeSel.className = 'stroke-slider';
+    strokeSel.title = 'Stroke width';
     strokeSel.addEventListener('click', (e) => e.stopPropagation());
     strokeSel.addEventListener('mousedown', (e) => e.stopPropagation());
-    strokeSel.addEventListener('change', () => {
+    strokeSel.addEventListener('input', () => {
       edit.strokeWidthPct = parseFloat(strokeSel.value);
       el.replaceChild(buildShapeSvg(edit.shapeKind, edit.color, edit.strokeWidthPct * 6), el.querySelector('svg'));
     });

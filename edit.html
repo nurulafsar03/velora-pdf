@@ -258,6 +258,61 @@
   .whiteout-el:hover, .whiteout-el.active {
     border-color: var(--blueprint-dim);
   }
+
+  #drawToolBtn.toggled { border-color: var(--blueprint); color: var(--paper); background: rgba(111,151,201,0.12); }
+
+  .draw-overlay-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+    z-index: 3;
+  }
+  .draw-overlay-svg.interactive { cursor: crosshair; }
+
+  .draw-controls {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 6px 8px;
+    z-index: 6;
+    box-shadow: var(--shadow-card);
+  }
+  .draw-controls.active { display: flex; }
+  .draw-controls .mini-swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 1px solid var(--line);
+  }
+  .draw-controls .mini-swatch.selected { border-color: var(--paper); border-width: 2px; }
+  .draw-controls select.stroke-select {
+    background: var(--ink);
+    color: var(--paper-dim);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    font-size: 12px;
+    padding: 3px 4px;
+  }
+  .draw-controls button {
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 2px;
+    border: 1px solid var(--line);
+    background: var(--surface-hi);
+    color: var(--paper-dim);
+    cursor: pointer;
+  }
+  .draw-controls button:hover { color: var(--paper); }
+  .draw-controls .draw-sep { width: 1px; height: 18px; background: var(--line); }
   .whiteout-el .wo-controls {
     position: absolute;
     top: -32px;
@@ -508,13 +563,30 @@
     </div>
     <button class="btn btn-ghost" id="addTextBtn" data-i18n="edit_add_text_btn">+ Add text</button>
     <button class="btn btn-ghost" id="addWhiteoutBtn" data-i18n="edit_add_whiteout_btn">+ Add whiteout</button>
+    <button class="btn btn-ghost" id="drawToolBtn" data-i18n="edit_draw_btn">+ Draw</button>
     <button class="btn btn-ghost" id="changeFileBtn" data-i18n="edit_change_file">Use a different file</button>
   </div>
 
 <div class="quick-actions" id="quickActions"></div>
 
   <div class="workspace" id="workspace">
-    <div class="preview-canvas-wrap" id="previewWrap"></div>
+    <div class="preview-canvas-wrap" id="previewWrap">
+      <div class="draw-controls" id="drawControls">
+        <div class="mini-swatch selected" data-color="#c1502e" style="background:#c1502e"></div>
+        <div class="mini-swatch" data-color="#16140f" style="background:#16140f"></div>
+        <div class="mini-swatch" data-color="#6f97c9" style="background:#6f97c9"></div>
+        <input type="color" id="drawColorPicker" class="color-picker" value="#c1502e" title="Custom color">
+        <div class="draw-sep"></div>
+        <select class="stroke-select" id="strokeSelect">
+          <option value="0.3">Thin</option>
+          <option value="0.6" selected>Medium</option>
+          <option value="1.1">Thick</option>
+        </select>
+        <div class="draw-sep"></div>
+        <button type="button" id="clearDrawingBtn" data-i18n="edit_draw_clear">Clear</button>
+        <button type="button" id="doneDrawingBtn" data-i18n="edit_draw_done">Done</button>
+      </div>
+    </div>
 
     <div class="notes">
       <p data-i18n="edit_note_latin">Added text supports Latin characters only (standard PDF fonts).</p>
@@ -555,7 +627,7 @@
 </script>
 <script src="js/handoff.js?v=1"></script>
 <script src="js/quick-actions.js?v=2"></script>
-<script src="js/edit.js?v=16"></script>
+<script src="js/edit.js?v=17"></script>
 <script src="js/nav.js?v=13"></script>
 <script src="js/i18n.js?v=14"></script>
 </body>

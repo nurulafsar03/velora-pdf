@@ -11,6 +11,12 @@
   const nextPageBtn = document.getElementById('nextPageBtn');
   const addTextBtn = document.getElementById('addTextBtn');
   const addWhiteoutBtn = document.getElementById('addWhiteoutBtn');
+  const drawToolBtn = document.getElementById('drawToolBtn');
+  const drawControls = document.getElementById('drawControls');
+  const drawColorPicker = document.getElementById('drawColorPicker');
+  const strokeSelect = document.getElementById('strokeSelect');
+  const clearDrawingBtn = document.getElementById('clearDrawingBtn');
+  const doneDrawingBtn = document.getElementById('doneDrawingBtn');
   const changeFileBtn = document.getElementById('changeFileBtn');
   const workspace = document.getElementById('workspace');
   const previewWrap = document.getElementById('previewWrap');
@@ -82,6 +88,9 @@
   let edits = []; // { id, type, pageNum, xPct, yPct, widthPct, heightPct, text, color, fontSizePct }
   let idCounter = 0;
   let activeEl = null;
+  let drawMode = false;
+  let drawColor = '#c1502e';
+  let currentStroke = null; // { points: [] } while actively drawing
 
   function setStatus(msg) { statusText.textContent = msg; }
   function baseName(name) { return name.replace(/\.pdf$/i, ''); }
@@ -128,6 +137,7 @@
       previewWrap.innerHTML = '';
       previewWrap.style.minHeight = '';
       previewWrap.appendChild(canvas);
+      previewWrap.appendChild(drawControls);
       renderPageElements();
       addTextBtn.disabled = false;
       addWhiteoutBtn.disabled = false;
@@ -144,11 +154,163 @@
 
   function renderPageElements() {
     previewWrap.querySelectorAll('.edit-el').forEach((el) => el.remove());
+    previewWrap.querySelectorAll('.drawing-svg').forEach((el) => el.remove());
+
     edits.filter((e) => e.pageNum === currentPage).forEach((edit) => {
       if (edit.type === 'text') createTextDom(edit);
-      else createWhiteoutDom(edit);
+      else if (edit.type === 'whiteout') createWhiteoutDom(edit);
+      else if (edit.type === 'drawing') renderDrawingSvg(edit);
     });
   }
+
+  function findDrawingEdit(pageNum) {
+    return edits.find((e) => e.type === 'drawing' && e.pageNum === pageNum);
+  }
+
+  function strokeToPointsAttr(points) {
+    return points.map((p) => `${p.xPct},${p.yPct}`).join(' ');
+  }
+
+  function renderDrawingSvg(edit) {
+    const old = previewWrap.querySelector('.drawing-svg[data-static="1"]');
+    if (old) old.remove();
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', 'draw-overlay-svg drawing-svg');
+    svg.setAttribute('data-static', '1');
+    svg.setAttribute('viewBox', '0 0 100 100');
+    svg.setAttribute('preserveAspectRatio', 'none');
+    svg.style.pointerEvents = 'none';
+
+    edit.strokes.forEach((stroke) => {
+      if (stroke.points.length < 2) return;
+      const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+      poly.setAttribute('points', strokeToPointsAttr(stroke.points));
+      poly.setAttribute('fill', 'none');
+      poly.setAttribute('stroke', stroke.color);
+      poly.setAttribute('stroke-width', stroke.widthPct);
+      poly.setAttribute('stroke-linecap', 'round');
+      poly.setAttribute('stroke-linejoin', 'round');
+      poly.setAttribute('vector-effect', 'non-scaling-stroke');
+      svg.appendChild(poly);
+    });
+
+    previewWrap.insertBefore(svg, previewWrap.firstChild.nextSibling);
+  }
+
+  // ---- draw tool ----
+
+  let liveDrawSvg = null;
+  let liveDrawPoly = null;
+
+  function ensureLiveDrawSvg() {
+    if (liveDrawSvg) return;
+    liveDrawSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    liveDrawSvg.setAttribute('class', 'draw-overlay-svg interactive');
+    liveDrawSvg.setAttribute('viewBox', '0 0 100 100');
+    liveDrawSvg.setAttribute('preserveAspectRatio', 'none');
+    previewWrap.appendChild(liveDrawSvg);
+  }
+
+  function removeLiveDrawSvg() {
+    if (liveDrawSvg) {
+      liveDrawSvg.remove();
+      liveDrawSvg = null;
+    }
+  }
+
+  function pointFromEvent(e) {
+    const rect = previewWrap.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      xPct: Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100)),
+      yPct: Math.max(0, Math.min(100, ((clientY - rect.top) / rect.height) * 100)),
+    };
+  }
+
+  function startStroke(e) {
+    if (!drawMode || e.target.closest('#drawControls')) return;
+    e.preventDefault();
+    const strokeWidthPct = parseFloat(strokeSelect.value);
+    currentStroke = { color: drawColor, widthPct: strokeWidthPct, points: [pointFromEvent(e)] };
+    liveDrawPoly = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    liveDrawPoly.setAttribute('fill', 'none');
+    liveDrawPoly.setAttribute('stroke', drawColor);
+    liveDrawPoly.setAttribute('stroke-width', strokeWidthPct);
+    liveDrawPoly.setAttribute('stroke-linecap', 'round');
+    liveDrawPoly.setAttribute('stroke-linejoin', 'round');
+    liveDrawPoly.setAttribute('vector-effect', 'non-scaling-stroke');
+    liveDrawSvg.appendChild(liveDrawPoly);
+  }
+
+  function moveStroke(e) {
+    if (!drawMode || !currentStroke) return;
+    e.preventDefault();
+    currentStroke.points.push(pointFromEvent(e));
+    liveDrawPoly.setAttribute('points', strokeToPointsAttr(currentStroke.points));
+  }
+
+  function endStroke() {
+    if (!drawMode || !currentStroke) return;
+    if (currentStroke.points.length > 1) {
+      let drawingEdit = findDrawingEdit(currentPage);
+      if (!drawingEdit) {
+        drawingEdit = { id: newId(), type: 'drawing', pageNum: currentPage, strokes: [] };
+        edits.push(drawingEdit);
+      }
+      drawingEdit.strokes.push(currentStroke);
+    }
+    currentStroke = null;
+    liveDrawPoly = null;
+    if (liveDrawSvg) liveDrawSvg.innerHTML = '';
+    validateDownload();
+  }
+
+  drawToolBtn.addEventListener('click', () => {
+    drawMode = !drawMode;
+    drawToolBtn.classList.toggle('toggled', drawMode);
+    drawControls.classList.toggle('active', drawMode);
+    document.querySelectorAll('.edit-el').forEach((n) => { n.style.pointerEvents = drawMode ? 'none' : ''; });
+    if (drawMode) {
+      ensureLiveDrawSvg();
+    } else {
+      removeLiveDrawSvg();
+    }
+  });
+
+  doneDrawingBtn.addEventListener('click', () => {
+    drawMode = false;
+    drawToolBtn.classList.remove('toggled');
+    drawControls.classList.remove('active');
+    document.querySelectorAll('.edit-el').forEach((n) => { n.style.pointerEvents = ''; });
+    removeLiveDrawSvg();
+  });
+
+  clearDrawingBtn.addEventListener('click', () => {
+    edits = edits.filter((e) => !(e.type === 'drawing' && e.pageNum === currentPage));
+    renderPageElements();
+    validateDownload();
+  });
+
+  drawControls.querySelectorAll('.mini-swatch').forEach((sw) => {
+    sw.addEventListener('click', () => {
+      drawColor = sw.dataset.color;
+      drawControls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.toggle('selected', s === sw));
+      drawColorPicker.value = drawColor;
+    });
+  });
+  drawColorPicker.addEventListener('input', (e) => {
+    drawColor = e.target.value;
+    drawControls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.remove('selected'));
+  });
+
+  previewWrap.addEventListener('mousedown', startStroke);
+  previewWrap.addEventListener('mousemove', moveStroke);
+  window.addEventListener('mouseup', endStroke);
+  previewWrap.addEventListener('touchstart', startStroke, { passive: false });
+  previewWrap.addEventListener('touchmove', moveStroke, { passive: false });
+  window.addEventListener('touchend', endStroke);
 
   previewWrap.addEventListener('mousedown', (e) => {
     if (!e.target.closest('.edit-el')) {
@@ -737,7 +899,13 @@
     pdfDocProxy = null;
     pageCount = 0;
     edits = [];
+    drawMode = false;
+    currentStroke = null;
+    removeLiveDrawSvg();
+    drawToolBtn.classList.remove('toggled');
+    drawControls.classList.remove('active');
     previewWrap.innerHTML = '';
+    previewWrap.appendChild(drawControls);
     toolbar.classList.remove('active');
     workspace.classList.remove('active');
     actionsBar.classList.remove('active');
@@ -747,7 +915,7 @@
   // ---- download ----
 
   async function buildEditedPdf() {
-    const { PDFDocument, StandardFonts, rgb } = PDFLib;
+    const { PDFDocument, StandardFonts, rgb, LineCapStyle } = PDFLib;
     const pdfDoc = await PDFDocument.load(sourceArrayBuffer.slice(0));
     pdfDoc.registerFontkit(fontkit);
     const pages = pdfDoc.getPages();
@@ -840,6 +1008,22 @@
           const y = height - height * (edit.yPct / 100) - boxHeight;
           const { r, g, b } = hexToRgb(edit.color || '#ffffff');
           page.drawRectangle({ x, y, width: boxWidth, height: boxHeight, color: rgb(r, g, b) });
+        } else if (edit.type === 'drawing') {
+          edit.strokes.forEach((stroke) => {
+            const { r, g, b } = hexToRgb(stroke.color);
+            const thickness = width * (stroke.widthPct / 100);
+            for (let i = 0; i < stroke.points.length - 1; i++) {
+              const p1 = stroke.points[i];
+              const p2 = stroke.points[i + 1];
+              page.drawLine({
+                start: { x: width * (p1.xPct / 100), y: height - height * (p1.yPct / 100) },
+                end: { x: width * (p2.xPct / 100), y: height - height * (p2.yPct / 100) },
+                thickness,
+                color: rgb(r, g, b),
+                lineCap: LineCapStyle.Round,
+              });
+            }
+          });
         } else if (edit.type === 'text' && edit.text.trim()) {
           const fontSize = width * (edit.fontSizePct / 100);
           const { r, g, b } = hexToRgb(edit.color);

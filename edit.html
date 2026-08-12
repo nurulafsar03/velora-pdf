@@ -261,6 +261,99 @@
 
   #drawToolBtn.toggled { border-color: var(--blueprint); color: var(--paper); background: rgba(111,151,201,0.12); }
 
+  .shape-picker-wrap { position: relative; display: inline-block; }
+  .shape-picker-popover {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 10px;
+    box-shadow: var(--shadow-card);
+    z-index: 20;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    width: 150px;
+  }
+  .shape-picker-popover.active { display: grid; }
+  .shape-picker-popover button {
+    width: 44px;
+    height: 44px;
+    background: var(--surface-hi);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--paper-dim);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .shape-picker-popover button:hover { border-color: var(--blueprint-dim); color: var(--paper); }
+  .shape-picker-popover svg { width: 20px; height: 20px; }
+
+  .shape-el, .image-el {
+    cursor: grab;
+  }
+  .shape-el svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .shape-el .resize-handle, .image-el .resize-handle {
+    position: absolute;
+    right: -5px;
+    bottom: -5px;
+    width: 12px;
+    height: 12px;
+    background: var(--blueprint);
+    border-radius: 2px;
+    cursor: nwse-resize;
+  }
+  .shape-el .del-btn-box, .image-el .del-btn-box {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--stamp);
+    color: var(--ink);
+    border: none;
+    font-size: 12px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+  .shape-el:hover .del-btn-box, .image-el:hover .del-btn-box { display: flex; }
+
+  .shape-controls {
+    position: absolute;
+    top: -34px;
+    left: 0;
+    display: none;
+    align-items: center;
+    gap: 3px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 3px;
+    white-space: nowrap;
+    z-index: 5;
+  }
+  .shape-el:hover .shape-controls, .shape-el.active .shape-controls { display: flex; }
+  .shape-controls .mini-swatch {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 1px solid var(--line);
+  }
+  .shape-controls .mini-swatch.selected { border-color: var(--blueprint); border-width: 2px; }
+  .shape-controls .color-picker { width: 18px; height: 18px; border: none; background: none; padding: 0; cursor: pointer; }
+  .shape-controls select { background: var(--ink); color: var(--paper-dim); border: 1px solid var(--line); border-radius: 2px; font-size: 11px; padding: 2px; }
+
+  .image-el img { width: 100%; height: 100%; display: block; pointer-events: none; }
+
   .draw-overlay-svg {
     position: absolute;
     inset: 0;
@@ -564,6 +657,19 @@
     <button class="btn btn-ghost" id="addTextBtn" data-i18n="edit_add_text_btn">+ Add text</button>
     <button class="btn btn-ghost" id="addWhiteoutBtn" data-i18n="edit_add_whiteout_btn">+ Add whiteout</button>
     <button class="btn btn-ghost" id="drawToolBtn" data-i18n="edit_draw_btn">+ Draw</button>
+    <div class="shape-picker-wrap">
+      <button class="btn btn-ghost" id="shapeToolBtn" data-i18n="edit_shape_btn">+ Shape</button>
+      <div class="shape-picker-popover" id="shapePopover">
+        <button type="button" data-shape="rect" title="Rectangle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="1"/></svg></button>
+        <button type="button" data-shape="circle" title="Circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg></button>
+        <button type="button" data-shape="line" title="Line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="20" x2="20" y2="4"/></svg></button>
+        <button type="button" data-shape="arrow" title="Arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="20" x2="20" y2="4"/><path d="M11 4h9v9"/></svg></button>
+        <button type="button" data-shape="cross" title="Cross"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
+        <button type="button" data-shape="check" title="Check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 13l5 5 11-13"/></svg></button>
+      </div>
+    </div>
+    <button class="btn btn-ghost" id="imageToolBtn" data-i18n="edit_image_btn">+ Image</button>
+    <input type="file" id="imageInput" accept="image/png,image/jpeg" style="display:none">
     <button class="btn btn-ghost" id="changeFileBtn" data-i18n="edit_change_file">Use a different file</button>
   </div>
 
@@ -627,7 +733,7 @@
 </script>
 <script src="js/handoff.js?v=1"></script>
 <script src="js/quick-actions.js?v=2"></script>
-<script src="js/edit.js?v=17"></script>
+<script src="js/edit.js?v=18"></script>
 <script src="js/nav.js?v=13"></script>
 <script src="js/i18n.js?v=14"></script>
 </body>

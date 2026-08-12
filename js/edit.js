@@ -17,6 +17,10 @@
   const strokeSelect = document.getElementById('strokeSelect');
   const clearDrawingBtn = document.getElementById('clearDrawingBtn');
   const doneDrawingBtn = document.getElementById('doneDrawingBtn');
+  const shapeToolBtn = document.getElementById('shapeToolBtn');
+  const shapePopover = document.getElementById('shapePopover');
+  const imageToolBtn = document.getElementById('imageToolBtn');
+  const imageInput = document.getElementById('imageInput');
   const changeFileBtn = document.getElementById('changeFileBtn');
   const workspace = document.getElementById('workspace');
   const previewWrap = document.getElementById('previewWrap');
@@ -160,6 +164,8 @@
       if (edit.type === 'text') createTextDom(edit);
       else if (edit.type === 'whiteout') createWhiteoutDom(edit);
       else if (edit.type === 'drawing') renderDrawingSvg(edit);
+      else if (edit.type === 'shape') createShapeDom(edit);
+      else if (edit.type === 'image') createImageDom(edit);
     });
   }
 
@@ -779,6 +785,224 @@
     previewWrap.appendChild(el);
   }
 
+  // ---- shape rendering ----
+
+  const SHAPE_COLORS = ['#16140f', '#c1502e', '#6f97c9'];
+
+  function buildShapeSvg(shapeKind, color, strokeWidthPx) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 100 100');
+    svg.setAttribute('preserveAspectRatio', 'none');
+    const ns = 'http://www.w3.org/2000/svg';
+    const sw = strokeWidthPx;
+
+    function line(x1, y1, x2, y2) {
+      const l = document.createElementNS(ns, 'line');
+      l.setAttribute('x1', x1); l.setAttribute('y1', y1);
+      l.setAttribute('x2', x2); l.setAttribute('y2', y2);
+      l.setAttribute('stroke', color);
+      l.setAttribute('stroke-width', sw);
+      l.setAttribute('stroke-linecap', 'round');
+      l.setAttribute('vector-effect', 'non-scaling-stroke');
+      svg.appendChild(l);
+    }
+
+    if (shapeKind === 'rect') {
+      const r = document.createElementNS(ns, 'rect');
+      r.setAttribute('x', 3); r.setAttribute('y', 3);
+      r.setAttribute('width', 94); r.setAttribute('height', 94);
+      r.setAttribute('fill', 'none'); r.setAttribute('stroke', color);
+      r.setAttribute('stroke-width', sw); r.setAttribute('vector-effect', 'non-scaling-stroke');
+      svg.appendChild(r);
+    } else if (shapeKind === 'circle') {
+      const c = document.createElementNS(ns, 'ellipse');
+      c.setAttribute('cx', 50); c.setAttribute('cy', 50);
+      c.setAttribute('rx', 46); c.setAttribute('ry', 46);
+      c.setAttribute('fill', 'none'); c.setAttribute('stroke', color);
+      c.setAttribute('stroke-width', sw); c.setAttribute('vector-effect', 'non-scaling-stroke');
+      svg.appendChild(c);
+    } else if (shapeKind === 'line') {
+      line(5, 95, 95, 5);
+    } else if (shapeKind === 'arrow') {
+      line(5, 95, 92, 8);
+      line(92, 8, 72, 12);
+      line(92, 8, 88, 28);
+    } else if (shapeKind === 'cross') {
+      line(6, 6, 94, 94);
+      line(94, 6, 6, 94);
+    } else if (shapeKind === 'check') {
+      line(8, 55, 38, 85);
+      line(38, 85, 92, 12);
+    }
+
+    return svg;
+  }
+
+  function createShapeDom(edit) {
+    const el = document.createElement('div');
+    el.className = 'edit-el shape-el';
+    el.style.left = `${edit.xPct}%`;
+    el.style.top = `${edit.yPct}%`;
+    el.style.width = `${edit.widthPct}%`;
+    el.style.height = `${edit.heightPct}%`;
+
+    const strokePx = edit.strokeWidthPct * 6;
+    const svg = buildShapeSvg(edit.shapeKind, edit.color, strokePx);
+    el.appendChild(svg);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'del-btn-box';
+    delBtn.textContent = '✕';
+    delBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      edits = edits.filter((x) => x.id !== edit.id);
+      renderPageElements();
+      validateDownload();
+    });
+    el.appendChild(delBtn);
+
+    const controls = document.createElement('div');
+    controls.className = 'shape-controls';
+    SHAPE_COLORS.forEach((c) => {
+      const sw = document.createElement('span');
+      sw.className = 'mini-swatch' + (c === edit.color ? ' selected' : '');
+      sw.style.background = c;
+      sw.addEventListener('click', (e) => {
+        e.stopPropagation();
+        edit.color = c;
+        el.replaceChild(buildShapeSvg(edit.shapeKind, edit.color, edit.strokeWidthPct * 6), el.querySelector('svg'));
+        controls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.toggle('selected', s === sw));
+        colorPicker.value = c;
+      });
+      controls.appendChild(sw);
+    });
+    const colorPicker = document.createElement('input');
+    colorPicker.type = 'color';
+    colorPicker.className = 'color-picker';
+    colorPicker.value = edit.color;
+    colorPicker.addEventListener('click', (e) => e.stopPropagation());
+    colorPicker.addEventListener('mousedown', (e) => e.stopPropagation());
+    colorPicker.addEventListener('input', (e) => {
+      edit.color = e.target.value;
+      el.replaceChild(buildShapeSvg(edit.shapeKind, edit.color, edit.strokeWidthPct * 6), el.querySelector('svg'));
+      controls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.remove('selected'));
+    });
+    controls.appendChild(colorPicker);
+
+    const strokeSel = document.createElement('select');
+    [['0.3', 'Thin'], ['0.6', 'Medium'], ['1.1', 'Thick']].forEach(([val, label]) => {
+      const opt = document.createElement('option');
+      opt.value = val;
+      opt.textContent = label;
+      if (parseFloat(val) === edit.strokeWidthPct) opt.selected = true;
+      strokeSel.appendChild(opt);
+    });
+    strokeSel.addEventListener('click', (e) => e.stopPropagation());
+    strokeSel.addEventListener('mousedown', (e) => e.stopPropagation());
+    strokeSel.addEventListener('change', () => {
+      edit.strokeWidthPct = parseFloat(strokeSel.value);
+      el.replaceChild(buildShapeSvg(edit.shapeKind, edit.color, edit.strokeWidthPct * 6), el.querySelector('svg'));
+    });
+    controls.appendChild(strokeSel);
+    el.appendChild(controls);
+
+    const handle = document.createElement('div');
+    handle.className = 'resize-handle';
+    el.appendChild(handle);
+
+    wireDrag(el, edit, () => {
+      el.style.left = `${edit.xPct}%`;
+      el.style.top = `${edit.yPct}%`;
+    });
+
+    let resizing = false;
+    handle.addEventListener('mousedown', (e) => { resizing = true; e.stopPropagation(); e.preventDefault(); });
+    handle.addEventListener('touchstart', (e) => { resizing = true; e.stopPropagation(); e.preventDefault(); }, { passive: false });
+    window.addEventListener('mousemove', (e) => {
+      if (!resizing) return;
+      const rect = previewWrap.getBoundingClientRect();
+      edit.widthPct = Math.max(3, ((e.clientX - rect.left) / rect.width) * 100 - edit.xPct);
+      edit.heightPct = Math.max(3, ((e.clientY - rect.top) / rect.height) * 100 - edit.yPct);
+      el.style.width = `${edit.widthPct}%`;
+      el.style.height = `${edit.heightPct}%`;
+    });
+    window.addEventListener('touchmove', (e) => {
+      if (!resizing) return;
+      const rect = previewWrap.getBoundingClientRect();
+      const t = e.touches[0];
+      edit.widthPct = Math.max(3, ((t.clientX - rect.left) / rect.width) * 100 - edit.xPct);
+      edit.heightPct = Math.max(3, ((t.clientY - rect.top) / rect.height) * 100 - edit.yPct);
+      el.style.width = `${edit.widthPct}%`;
+      el.style.height = `${edit.heightPct}%`;
+    }, { passive: false });
+    window.addEventListener('mouseup', () => { resizing = false; });
+    window.addEventListener('touchend', () => { resizing = false; });
+
+    previewWrap.appendChild(el);
+  }
+
+  // ---- image rendering ----
+
+  function createImageDom(edit) {
+    const el = document.createElement('div');
+    el.className = 'edit-el image-el';
+    el.style.left = `${edit.xPct}%`;
+    el.style.top = `${edit.yPct}%`;
+    el.style.width = `${edit.widthPct}%`;
+    el.style.height = `${edit.heightPct}%`;
+
+    const img = document.createElement('img');
+    img.src = edit.dataUrl;
+    el.appendChild(img);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'del-btn-box';
+    delBtn.textContent = '✕';
+    delBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      edits = edits.filter((x) => x.id !== edit.id);
+      renderPageElements();
+      validateDownload();
+    });
+    el.appendChild(delBtn);
+
+    const handle = document.createElement('div');
+    handle.className = 'resize-handle';
+    el.appendChild(handle);
+
+    wireDrag(el, edit, () => {
+      el.style.left = `${edit.xPct}%`;
+      el.style.top = `${edit.yPct}%`;
+    });
+
+    let resizing = false;
+    handle.addEventListener('mousedown', (e) => { resizing = true; e.stopPropagation(); e.preventDefault(); });
+    handle.addEventListener('touchstart', (e) => { resizing = true; e.stopPropagation(); e.preventDefault(); }, { passive: false });
+    window.addEventListener('mousemove', (e) => {
+      if (!resizing) return;
+      const rect = previewWrap.getBoundingClientRect();
+      const newWidthPct = Math.max(3, ((e.clientX - rect.left) / rect.width) * 100 - edit.xPct);
+      edit.widthPct = newWidthPct;
+      edit.heightPct = newWidthPct * (edit.naturalH / edit.naturalW) * (rect.width / rect.height);
+      el.style.width = `${edit.widthPct}%`;
+      el.style.height = `${edit.heightPct}%`;
+    });
+    window.addEventListener('touchmove', (e) => {
+      if (!resizing) return;
+      const rect = previewWrap.getBoundingClientRect();
+      const t = e.touches[0];
+      const newWidthPct = Math.max(3, ((t.clientX - rect.left) / rect.width) * 100 - edit.xPct);
+      edit.widthPct = newWidthPct;
+      edit.heightPct = newWidthPct * (edit.naturalH / edit.naturalW) * (rect.width / rect.height);
+      el.style.width = `${edit.widthPct}%`;
+      el.style.height = `${edit.heightPct}%`;
+    }, { passive: false });
+    window.addEventListener('mouseup', () => { resizing = false; });
+    window.addEventListener('touchend', () => { resizing = false; });
+
+    previewWrap.appendChild(el);
+  }
+
   // ---- toolbar actions ----
 
   addTextBtn.addEventListener('click', () => {
@@ -812,6 +1036,77 @@
       color: '#ffffff',
       baseColor: '#ffffff',
       colorAdjust: 0,
+    };
+    edits.push(edit);
+    renderPageElements();
+    validateDownload();
+  });
+
+  // ---- shape tool ----
+
+  shapeToolBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    shapePopover.classList.toggle('active');
+  });
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.shape-picker-wrap')) shapePopover.classList.remove('active');
+  });
+  shapePopover.querySelectorAll('button[data-shape]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const kind = btn.dataset.shape;
+      const edit = {
+        id: newId(),
+        type: 'shape',
+        shapeKind: kind,
+        pageNum: currentPage,
+        xPct: 25,
+        yPct: 25,
+        widthPct: 25,
+        heightPct: kind === 'line' || kind === 'arrow' ? 15 : 20,
+        color: SHAPE_COLORS[0],
+        strokeWidthPct: 0.6,
+      };
+      edits.push(edit);
+      renderPageElements();
+      validateDownload();
+      shapePopover.classList.remove('active');
+    });
+  });
+
+  // ---- image tool ----
+
+  imageToolBtn.addEventListener('click', () => imageInput.click());
+  imageInput.addEventListener('change', async () => {
+    const file = imageInput.files[0];
+    imageInput.value = '';
+    if (!file) return;
+
+    const arrayBuffer = await file.arrayBuffer();
+    const dataUrl = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.readAsDataURL(file);
+    });
+    const dims = await new Promise((resolve) => {
+      const im = new Image();
+      im.onload = () => resolve({ w: im.width, h: im.height });
+      im.src = dataUrl;
+    });
+
+    const heightPct = 25 * (dims.h / dims.w) * (previewWrap.clientWidth / previewWrap.clientHeight);
+    const edit = {
+      id: newId(),
+      type: 'image',
+      pageNum: currentPage,
+      xPct: 25,
+      yPct: 25,
+      widthPct: 25,
+      heightPct: heightPct || 20,
+      dataUrl,
+      arrayBuffer,
+      imgType: file.type === 'image/png' ? 'png' : 'jpg',
+      naturalW: dims.w,
+      naturalH: dims.h,
     };
     edits.push(edit);
     renderPageElements();
@@ -1008,6 +1303,52 @@
           const y = height - height * (edit.yPct / 100) - boxHeight;
           const { r, g, b } = hexToRgb(edit.color || '#ffffff');
           page.drawRectangle({ x, y, width: boxWidth, height: boxHeight, color: rgb(r, g, b) });
+        } else if (edit.type === 'shape') {
+          const { r, g, b } = hexToRgb(edit.color);
+          const thickness = width * (edit.strokeWidthPct / 100);
+          const bx = width * (edit.xPct / 100);
+          const bw = width * (edit.widthPct / 100);
+          const by = height - height * (edit.yPct / 100) - height * (edit.heightPct / 100);
+          const bh = height * (edit.heightPct / 100);
+
+          // Map the 0-100 local shape coordinates (see buildShapeSvg) into
+          // this box's absolute PDF coordinates (PDF y-axis points up).
+          const px = (lx) => bx + (lx / 100) * bw;
+          const py = (ly) => by + bh - (ly / 100) * bh;
+          const seg = (x1, y1, x2, y2) => page.drawLine({
+            start: { x: px(x1), y: py(y1) },
+            end: { x: px(x2), y: py(y2) },
+            thickness,
+            color: rgb(r, g, b),
+            lineCap: LineCapStyle.Round,
+          });
+
+          if (edit.shapeKind === 'rect') {
+            page.drawRectangle({ x: bx, y: by, width: bw, height: bh, borderColor: rgb(r, g, b), borderWidth: thickness });
+          } else if (edit.shapeKind === 'circle') {
+            page.drawEllipse({ x: bx + bw / 2, y: by + bh / 2, xScale: bw / 2, yScale: bh / 2, borderColor: rgb(r, g, b), borderWidth: thickness });
+          } else if (edit.shapeKind === 'line') {
+            seg(5, 95, 95, 5);
+          } else if (edit.shapeKind === 'arrow') {
+            seg(5, 95, 92, 8);
+            seg(92, 8, 72, 12);
+            seg(92, 8, 88, 28);
+          } else if (edit.shapeKind === 'cross') {
+            seg(6, 6, 94, 94);
+            seg(94, 6, 6, 94);
+          } else if (edit.shapeKind === 'check') {
+            seg(8, 55, 38, 85);
+            seg(38, 85, 92, 12);
+          }
+        } else if (edit.type === 'image') {
+          const embedded = edit.imgType === 'png'
+            ? await pdfDoc.embedPng(edit.arrayBuffer)
+            : await pdfDoc.embedJpg(edit.arrayBuffer);
+          const bx = width * (edit.xPct / 100);
+          const bw = width * (edit.widthPct / 100);
+          const bh = height * (edit.heightPct / 100);
+          const by = height - height * (edit.yPct / 100) - bh;
+          page.drawImage(embedded, { x: bx, y: by, width: bw, height: bh });
         } else if (edit.type === 'drawing') {
           edit.strokes.forEach((stroke) => {
             const { r, g, b } = hexToRgb(stroke.color);

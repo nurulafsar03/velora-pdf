@@ -157,6 +157,10 @@
             <a href="compress.html" data-i18n="home_tool_compress_title">Compress PDF</a>
             <a href="img2pdf.html" data-i18n="home_tool_img2pdf_title">Image to PDF</a>
             <a href="pdf2jpg.html" data-i18n="home_tool_pdf2jpg_title">PDF to JPG</a>
+            <a href="txt2pdf.html" data-i18n="home_tool_txt2pdf_title">TXT to PDF</a>
+            <a href="pdf2pptx.html" data-i18n="home_tool_pdf2pptx_title">PDF to PowerPoint</a>
+            <a href="xlsx2pdf.html" data-i18n="home_tool_xlsx2pdf_title">Excel to PDF</a>
+            <a href="pdf2xlsx.html" data-i18n="home_tool_pdf2xlsx_title">PDF to Excel</a>
           </div>
         </div>
       </div>
@@ -192,6 +196,11 @@
     <button class="btn btn-ghost" id="changeFileBtn" data-i18n="pdf2jpg_change_file">Use a different file</button>
   </div>
 
+  <div class="quality-group" id="formatGroup">
+    <div class="quality-option selected" data-format="jpg">JPG</div>
+    <div class="quality-option" data-format="png">PNG</div>
+  </div>
+
   <div class="quality-group" id="qualityGroup">
     <div class="quality-option selected" data-quality="standard" data-i18n="pdf2jpg_quality_standard">Standard</div>
     <div class="quality-option" data-quality="high" data-i18n="pdf2jpg_quality_high">High resolution</div>
@@ -220,7 +229,7 @@
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 </script>
 <script src="js/handoff.js?v=1"></script>
-<script src="js/quick-actions.js?v=2"></script>
+<script src="js/quick-actions.js?v=3"></script>
 <script src="js/pdf2jpg.js?v=13"></script>
 <script src="js/nav.js?v=13"></script>
 <script src="js/i18n.js?v=16"></script>

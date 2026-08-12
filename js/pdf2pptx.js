@@ -5,49 +5,25 @@
   const fileInput = document.getElementById('fileInput');
   const toolbar = document.getElementById('toolbar');
   const docNameEl = document.getElementById('docName');
-  const qualityGroup = document.getElementById('qualityGroup');
-  const formatGroup = document.getElementById('formatGroup');
+  const changeFileBtn = document.getElementById('changeFileBtn');
   const pageGrid = document.getElementById('pageGrid');
   const actionsBar = document.getElementById('actionsBar');
   const downloadBtn = document.getElementById('downloadBtn');
   const statusText = document.getElementById('statusText');
-  const changeFileBtn = document.getElementById('changeFileBtn');
-
-  const QUALITY = {
-    standard: { scale: 1.2, jpegQuality: 0.85 },
-    high: { scale: 2.2, jpegQuality: 0.92 },
-  };
+  const quickActions = document.getElementById('quickActions');
 
   let pdfDocProxy = null;
   let sourceFileName = 'document';
   let sourceArrayBuffer = null;
   let pageCount = 0;
-  let currentQuality = 'standard';
-  let currentFormat = 'jpg';
 
   function setStatus(msg) { statusText.textContent = msg; }
   function baseName(name) { return name.replace(/\.pdf$/i, ''); }
-
-  formatGroup.querySelectorAll('.quality-option').forEach((opt) => {
-    opt.addEventListener('click', () => {
-      currentFormat = opt.dataset.format;
-      formatGroup.querySelectorAll('.quality-option').forEach((o) => o.classList.toggle('selected', o === opt));
-    });
-  });
-
-  qualityGroup.querySelectorAll('.quality-option').forEach((opt) => {
-    opt.addEventListener('click', () => {
-      currentQuality = opt.dataset.quality;
-      qualityGroup.querySelectorAll('.quality-option').forEach((o) => o.classList.toggle('selected', o === opt));
-      if (pdfDocProxy) renderThumbnails();
-    });
-  });
 
   async function renderThumbnails() {
     pageGrid.innerHTML = '';
     for (let i = 1; i <= pageCount; i++) {
       const page = await pdfDocProxy.getPage(i);
-      // thumbnails always render small regardless of the chosen export quality
       const thumbViewport = page.getViewport({ scale: 0.3 });
       const canvas = document.createElement('canvas');
       canvas.width = thumbViewport.width;
@@ -59,10 +35,54 @@
       card.appendChild(canvas);
       const label = document.createElement('div');
       label.className = 'page-num';
-      label.textContent = `Page ${i}`;
+      label.textContent = `Slide ${i}`;
       card.appendChild(label);
       pageGrid.appendChild(card);
     }
+  }
+
+  async function buildPptxBlob() {
+    const pptx = new window.PptxGenJS();
+    const MAX_DIM = 2200;
+
+    const firstPage = await pdfDocProxy.getPage(1);
+    const firstViewport = firstPage.getViewport({ scale: 1 });
+    const widthIn = firstViewport.width / 72;
+    const heightIn = firstViewport.height / 72;
+    pptx.defineLayout({ name: 'PDF_LAYOUT', width: widthIn, height: heightIn });
+    pptx.layout = 'PDF_LAYOUT';
+
+    for (let i = 1; i <= pageCount; i++) {
+      const page = await pdfDocProxy.getPage(i);
+      const baseViewport = page.getViewport({ scale: 1 });
+      const longEdge = Math.max(baseViewport.width, baseViewport.height);
+      const scale = Math.min(2, MAX_DIM / longEdge);
+      const viewport = page.getViewport({ scale });
+
+      const canvas = document.createElement('canvas');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      await page.render({ canvasContext: ctx, viewport }).promise;
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+
+      // Fit this page's own image into the fixed presentation-wide slide
+      // size, centered, in case a later page has a different aspect ratio.
+      const pageWidthIn = baseViewport.width / 72;
+      const pageHeightIn = baseViewport.height / 72;
+      const fitScale = Math.min(widthIn / pageWidthIn, heightIn / pageHeightIn);
+      const drawW = pageWidthIn * fitScale;
+      const drawH = pageHeightIn * fitScale;
+      const offsetX = (widthIn - drawW) / 2;
+      const offsetY = (heightIn - drawH) / 2;
+
+      const slide = pptx.addSlide();
+      slide.addImage({ data: dataUrl, x: offsetX, y: offsetY, w: drawW, h: drawH });
+    }
+
+    return pptx.write({ outputType: 'blob' });
   }
 
   async function loadFile(file) {
@@ -78,12 +98,13 @@
 
     docNameEl.textContent = `${file.name} · ${pageCount} pages`;
     toolbar.classList.add('active');
-    window.VeloraQuickActions.render(document.getElementById('quickActions'), 'pdf2jpg.html', () => sourceArrayBuffer, () => sourceFileName);
     actionsBar.classList.add('active');
     downloadBtn.disabled = false;
 
+    window.VeloraQuickActions.render(quickActions, 'pdf2pptx.html', () => sourceArrayBuffer, () => sourceFileName);
+
     await renderThumbnails();
-    setStatus('choose a quality, then export');
+    setStatus('ready to convert');
   }
 
   fileInput.addEventListener('change', () => {
@@ -92,16 +113,10 @@
   });
 
   ['dragenter', 'dragover'].forEach((evt) =>
-    dropzone.addEventListener(evt, (e) => {
-      e.preventDefault();
-      dropzone.classList.add('drag-over');
-    })
+    dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.add('drag-over'); })
   );
   ['dragleave', 'drop'].forEach((evt) =>
-    dropzone.addEventListener(evt, (e) => {
-      e.preventDefault();
-      dropzone.classList.remove('drag-over');
-    })
+    dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.remove('drag-over'); })
   );
   dropzone.addEventListener('drop', (e) => {
     const file = Array.from(e.dataTransfer.files || []).find(
@@ -111,7 +126,7 @@
   });
 
   changeFileBtn.addEventListener('click', () => {
-    window.VeloraQuickActions.hide(document.getElementById('quickActions'));
+    window.VeloraQuickActions.hide(quickActions);
     pdfDocProxy = null;
     pageCount = 0;
     pageGrid.innerHTML = '';
@@ -123,45 +138,21 @@
   downloadBtn.addEventListener('click', async () => {
     if (!pdfDocProxy) return;
     downloadBtn.disabled = true;
-    const { scale, jpegQuality } = QUALITY[currentQuality];
-    const zip = new JSZip();
-
+    setStatus('building PowerPoint — this can take a moment for large PDFs…');
     try {
-      for (let i = 1; i <= pageCount; i++) {
-        setStatus(`exporting page ${i} of ${pageCount}…`);
-        const page = await pdfDocProxy.getPage(i);
-        const viewport = page.getViewport({ scale });
-        const canvas = document.createElement('canvas');
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        await page.render({ canvasContext: ctx, viewport }).promise;
-
-        const mime = currentFormat === 'png' ? 'image/png' : 'image/jpeg';
-        const ext = currentFormat === 'png' ? 'png' : 'jpg';
-        const dataUrl = currentFormat === 'png' ? canvas.toDataURL(mime) : canvas.toDataURL(mime, jpegQuality);
-        const base64 = dataUrl.split(',')[1];
-        const pageNumPadded = String(i).padStart(String(pageCount).length, '0');
-        zip.file(`${baseName(sourceFileName)}-page-${pageNumPadded}.${ext}`, base64, { base64: true });
-      }
-
-      setStatus('packaging zip…');
-      const zipBlob = await zip.generateAsync({ type: 'blob' });
-      const url = URL.createObjectURL(zipBlob);
+      const blob = await buildPptxBlob();
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${baseName(sourceFileName)}-jpg.zip`;
+      a.download = `${baseName(sourceFileName)}.pptx`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-
-      setStatus('done — zip downloaded');
+      setStatus('done — PowerPoint downloaded');
     } catch (err) {
       console.error(err);
-      setStatus('export failed — check the console');
+      setStatus('conversion failed — check the console');
     } finally {
       downloadBtn.disabled = false;
     }

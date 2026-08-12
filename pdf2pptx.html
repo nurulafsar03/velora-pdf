@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title data-i18n="about_title">About — VeloraPDF</title>
-<meta name="description" content="Why VeloraPDF processes every file in your browser and never on a server.">
+<title data-i18n="pdf2pptx_title">PDF to PowerPoint — VeloraPDF</title>
+<meta name="description" content="Turn each PDF page into a PowerPoint slide, entirely in your browser.">
 <link rel="icon" href="/favicon.ico?v=2" sizes="any">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
@@ -12,35 +12,30 @@
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=2">
 <link rel="stylesheet" href="css/style.css">
 <style>
-  .page-header { padding: 40px 0 8px; }
-  .page-header h1 {
-    font-family: var(--font-display);
-    font-size: 34px;
-    font-weight: 500;
-    margin: 0 0 8px;
-  }
-  .prose { max-width: 62ch; padding-bottom: 90px; }
-  .prose p { color: var(--paper-dim); line-height: 1.7; font-size: 15px; margin: 0 0 18px; }
-  .prose h2 {
-    font-family: var(--font-display);
-    font-size: 20px;
-    font-weight: 500;
-    margin: 34px 0 12px;
-    color: var(--paper);
-  }
-  .prose .stamp-line {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--stamp);
-    margin: 0 0 24px;
-  }
+  .tool-header { padding: 40px 0 8px; }
+  .tool-header h1 { font-family: var(--font-display); font-size: 34px; font-weight: 500; margin: 0 0 8px; }
+  .tool-header p { color: var(--paper-dim); margin: 0 0 32px; font-size: 15px; border-left: 2px solid var(--blueprint-dim); padding-left: 14px; }
+  .dropzone { border: 1.5px dashed var(--line); border-radius: var(--radius); padding: 48px 24px; text-align: center; color: var(--mist); cursor: pointer; transition: border-color 0.2s ease, background 0.2s ease; }
+  .dropzone.drag-over { border-color: var(--blueprint); background: rgba(111, 151, 201, 0.06); color: var(--paper); }
+  .dropzone .dz-title { font-family: var(--font-display); font-size: 18px; color: var(--paper); margin-bottom: 6px; }
+  .dropzone .dz-sub { font-size: 13px; font-family: var(--font-mono); }
+  .dropzone input { display: none; }
+  .toolbar { display: none; align-items: center; gap: 14px; padding: 22px 0 6px; flex-wrap: wrap; }
+  .toolbar.active { display: flex; }
+  .toolbar .doc-name { font-family: var(--font-mono); font-size: 12px; color: var(--paper-dim); border: 1px solid var(--line); padding: 6px 10px; border-radius: var(--radius); }
+  .page-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; margin: 20px 0; }
+  .page-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; }
+  .page-card canvas { width: 100%; height: 100px; object-fit: cover; background: var(--paper); border-radius: 2px; display: block; margin-bottom: 8px; }
+  .page-card .page-num { font-family: var(--font-mono); font-size: 11px; color: var(--mist); text-align: center; }
+  .actions-bar { display: none; align-items: center; gap: 14px; padding: 20px 0 80px; border-top: 1px solid var(--line); margin-top: 8px; }
+  .actions-bar.active { display: flex; }
+  .status-text { font-family: var(--font-mono); font-size: 12px; color: var(--mist); }
   .back-link { display: inline-block; font-size: 13px; color: var(--mist); margin-bottom: 4px; }
   .back-link:hover { color: var(--blueprint); }
 </style>
 </head>
 <body>
 <div class="top-accent" aria-hidden="true"></div>
-
 <div class="wrap">
   <header class="site">
     <a class="brand" href="index.html"><img src="assets/logo-mark-light.svg" width="30" height="30" alt="" class="brand-icon"><span class="brand-text">velorapdf<span class="brand-tld">.online</span></span></a>
@@ -78,7 +73,6 @@
           </div>
         </div>
       </div>
-
       <div class="nav-dropdown">
         <button class="nav-dropdown-btn" type="button" aria-haspopup="true" aria-expanded="false">
           <span data-i18n="nav_more">More</span>
@@ -93,46 +87,30 @@
     </nav>
   </header>
 
-  <div class="page-header">
-    <a class="back-link" href="index.html" data-i18n="about_back">&larr; Back home</a>
-    <h1 data-i18n="about_title">Why this exists</h1>
+  <div class="tool-header">
+    <a class="back-link" href="index.html" data-i18n="pdf2pptx_back">&larr; Back to tools</a>
+    <h1 data-i18n="pdf2pptx_title">PDF to PowerPoint</h1>
+    <p data-i18n="pdf2pptx_subtitle">Turn each PDF page into a slide, ready to present or edit.</p>
   </div>
 
-  <div class="prose">
-    <p class="stamp-line" data-i18n="about_tag">PART OF THE VELORA TOOLKIT</p>
+  <label class="dropzone" id="dropzone">
+    <div class="dz-title" data-i18n="pdf2pptx_dz_title">Drop a PDF here, or click to browse</div>
+    <div class="dz-sub" data-i18n="pdf2pptx_dz_sub">one file at a time &middot; nothing is uploaded</div>
+    <input type="file" id="fileInput" accept="application/pdf">
+  </label>
 
-    <p class="lede-para" data-i18n="about_p1">
-      Most free PDF tools work the same way: you upload your file to someone
-      else's server, it gets processed, and you download the result. That's
-      fine for a public flyer. It's a bad trade for a contract, a payslip,
-      or a scanned ID.
-    </p>
+  <div class="toolbar" id="toolbar">
+    <span class="doc-name" id="docName"></span>
+    <button class="btn btn-ghost" id="changeFileBtn" data-i18n="pdf2pptx_change_file">Use a different file</button>
+  </div>
 
-    <p data-i18n="about_p2">
-      VeloraPDF does the same jobs — merge, split, rotate, compress — but
-      the file never leaves your browser tab. The PDF is read, edited, and
-      rebuilt entirely on your device using open-source libraries that run
-      in JavaScript, the same way a spreadsheet formula runs locally in
-      your browser. Close the tab, and nothing of your file remains
-      anywhere but your own downloads folder.
-    </p>
+  <div class="quick-actions" id="quickActions"></div>
 
-    <h2 data-i18n="about_h2_1">What "client-side" actually means here</h2>
-    <p data-i18n="about_p3">
-      When you pick a file, it's read directly from your disk into the
-      page's memory. The merge, rotate, or compress operation happens in
-      that memory. The result is offered back to you as a download. At no
-      point does the file's content get sent over the network to us or
-      anyone else.
-    </p>
+  <div class="page-grid" id="pageGrid"></div>
 
-    <h2 data-i18n="about_h2_2">Where this fits</h2>
-    <p class="callout" data-i18n="about_p4">
-      VeloraPDF is the second tool in the Velora toolkit, after
-      VeloraGif, a browser-based GIF and image editor built on the same
-      principle. Both exist because everyday file editing shouldn't require
-      trusting a stranger's server with your documents.
-    </p>
+  <div class="actions-bar" id="actionsBar">
+    <button class="btn btn-primary" id="downloadBtn" data-i18n="pdf2pptx_download_btn" disabled>Convert to PowerPoint</button>
+    <span class="status-text" id="statusText"></span>
   </div>
 
   <footer class="site">
@@ -143,6 +121,15 @@
   </footer>
 </div>
 
+<script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+</script>
+<script src="https://unpkg.com/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://unpkg.com/pptxgenjs@4.0.1/dist/pptxgen.min.js"></script>
+<script src="js/handoff.js?v=1"></script>
+<script src="js/quick-actions.js?v=3"></script>
+<script src="js/pdf2pptx.js?v=1"></script>
 <script src="js/nav.js?v=13"></script>
 <script src="js/i18n.js?v=16"></script>
 </body>

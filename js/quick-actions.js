@@ -18,6 +18,8 @@ window.VeloraQuickActions = (() => {
     { url: 'sign.html', labelKey: 'home_tool_sign_title', fallback: 'Sign PDF' },
     { url: 'compress.html', labelKey: 'home_tool_compress_title', fallback: 'Compress PDF' },
     { url: 'pdf2jpg.html', labelKey: 'home_tool_pdf2jpg_title', fallback: 'PDF to JPG' },
+    { url: 'pdf2pptx.html', labelKey: 'home_tool_pdf2pptx_title', fallback: 'PDF to PowerPoint' },
+    { url: 'pdf2xlsx.html', labelKey: 'home_tool_pdf2xlsx_title', fallback: 'PDF to Excel' },
   ];
 
   function render(containerEl, selfUrl, getArrayBuffer, getFileName) {

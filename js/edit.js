@@ -270,6 +270,7 @@
         edits.push(drawingEdit);
       }
       drawingEdit.strokes.push(currentStroke);
+      renderDrawingSvg(drawingEdit);
     }
     currentStroke = null;
     liveDrawPoly = null;

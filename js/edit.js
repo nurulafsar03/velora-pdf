@@ -1005,7 +1005,7 @@
     controls.appendChild(colorPicker);
 
     const strokeSel = document.createElement('select');
-    [['0.3', 'Thin'], ['0.6', 'Medium'], ['1.1', 'Thick']].forEach(([val, label]) => {
+    [['1.5', 'Thin'], ['3', 'Medium'], ['5', 'Thick']].forEach(([val, label]) => {
       const opt = document.createElement('option');
       opt.value = val;
       opt.textContent = label;
@@ -1138,7 +1138,7 @@
         widthPct: 25,
         heightPct: kind === 'line' || kind === 'arrow' ? 15 : 20,
         color: SHAPE_COLORS[0],
-        strokeWidthPct: 0.6,
+        strokeWidthPct: 3,
         rotation: 0,
       };
       edits.push(edit);
@@ -1381,7 +1381,7 @@
           page.drawRectangle({ x, y, width: boxWidth, height: boxHeight, color: rgb(r, g, b) });
         } else if (edit.type === 'shape') {
           const { r, g, b } = hexToRgb(edit.color);
-          const thickness = width * (edit.strokeWidthPct / 100);
+          const thickness = edit.strokeWidthPct;
           const bx = width * (edit.xPct / 100);
           const bw = width * (edit.widthPct / 100);
           const by = height - height * (edit.yPct / 100) - height * (edit.heightPct / 100);
@@ -1432,7 +1432,7 @@
         } else if (edit.type === 'drawing') {
           edit.strokes.forEach((stroke) => {
             const { r, g, b } = hexToRgb(stroke.color);
-            const thickness = width * (stroke.widthPct / 100);
+            const thickness = stroke.widthPct;
             for (let i = 0; i < stroke.points.length - 1; i++) {
               const p1 = stroke.points[i];
               const p2 = stroke.points[i + 1];

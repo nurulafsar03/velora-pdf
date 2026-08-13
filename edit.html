@@ -132,8 +132,28 @@
   }
   .toolbar .page-nav span { font-family: var(--font-mono); font-size: 12px; color: var(--mist); }
 
+  .zoom-controls { display: flex; align-items: center; gap: 6px; }
+  .zoom-controls .zoom-btn { padding: 6px 11px; font-size: 14px; line-height: 1; }
+  .zoom-controls .zoom-pct {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--paper-dim);
+    min-width: 38px;
+    text-align: center;
+  }
+
   .workspace { display: none; }
   .workspace.active { display: block; }
+
+  /* Widen the shared page shell on this tool page only, so the PDF
+     preview can use more of the screen on wide monitors. */
+  .wrap { max-width: 1400px; }
+
+  .preview-scroll {
+    overflow-x: auto;
+    overflow-y: visible;
+    padding-bottom: 6px;
+  }
 
   .preview-canvas-wrap {
     background: var(--paper);
@@ -142,7 +162,7 @@
     position: relative;
     overflow: hidden;
     user-select: none;
-    max-width: 720px;
+    width: 100%;
     min-height: 120px;
   }
   .btn-ghost:disabled {
@@ -352,6 +372,24 @@
     z-index: 2;
   }
   .shape-el:hover .del-btn-box, .image-el:hover .del-btn-box { display: flex; }
+  .shape-el .dup-btn-box, .image-el .dup-btn-box {
+    position: absolute;
+    top: -10px;
+    right: 14px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--blueprint);
+    color: var(--ink);
+    border: none;
+    font-size: 11px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+  .shape-el:hover .dup-btn-box, .image-el:hover .dup-btn-box { display: flex; }
 
   .shape-controls {
     position: absolute;
@@ -538,9 +576,27 @@
     justify-content: center;
   }
   .whiteout-el:hover .del-btn-box { display: flex; }
+  .whiteout-el .dup-btn-box {
+    position: absolute;
+    top: -10px;
+    right: 14px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--blueprint);
+    color: var(--ink);
+    border: none;
+    font-size: 11px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+  .whiteout-el:hover .dup-btn-box { display: flex; }
 
   .notes {
-    max-width: 720px;
+    max-width: 900px;
     margin: 20px 0;
     padding: 14px 16px;
     background: var(--surface);
@@ -754,6 +810,12 @@
       <span id="pageOf"></span>
       <button type="button" class="btn btn-ghost" id="nextPageBtn" style="padding:6px 10px">&rarr;</button>
     </div>
+    <div class="zoom-controls" id="zoomControls">
+      <button type="button" class="btn btn-ghost zoom-btn" id="zoomOutBtn" title="Zoom out">&minus;</button>
+      <span class="zoom-pct" id="zoomPctLabel">100%</span>
+      <button type="button" class="btn btn-ghost zoom-btn" id="zoomInBtn" title="Zoom in">+</button>
+      <button type="button" class="btn btn-ghost zoom-btn" id="zoomResetBtn" title="Reset zoom" data-i18n="edit_zoom_reset">Reset</button>
+    </div>
     <button class="btn btn-ghost" id="addTextBtn" data-i18n="edit_add_text_btn">+ Add text</button>
     <button class="btn btn-ghost" id="addWhiteoutBtn" data-i18n="edit_add_whiteout_btn">+ Add whiteout</button>
     <button class="btn btn-ghost" id="drawToolBtn" data-i18n="edit_draw_btn">+ Draw</button>
@@ -777,19 +839,21 @@
 <div class="quick-actions" id="quickActions"></div>
 
   <div class="workspace" id="workspace">
-    <div class="preview-canvas-wrap" id="previewWrap">
-      <div class="draw-controls" id="drawControls">
-        <span class="drag-grip" id="drawControlsGrip">⠿</span>
-        <div class="mini-swatch selected" data-color="#c1502e" style="background:#c1502e"></div>
-        <div class="mini-swatch" data-color="#16140f" style="background:#16140f"></div>
-        <div class="mini-swatch" data-color="#6f97c9" style="background:#6f97c9"></div>
-        <input type="color" id="drawColorPicker" class="color-picker" value="#c1502e" title="Custom color">
-        <div class="draw-sep"></div>
-        <input type="range" class="stroke-slider" id="strokeSelect" min="0.5" max="10" step="0.5" value="3" title="Stroke width">
-        <span class="stroke-val" id="strokeVal">3pt</span>
-        <div class="draw-sep"></div>
-        <button type="button" id="clearDrawingBtn" data-i18n="edit_draw_clear">Clear</button>
-        <button type="button" id="doneDrawingBtn" data-i18n="edit_draw_done">Done</button>
+    <div class="preview-scroll" id="previewScroll">
+      <div class="preview-canvas-wrap" id="previewWrap">
+        <div class="draw-controls" id="drawControls">
+          <span class="drag-grip" id="drawControlsGrip">⠿</span>
+          <div class="mini-swatch selected" data-color="#c1502e" style="background:#c1502e"></div>
+          <div class="mini-swatch" data-color="#16140f" style="background:#16140f"></div>
+          <div class="mini-swatch" data-color="#6f97c9" style="background:#6f97c9"></div>
+          <input type="color" id="drawColorPicker" class="color-picker" value="#c1502e" title="Custom color">
+          <div class="draw-sep"></div>
+          <input type="range" class="stroke-slider" id="strokeSelect" min="0.5" max="10" step="0.5" value="3" title="Stroke width">
+          <span class="stroke-val" id="strokeVal">3pt</span>
+          <div class="draw-sep"></div>
+          <button type="button" id="clearDrawingBtn" data-i18n="edit_draw_clear">Clear</button>
+          <button type="button" id="doneDrawingBtn" data-i18n="edit_draw_done">Done</button>
+        </div>
       </div>
     </div>
 
@@ -845,7 +909,7 @@
 </script>
 <script src="js/handoff.js?v=1"></script>
 <script src="js/quick-actions.js?v=3"></script>
-<script src="js/edit.js?v=27"></script>
+<script src="js/edit.js?v=28"></script>
 <script src="js/nav.js?v=13"></script>
 <script src="js/i18n.js?v=17"></script>
 </body>

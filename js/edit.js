@@ -37,6 +37,10 @@
   const printPagesWrap = document.getElementById('printPagesWrap');
   const closePrintModalBtn = document.getElementById('closePrintModalBtn');
   const printNowBtn = document.getElementById('printNowBtn');
+  const zoomOutBtn = document.getElementById('zoomOutBtn');
+  const zoomInBtn = document.getElementById('zoomInBtn');
+  const zoomResetBtn = document.getElementById('zoomResetBtn');
+  const zoomPctLabel = document.getElementById('zoomPctLabel');
 
   const COLORS = ['#16140f', '#6f97c9', '#c1502e'];
   const WHITEOUT_COLORS = ['#ffffff', '#16140f', '#ede6d6'];
@@ -98,6 +102,37 @@
   function pxFontSize(fontSizePct) {
     return (previewWrap.clientWidth * fontSizePct) / 100;
   }
+
+  // ---- zoom ----
+  // Zoom just resizes previewWrap itself (as a % width inside its
+  // scrollable parent). Since the canvas is CSS `width:100%` and every
+  // edit element is positioned/sized in percentages relative to
+  // previewWrap, everything scales together automatically. Only the
+  // preview font-size (computed in real px via pxFontSize) needs an
+  // explicit refresh after a zoom change.
+  let zoomPct = 100;
+  const ZOOM_MIN = 40;
+  const ZOOM_MAX = 300;
+  const ZOOM_STEP = 10;
+
+  function applyZoom() {
+    previewWrap.style.width = `${zoomPct}%`;
+    if (zoomPctLabel) zoomPctLabel.textContent = `${zoomPct}%`;
+    refreshTextFontSizes();
+  }
+
+  if (zoomOutBtn) zoomOutBtn.addEventListener('click', () => {
+    zoomPct = Math.max(ZOOM_MIN, zoomPct - ZOOM_STEP);
+    applyZoom();
+  });
+  if (zoomInBtn) zoomInBtn.addEventListener('click', () => {
+    zoomPct = Math.min(ZOOM_MAX, zoomPct + ZOOM_STEP);
+    applyZoom();
+  });
+  if (zoomResetBtn) zoomResetBtn.addEventListener('click', () => {
+    zoomPct = 100;
+    applyZoom();
+  });
 
   let sourceArrayBuffer = null;
   let sourceFileName = 'document';
@@ -183,6 +218,21 @@
       else if (edit.type === 'shape') createShapeDom(edit);
       else if (edit.type === 'image') createImageDom(edit);
     });
+  }
+
+  // Duplicate any edit (text, whiteout, shape, or image) as a new
+  // element nudged slightly down-right so it's visibly a copy and not
+  // stacked exactly on top of the original.
+  function duplicateEdit(edit) {
+    const copy = {
+      ...edit,
+      id: newId(),
+      xPct: Math.min(94, edit.xPct + 3),
+      yPct: Math.min(94, edit.yPct + 3),
+    };
+    edits.push(copy);
+    renderPageElements();
+    validateDownload();
   }
 
   // Re-apply preview font sizes for all text boxes on the current page.
@@ -587,6 +637,15 @@
     colorPicker.addEventListener('click', (e) => e.stopPropagation());
     controls.appendChild(colorPicker);
 
+    const copyBtn = document.createElement('button');
+    copyBtn.textContent = '⧉';
+    copyBtn.title = 'Copy';
+    copyBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      duplicateEdit(edit);
+    });
+    controls.appendChild(copyBtn);
+
     const sep2 = document.createElement('div');
     sep2.className = 'ctrl-sep';
     controls.appendChild(sep2);
@@ -686,6 +745,16 @@
       validateDownload();
     });
     el.appendChild(delBtn);
+
+    const dupBtn = document.createElement('button');
+    dupBtn.className = 'dup-btn-box';
+    dupBtn.textContent = '⧉';
+    dupBtn.title = 'Copy';
+    dupBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      duplicateEdit(edit);
+    });
+    el.appendChild(dupBtn);
 
     const controls = document.createElement('div');
     controls.className = 'wo-controls';
@@ -1075,6 +1144,16 @@
     });
     el.appendChild(delBtn);
 
+    const dupBtn = document.createElement('button');
+    dupBtn.className = 'dup-btn-box';
+    dupBtn.textContent = '⧉';
+    dupBtn.title = 'Copy';
+    dupBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      duplicateEdit(edit);
+    });
+    el.appendChild(dupBtn);
+
     const controls = document.createElement('div');
     controls.className = 'shape-controls';
     SHAPE_COLORS.forEach((c) => {
@@ -1162,6 +1241,16 @@
       validateDownload();
     });
     el.appendChild(delBtn);
+
+    const dupBtn = document.createElement('button');
+    dupBtn.className = 'dup-btn-box';
+    dupBtn.textContent = '⧉';
+    dupBtn.title = 'Copy';
+    dupBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      duplicateEdit(edit);
+    });
+    el.appendChild(dupBtn);
 
     const controls = document.createElement('div');
     controls.className = 'shape-controls';
@@ -1403,6 +1492,8 @@
     previewWrap.innerHTML = '';
     edits = [];
     sourcePassword = null;
+    zoomPct = 100;
+    applyZoom();
 
     const arrayBuffer = await file.arrayBuffer();
     sourceArrayBuffer = arrayBuffer;

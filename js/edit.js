@@ -89,6 +89,16 @@
     return `'${entry.label}', ${fallback}`;
   }
 
+  // Preview font-size must be derived from previewWrap's actual on-screen
+  // width using the SAME percentage-of-width formula used when the text is
+  // baked into the final PDF (fontSize = pageWidth * fontSizePct / 100).
+  // Previously this used a fixed "* 5" multiplier that had no relation to
+  // previewWrap's width, so text looked fine on screen but came out much
+  // larger (and overflowed its box) in the downloaded PDF.
+  function pxFontSize(fontSizePct) {
+    return (previewWrap.clientWidth * fontSizePct) / 100;
+  }
+
   let sourceArrayBuffer = null;
   let sourceFileName = 'document';
   let sourcePassword = null;
@@ -174,6 +184,24 @@
       else if (edit.type === 'image') createImageDom(edit);
     });
   }
+
+  // Re-apply preview font sizes for all text boxes on the current page.
+  // Needed whenever previewWrap's rendered width can change (window
+  // resize, orientation change) since pxFontSize() depends on it.
+  function refreshTextFontSizes() {
+    previewWrap.querySelectorAll('.text-el').forEach((el) => {
+      const edit = edits.find((e) => e.id === el.dataset.editId);
+      if (!edit) return;
+      const content = el.querySelector('.text-content');
+      if (content) content.style.fontSize = `${pxFontSize(edit.fontSizePct)}px`;
+    });
+  }
+
+  let resizeDebounce = null;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeDebounce);
+    resizeDebounce = setTimeout(refreshTextFontSizes, 100);
+  });
 
   function findDrawingEdit(pageNum) {
     return edits.find((e) => e.type === 'drawing' && e.pageNum === pageNum);
@@ -417,6 +445,7 @@
   function createTextDom(edit) {
     const el = document.createElement('div');
     el.className = 'edit-el text-el';
+    el.dataset.editId = edit.id;
     el.style.left = `${edit.xPct}%`;
     el.style.top = `${edit.yPct}%`;
     el.style.maxWidth = `${Math.max(10, 98 - edit.xPct)}%`;
@@ -431,7 +460,7 @@
     content.spellcheck = false;
     content.textContent = edit.text;
     content.style.color = edit.color;
-    content.style.fontSize = `${edit.fontSizePct * 5}px`;
+    content.style.fontSize = `${pxFontSize(edit.fontSizePct)}px`;
     content.style.fontFamily = cssFontFamily(catalogEntry(edit.fontFamily));
     content.style.fontWeight = edit.bold ? '700' : '400';
     content.style.fontStyle = edit.italic ? 'italic' : 'normal';
@@ -471,12 +500,12 @@
     smallerBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       edit.fontSizePct = Math.max(1, edit.fontSizePct - 0.4);
-      content.style.fontSize = `${edit.fontSizePct * 5}px`;
+      content.style.fontSize = `${pxFontSize(edit.fontSizePct)}px`;
     });
     biggerBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       edit.fontSizePct = Math.min(12, edit.fontSizePct + 0.4);
-      content.style.fontSize = `${edit.fontSizePct * 5}px`;
+      content.style.fontSize = `${pxFontSize(edit.fontSizePct)}px`;
     });
     boldBtn.addEventListener('click', (e) => {
       e.stopPropagation();

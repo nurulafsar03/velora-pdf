@@ -639,7 +639,7 @@
 
     const copyBtn = document.createElement('button');
     copyBtn.textContent = '⧉';
-    copyBtn.title = 'Copy';
+    copyBtn.title = window.veloraT ? window.veloraT('edit_copy_title') : 'Copy';
     copyBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       duplicateEdit(edit);
@@ -749,7 +749,7 @@
     const dupBtn = document.createElement('button');
     dupBtn.className = 'dup-btn-box';
     dupBtn.textContent = '⧉';
-    dupBtn.title = 'Copy';
+    dupBtn.title = window.veloraT ? window.veloraT('edit_copy_title') : 'Copy';
     dupBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       duplicateEdit(edit);
@@ -1147,7 +1147,7 @@
     const dupBtn = document.createElement('button');
     dupBtn.className = 'dup-btn-box';
     dupBtn.textContent = '⧉';
-    dupBtn.title = 'Copy';
+    dupBtn.title = window.veloraT ? window.veloraT('edit_copy_title') : 'Copy';
     dupBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       duplicateEdit(edit);
@@ -1245,7 +1245,7 @@
     const dupBtn = document.createElement('button');
     dupBtn.className = 'dup-btn-box';
     dupBtn.textContent = '⧉';
-    dupBtn.title = 'Copy';
+    dupBtn.title = window.veloraT ? window.veloraT('edit_copy_title') : 'Copy';
     dupBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       duplicateEdit(edit);

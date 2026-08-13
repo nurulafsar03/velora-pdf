@@ -144,6 +144,10 @@
       edit_pw_wrong: 'Incorrect password — try again.',
       edit_pw_unlock: 'Unlock',
       edit_pw_cancel: 'Cancel',
+      edit_zoom_out: 'Zoom out',
+      edit_zoom_in: 'Zoom in',
+      edit_zoom_reset: 'Reset',
+      edit_copy_title: 'Copy',
 
       img2pdf_back: '← Back to tools',
       img2pdf_title: 'Image to PDF',
@@ -437,6 +441,10 @@
       edit_pw_wrong: 'ভুল পাসওয়ার্ড — আবার চেষ্টা করুন।',
       edit_pw_unlock: 'আনলক করুন',
       edit_pw_cancel: 'বাতিল করুন',
+      edit_zoom_out: 'ছোট করুন',
+      edit_zoom_in: 'বড় করুন',
+      edit_zoom_reset: 'রিসেট',
+      edit_copy_title: 'কপি করুন',
 
       img2pdf_back: '← টুলসে ফিরুন',
       img2pdf_title: 'ইমেজ থেকে PDF',
@@ -685,6 +693,10 @@
       edit_pw_wrong: 'Falsches Passwort — versuchen Sie es erneut.',
       edit_pw_unlock: 'Entsperren',
       edit_pw_cancel: 'Abbrechen',
+      edit_zoom_out: 'Verkleinern',
+      edit_zoom_in: 'Vergrößern',
+      edit_zoom_reset: 'Zurücksetzen',
+      edit_copy_title: 'Kopieren',
 
       img2pdf_back: '← Zurück zu den Werkzeugen',
       img2pdf_title: 'Bild zu PDF',
@@ -933,6 +945,10 @@
       edit_pw_wrong: 'गलत पासवर्ड — फिर कोशिश करें।',
       edit_pw_unlock: 'अनलॉक करें',
       edit_pw_cancel: 'रद्द करें',
+      edit_zoom_out: 'छोटा करें',
+      edit_zoom_in: 'बड़ा करें',
+      edit_zoom_reset: 'रीसेट',
+      edit_copy_title: 'कॉपी करें',
 
       img2pdf_back: '← टूल्स पर वापस जाएं',
       img2pdf_title: 'इमेज से PDF',
@@ -1181,6 +1197,10 @@
       edit_pw_wrong: 'غلط پاس ورڈ — دوبارہ کوشش کریں۔',
       edit_pw_unlock: 'ان لاک کریں',
       edit_pw_cancel: 'منسوخ کریں',
+      edit_zoom_out: 'چھوٹا کریں',
+      edit_zoom_in: 'بڑا کریں',
+      edit_zoom_reset: 'ری سیٹ',
+      edit_copy_title: 'کاپی کریں',
 
       img2pdf_back: '← ٹولز پر واپس جائیں',
       img2pdf_title: 'تصویر سے PDF',
@@ -1429,6 +1449,10 @@
       edit_pw_wrong: 'كلمة مرور غير صحيحة — حاول مرة أخرى.',
       edit_pw_unlock: 'فتح القفل',
       edit_pw_cancel: 'إلغاء',
+      edit_zoom_out: 'تصغير',
+      edit_zoom_in: 'تكبير',
+      edit_zoom_reset: 'إعادة تعيين',
+      edit_copy_title: 'نسخ',
 
       img2pdf_back: '← العودة إلى الأدوات',
       img2pdf_title: 'صورة إلى PDF',
@@ -1612,6 +1636,9 @@
     });
     document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
       el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder'), lang));
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach((el) => {
+      el.setAttribute('title', t(el.getAttribute('data-i18n-title'), lang));
     });
 
     const switcher = document.getElementById('langSwitcher');

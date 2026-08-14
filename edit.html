@@ -381,6 +381,61 @@
   .shape-picker-popover button:hover { border-color: var(--blueprint-dim); color: var(--paper); }
   .shape-picker-popover svg { width: 20px; height: 20px; }
 
+  /* Page number popover reuses .shape-picker-popover's positioning/shell
+     but needs a column layout instead of the shape grid. */
+  .pn-popover.active { display: flex; flex-direction: column; gap: 8px; width: 190px; }
+  .pn-field-label {
+    font-size: 11px;
+    color: var(--mist);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .pn-position-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .pn-position-grid button {
+    width: auto;
+    height: 30px;
+    padding: 0;
+    position: relative;
+  }
+  .pn-position-grid button::before {
+    content: "";
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--paper-dim);
+  }
+  .pn-position-grid button[data-pos$="Left"]::before { left: 6px; }
+  .pn-position-grid button[data-pos$="Center"]::before { left: 50%; transform: translateX(-50%); }
+  .pn-position-grid button[data-pos$="Right"]::before { right: 6px; }
+  .pn-position-grid button[data-pos^="header"]::before { top: 6px; }
+  .pn-position-grid button[data-pos^="footer"]::before { bottom: 6px; }
+  .pn-position-grid button.pn-selected { border-color: var(--blueprint); background: rgba(111,151,201,0.15); }
+  .pn-position-grid button.pn-selected::before { background: var(--blueprint); }
+  #pnFormatSelect {
+    width: 100%;
+    background: var(--ink);
+    color: var(--paper-dim);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+  .pn-add-btn { width: 100%; padding: 8px; font-size: 13px; }
+
+  /* Screenshot / snip tool */
+  .snip-selection {
+    position: absolute;
+    border: 1.5px dashed var(--blueprint);
+    background: rgba(111, 151, 201, 0.18);
+    pointer-events: none;
+    z-index: 10;
+  }
+
   .shape-el, .image-el {
     cursor: grab;
   }
@@ -967,6 +1022,30 @@
     <button class="btn btn-ghost" id="underlineBtn" data-i18n="edit_underline_btn">Underline</button>
     <button class="btn btn-ghost" id="strikethroughBtn" data-i18n="edit_strikethrough_btn">Strikethrough</button>
     <button class="btn btn-ghost" id="headerFooterBtn" data-i18n="edit_headerfooter_btn">+ Header &amp; Footer</button>
+    <div class="shape-picker-wrap">
+      <button class="btn btn-ghost" id="pageNumberBtn" data-i18n="edit_page_number_btn">+ Page number</button>
+      <div class="shape-picker-popover pn-popover" id="pageNumberPopover">
+        <div class="pn-field-label" data-i18n="edit_pn_position_label">Position</div>
+        <div class="pn-position-grid">
+          <button type="button" data-pos="headerLeft" title="Top left"></button>
+          <button type="button" data-pos="headerCenter" title="Top center"></button>
+          <button type="button" data-pos="headerRight" title="Top right"></button>
+          <button type="button" data-pos="footerLeft" title="Bottom left"></button>
+          <button type="button" data-pos="footerCenter" class="pn-selected" title="Bottom center"></button>
+          <button type="button" data-pos="footerRight" title="Bottom right"></button>
+        </div>
+        <div class="pn-field-label" data-i18n="edit_pn_format_label">Format</div>
+        <select id="pnFormatSelect">
+          <option value="{page}">1, 2, 3…</option>
+          <option value="{page} / {pages}" selected>1 / 10</option>
+          <option value="Page {page}">Page 1</option>
+          <option value="Page {page} of {pages}">Page 1 of 10</option>
+          <option value="- {page} -">- 1 -</option>
+        </select>
+        <button type="button" class="btn btn-primary pn-add-btn" id="pnAddBtn" data-i18n="edit_pn_add_btn">Add</button>
+      </div>
+    </div>
+    <button class="btn btn-ghost" id="screenshotBtn" data-i18n="edit_screenshot_btn">+ Screenshot</button>
     <button class="btn btn-ghost" id="drawToolBtn" data-i18n="edit_draw_btn">+ Draw</button>
     <div class="shape-picker-wrap">
       <button class="btn btn-ghost" id="shapeToolBtn" data-i18n="edit_shape_btn">+ Shape</button>
@@ -1010,6 +1089,11 @@
           <span class="stroke-val" data-i18n="edit_mark_hint">Drag over text to mark it</span>
           <div class="draw-sep"></div>
           <button type="button" id="textMarkDoneBtn" data-i18n="edit_draw_done">Done</button>
+        </div>
+        <div class="draw-controls" id="screenshotControls">
+          <span class="stroke-val" data-i18n="edit_screenshot_hint">Drag over any part of the page to capture it</span>
+          <div class="draw-sep"></div>
+          <button type="button" id="screenshotDoneBtn" data-i18n="edit_draw_done">Done</button>
         </div>
       </div>
     </div>
@@ -1101,8 +1185,8 @@
 </script>
 <script src="js/handoff.js?v=1"></script>
 <script src="js/quick-actions.js?v=3"></script>
-<script src="js/edit.js?v=30"></script>
+<script src="js/edit.js?v=31"></script>
 <script src="js/nav.js?v=13"></script>
-<script src="js/i18n.js?v=22"></script>
+<script src="js/i18n.js?v=23"></script>
 </body>
 </html>

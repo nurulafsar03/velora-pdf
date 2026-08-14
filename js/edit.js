@@ -61,6 +61,13 @@
   const hfColorPicker = document.getElementById('hfColorPicker');
   const hfClearBtn = document.getElementById('hfClearBtn');
   const hfCloseBtn = document.getElementById('hfCloseBtn');
+  const pageNumberBtn = document.getElementById('pageNumberBtn');
+  const pageNumberPopover = document.getElementById('pageNumberPopover');
+  const pnFormatSelect = document.getElementById('pnFormatSelect');
+  const pnAddBtn = document.getElementById('pnAddBtn');
+  const screenshotBtn = document.getElementById('screenshotBtn');
+  const screenshotControls = document.getElementById('screenshotControls');
+  const screenshotDoneBtn = document.getElementById('screenshotDoneBtn');
 
   const COLORS = ['#16140f', '#6f97c9', '#c1502e'];
   const WHITEOUT_COLORS = ['#ffffff', '#16140f', '#ede6d6'];
@@ -573,7 +580,7 @@
   }
 
   drawToolBtn.addEventListener('click', () => {
-    if (!drawMode) turnOffMarkMode();
+    if (!drawMode) { turnOffMarkMode(); turnOffScreenshotMode(); }
     drawMode = !drawMode;
     drawToolBtn.classList.toggle('toggled', drawMode);
     drawControls.classList.toggle('active', drawMode);
@@ -665,6 +672,7 @@
 
   function enterMarkMode(mode, btn) {
     turnOffDrawMode();
+    turnOffScreenshotMode();
     const turningOn = textMarkMode !== mode;
     turnOffMarkMode();
     if (!turningOn) return;
@@ -778,6 +786,131 @@
     });
     previewWrap.appendChild(delBtn);
   }
+
+  // ---- screenshot / snip tool ----
+  // Crops directly from the rendered <canvas> pixel data (the original
+  // PDF page render), not the DOM overlay — so it reflects the page as
+  // rendered, not any text/whiteout/shape edits sitting on top of it.
+
+  let screenshotMode = false;
+  let snipStart = null; // {clientX, clientY}
+  let snipEl = null;
+
+  function turnOffScreenshotMode() {
+    if (!screenshotMode) return;
+    screenshotMode = false;
+    if (screenshotBtn) screenshotBtn.classList.remove('toggled');
+    if (screenshotControls) screenshotControls.classList.remove('active');
+    document.querySelectorAll('.edit-el').forEach((n) => { n.style.pointerEvents = ''; });
+    if (snipEl) { snipEl.remove(); snipEl = null; }
+    snipStart = null;
+  }
+
+  if (screenshotBtn) {
+    screenshotBtn.addEventListener('click', () => {
+      const turningOn = !screenshotMode;
+      turnOffDrawMode();
+      turnOffMarkMode();
+      turnOffScreenshotMode();
+      if (!turningOn) return;
+      screenshotMode = true;
+      screenshotBtn.classList.add('toggled');
+      if (screenshotControls) screenshotControls.classList.add('active');
+      document.querySelectorAll('.edit-el').forEach((n) => { n.style.pointerEvents = 'none'; });
+    });
+  }
+  if (screenshotDoneBtn) screenshotDoneBtn.addEventListener('click', turnOffScreenshotMode);
+
+  function snipPointerDown(e) {
+    if (!screenshotMode || e.target.closest('#screenshotControls')) return;
+    e.preventDefault();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    snipStart = { clientX, clientY };
+    snipEl = document.createElement('div');
+    snipEl.className = 'snip-selection';
+    previewWrap.appendChild(snipEl);
+  }
+
+  function snipPointerMove(e) {
+    if (!screenshotMode || !snipStart || !snipEl) return;
+    e.preventDefault();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const wrapRect = previewWrap.getBoundingClientRect();
+    const x1 = Math.min(snipStart.clientX, clientX) - wrapRect.left;
+    const y1 = Math.min(snipStart.clientY, clientY) - wrapRect.top;
+    const w = Math.abs(clientX - snipStart.clientX);
+    const h = Math.abs(clientY - snipStart.clientY);
+    snipEl.style.left = `${x1}px`;
+    snipEl.style.top = `${y1}px`;
+    snipEl.style.width = `${w}px`;
+    snipEl.style.height = `${h}px`;
+  }
+
+  async function snipPointerUp(e) {
+    if (!screenshotMode || !snipStart) return;
+    const clientX = (e.changedTouches ? e.changedTouches[0].clientX : e.clientX) || snipStart.clientX;
+    const clientY = (e.changedTouches ? e.changedTouches[0].clientY : e.clientY) || snipStart.clientY;
+
+    const canvas = previewWrap.querySelector('canvas');
+    if (snipEl) { snipEl.remove(); snipEl = null; }
+    const startClient = snipStart;
+    snipStart = null;
+    if (!canvas) return;
+
+    const left = Math.min(startClient.clientX, clientX);
+    const top = Math.min(startClient.clientY, clientY);
+    const widthPx = Math.abs(clientX - startClient.clientX);
+    const heightPx = Math.abs(clientY - startClient.clientY);
+    if (widthPx < 4 || heightPx < 4) return; // ignore accidental clicks
+
+    const canvasRect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / canvasRect.width;
+    const scaleY = canvas.height / canvasRect.height;
+    let sx = (left - canvasRect.left) * scaleX;
+    let sy = (top - canvasRect.top) * scaleY;
+    let sw = widthPx * scaleX;
+    let sh = heightPx * scaleY;
+    // Clamp to the canvas bounds in case the drag went slightly outside it.
+    sx = Math.max(0, sx);
+    sy = Math.max(0, sy);
+    sw = Math.min(sw, canvas.width - sx);
+    sh = Math.min(sh, canvas.height - sy);
+    if (sw < 1 || sh < 1) return;
+
+    const cropCanvas = document.createElement('canvas');
+    cropCanvas.width = Math.max(1, Math.round(sw));
+    cropCanvas.height = Math.max(1, Math.round(sh));
+    cropCanvas.getContext('2d').drawImage(canvas, sx, sy, sw, sh, 0, 0, cropCanvas.width, cropCanvas.height);
+
+    const filename = `${baseName(sourceFileName)}-page${currentPage}-screenshot.png`;
+    cropCanvas.toBlob(async (blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      try {
+        await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+        setStatus('screenshot copied to clipboard and downloaded');
+      } catch (clipErr) {
+        setStatus('screenshot downloaded');
+      }
+    }, 'image/png');
+  }
+
+  previewWrap.addEventListener('mousedown', snipPointerDown);
+  previewWrap.addEventListener('mousemove', snipPointerMove);
+  window.addEventListener('mouseup', snipPointerUp);
+  previewWrap.addEventListener('touchstart', snipPointerDown, { passive: false });
+  previewWrap.addEventListener('touchmove', snipPointerMove, { passive: false });
+  window.addEventListener('touchend', snipPointerUp);
 
   // ---- drag helper (shared) ----
 
@@ -1741,6 +1874,36 @@
     });
   });
 
+  // ---- page number (quick preset into headerFooterConfig) ----
+
+  let pnSelectedSlot = 'footerCenter';
+
+  if (pageNumberBtn) {
+    pageNumberBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      pageNumberPopover.classList.toggle('active');
+    });
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#pageNumberPopover') && e.target !== pageNumberBtn) {
+        pageNumberPopover.classList.remove('active');
+      }
+    });
+    pageNumberPopover.querySelectorAll('button[data-pos]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        pnSelectedSlot = btn.dataset.pos;
+        pageNumberPopover.querySelectorAll('button[data-pos]').forEach((b) => b.classList.toggle('pn-selected', b === btn));
+      });
+    });
+    if (pnAddBtn) {
+      pnAddBtn.addEventListener('click', () => {
+        headerFooterConfig[pnSelectedSlot] = pnFormatSelect.value;
+        renderHeaderFooterPreview();
+        validateDownload();
+        pageNumberPopover.classList.remove('active');
+      });
+    }
+  }
+
   // ---- image tool ----
 
   imageToolBtn.addEventListener('click', () => imageInput.click());
@@ -1876,6 +2039,7 @@
     applyZoom();
     turnOffMarkMode();
     turnOffDrawMode();
+    turnOffScreenshotMode();
     headerFooterConfig = {
       headerLeft: '', headerCenter: '', headerRight: '',
       footerLeft: '', footerCenter: '', footerRight: '',

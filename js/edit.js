@@ -12,6 +12,13 @@
   const addTextBtn = document.getElementById('addTextBtn');
   const addWhiteoutBtn = document.getElementById('addWhiteoutBtn');
   const addHighlightBtn = document.getElementById('addHighlightBtn');
+  const highlightTextBtn = document.getElementById('highlightTextBtn');
+  const underlineBtn = document.getElementById('underlineBtn');
+  const strikethroughBtn = document.getElementById('strikethroughBtn');
+  const textMarkControls = document.getElementById('textMarkControls');
+  const textMarkSwatches = document.getElementById('textMarkSwatches');
+  const textMarkColorPicker = document.getElementById('textMarkColorPicker');
+  const textMarkDoneBtn = document.getElementById('textMarkDoneBtn');
   const drawToolBtn = document.getElementById('drawToolBtn');
   const drawControls = document.getElementById('drawControls');
   const drawColorPicker = document.getElementById('drawColorPicker');
@@ -117,13 +124,27 @@
     return (previewWrap.clientWidth * fontSizePct) / 100;
   }
 
+  // ---- text layer positioning ----
+  // pdf.js renders text-layer spans at the native viewport pixel size
+  // (e.g. up to 1700px). We CSS-scale that whole layer down/up to match
+  // previewWrap's actual on-screen width (which changes with zoom and
+  // window resizing) — the standard technique pdf.js's own viewer uses.
+  let currentViewportDims = null;
+  function positionTextLayer() {
+    const textLayerDiv = previewWrap.querySelector('.textLayer');
+    if (!textLayerDiv || !currentViewportDims || !currentViewportDims.width) return;
+    const scale = previewWrap.clientWidth / currentViewportDims.width;
+    textLayerDiv.style.transform = `scale(${scale})`;
+    textLayerDiv.style.transformOrigin = '0 0';
+  }
+
   // ---- zoom ----
   // Zoom just resizes previewWrap itself (as a % width inside its
   // scrollable parent). Since the canvas is CSS `width:100%` and every
   // edit element is positioned/sized in percentages relative to
   // previewWrap, everything scales together automatically. Only the
-  // preview font-size (computed in real px via pxFontSize) needs an
-  // explicit refresh after a zoom change.
+  // preview font-size (computed in real px via pxFontSize) and the text
+  // layer's scale transform need an explicit refresh after a zoom change.
   let zoomPct = 100;
   const ZOOM_MIN = 40;
   const ZOOM_MAX = 300;
@@ -133,6 +154,7 @@
     previewWrap.style.width = `${zoomPct}%`;
     if (zoomPctLabel) zoomPctLabel.textContent = `${zoomPct}%`;
     refreshTextFontSizes();
+    positionTextLayer();
   }
 
   if (zoomOutBtn) zoomOutBtn.addEventListener('click', () => {
@@ -308,6 +330,30 @@
       previewWrap.innerHTML = '';
       previewWrap.style.minHeight = '';
       previewWrap.appendChild(canvas);
+
+      // Real, selectable text layer (pdf.js) for the text-selection-based
+      // highlight/underline/strikethrough tools. Scanned/image-only PDFs
+      // simply produce an empty text layer — nothing to select there.
+      currentViewportDims = { width: viewport.width, height: viewport.height };
+      try {
+        const textContent = await page.getTextContent();
+        const textLayerDiv = document.createElement('div');
+        textLayerDiv.className = 'textLayer';
+        textLayerDiv.style.width = `${viewport.width}px`;
+        textLayerDiv.style.height = `${viewport.height}px`;
+        previewWrap.appendChild(textLayerDiv);
+        const task = pdfjsLib.renderTextLayer({
+          textContentSource: textContent,
+          container: textLayerDiv,
+          viewport,
+          textDivs: [],
+        });
+        if (task && task.promise) await task.promise;
+        positionTextLayer();
+      } catch (tlErr) {
+        console.error('Text layer unavailable for this page', tlErr);
+      }
+
       previewWrap.appendChild(drawControls);
       renderPageElements();
       addTextBtn.disabled = false;
@@ -333,6 +379,7 @@
       else if (edit.type === 'drawing') renderDrawingSvg(edit);
       else if (edit.type === 'shape') createShapeDom(edit);
       else if (edit.type === 'image') createImageDom(edit);
+      else if (edit.type === 'textHighlight' || edit.type === 'underline' || edit.type === 'strikethrough') createTextMarkDom(edit);
     });
 
     renderHeaderFooterPreview();
@@ -368,7 +415,10 @@
   let resizeDebounce = null;
   window.addEventListener('resize', () => {
     clearTimeout(resizeDebounce);
-    resizeDebounce = setTimeout(refreshTextFontSizes, 100);
+    resizeDebounce = setTimeout(() => {
+      refreshTextFontSizes();
+      positionTextLayer();
+    }, 100);
   });
 
   function findDrawingEdit(pageNum) {
@@ -514,7 +564,16 @@
     window.addEventListener('touchend', up);
   })();
 
+  function turnOffDrawMode() {
+    drawMode = false;
+    drawToolBtn.classList.remove('toggled');
+    drawControls.classList.remove('active');
+    document.querySelectorAll('.edit-el').forEach((n) => { n.style.pointerEvents = ''; });
+    removeLiveDrawSvg();
+  }
+
   drawToolBtn.addEventListener('click', () => {
+    if (!drawMode) turnOffMarkMode();
     drawMode = !drawMode;
     drawToolBtn.classList.toggle('toggled', drawMode);
     drawControls.classList.toggle('active', drawMode);
@@ -526,13 +585,7 @@
     }
   });
 
-  doneDrawingBtn.addEventListener('click', () => {
-    drawMode = false;
-    drawToolBtn.classList.remove('toggled');
-    drawControls.classList.remove('active');
-    document.querySelectorAll('.edit-el').forEach((n) => { n.style.pointerEvents = ''; });
-    removeLiveDrawSvg();
-  });
+  doneDrawingBtn.addEventListener('click', turnOffDrawMode);
 
   clearDrawingBtn.addEventListener('click', () => {
     edits = edits.filter((e) => !(e.type === 'drawing' && e.pageNum === currentPage));
@@ -569,6 +622,162 @@
       previewWrap.querySelectorAll('.edit-el').forEach((n) => n.classList.remove('active'));
     }
   });
+
+  // ---- text-selection highlight / underline / strikethrough ----
+  // Unlike Area Highlight (a manually placed box), these snap onto the
+  // PDF's real, selectable text via pdf.js's text layer. Only works on
+  // pages that actually have text (not scanned/image-only pages).
+
+  const MARK_LINE_COLORS = ['#c1502e', '#6f97c9', '#4caf50', '#16140f'];
+  let textMarkMode = null; // 'highlight' | 'underline' | 'strikethrough' | null
+  let textMarkColor = HIGHLIGHT_COLORS[0];
+
+  function markPalette() {
+    return textMarkMode === 'highlight' ? HIGHLIGHT_COLORS : MARK_LINE_COLORS;
+  }
+
+  function renderMarkSwatches() {
+    if (!textMarkSwatches) return;
+    textMarkSwatches.innerHTML = '';
+    markPalette().forEach((c) => {
+      const sw = document.createElement('span');
+      sw.className = 'mini-swatch' + (c === textMarkColor ? ' selected' : '');
+      sw.style.background = c;
+      sw.addEventListener('click', () => {
+        textMarkColor = c;
+        renderMarkSwatches();
+        if (textMarkColorPicker) textMarkColorPicker.value = c;
+      });
+      textMarkSwatches.appendChild(sw);
+    });
+  }
+
+  function turnOffMarkMode() {
+    if (!textMarkMode) return;
+    textMarkMode = null;
+    [highlightTextBtn, underlineBtn, strikethroughBtn].forEach((b) => b && b.classList.remove('toggled'));
+    if (textMarkControls) textMarkControls.classList.remove('active');
+    const tl = previewWrap.querySelector('.textLayer');
+    if (tl) tl.classList.remove('active');
+    document.querySelectorAll('.edit-el').forEach((n) => { n.style.pointerEvents = ''; });
+    window.getSelection().removeAllRanges();
+  }
+
+  function enterMarkMode(mode, btn) {
+    turnOffDrawMode();
+    const turningOn = textMarkMode !== mode;
+    turnOffMarkMode();
+    if (!turningOn) return;
+    textMarkMode = mode;
+    btn.classList.add('toggled');
+    if (textMarkControls) textMarkControls.classList.add('active');
+    const tl = previewWrap.querySelector('.textLayer');
+    if (tl) tl.classList.add('active');
+    document.querySelectorAll('.edit-el').forEach((n) => { n.style.pointerEvents = 'none'; });
+    textMarkColor = markPalette()[0];
+    if (textMarkColorPicker) textMarkColorPicker.value = textMarkColor;
+    renderMarkSwatches();
+  }
+
+  if (highlightTextBtn) highlightTextBtn.addEventListener('click', () => enterMarkMode('highlight', highlightTextBtn));
+  if (underlineBtn) underlineBtn.addEventListener('click', () => enterMarkMode('underline', underlineBtn));
+  if (strikethroughBtn) strikethroughBtn.addEventListener('click', () => enterMarkMode('strikethrough', strikethroughBtn));
+  if (textMarkDoneBtn) textMarkDoneBtn.addEventListener('click', turnOffMarkMode);
+  if (textMarkColorPicker) {
+    textMarkColorPicker.addEventListener('input', (e) => {
+      textMarkColor = e.target.value;
+      renderMarkSwatches();
+    });
+  }
+
+  function rectsFromSelection() {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return [];
+    const wrapRect = previewWrap.getBoundingClientRect();
+    const results = [];
+    for (let i = 0; i < sel.rangeCount; i++) {
+      const range = sel.getRangeAt(i);
+      const clientRects = range.getClientRects();
+      for (const r of clientRects) {
+        if (r.width < 1 || r.height < 1) continue;
+        results.push({
+          xPct: ((r.left - wrapRect.left) / wrapRect.width) * 100,
+          yPct: ((r.top - wrapRect.top) / wrapRect.height) * 100,
+          widthPct: (r.width / wrapRect.width) * 100,
+          heightPct: (r.height / wrapRect.height) * 100,
+        });
+      }
+    }
+    return results;
+  }
+
+  function captureTextMark() {
+    if (!textMarkMode) return;
+    const rects = rectsFromSelection();
+    window.getSelection().removeAllRanges();
+    if (rects.length === 0) return;
+    const edit = {
+      id: newId(),
+      type: textMarkMode === 'highlight' ? 'textHighlight' : textMarkMode,
+      pageNum: currentPage,
+      rects,
+      color: textMarkColor,
+      opacity: textMarkMode === 'highlight' ? 40 : 100,
+    };
+    edits.push(edit);
+    renderPageElements();
+    validateDownload();
+  }
+
+  previewWrap.addEventListener('mouseup', (e) => {
+    if (!textMarkMode || !e.target.closest('.textLayer')) return;
+    setTimeout(captureTextMark, 0);
+  });
+  previewWrap.addEventListener('touchend', (e) => {
+    if (!textMarkMode) return;
+    setTimeout(captureTextMark, 0);
+  });
+
+  function createTextMarkDom(edit) {
+    edit.rects.forEach((r) => {
+      const mark = document.createElement('div');
+      mark.dataset.editId = edit.id;
+      if (edit.type === 'textHighlight') {
+        mark.className = 'edit-el textmark-highlight';
+        mark.style.background = hexToRgba(edit.color, (edit.opacity ?? 40) / 100);
+        mark.style.left = `${r.xPct}%`;
+        mark.style.top = `${r.yPct}%`;
+        mark.style.width = `${r.widthPct}%`;
+        mark.style.height = `${r.heightPct}%`;
+      } else {
+        mark.className = 'edit-el textmark-line';
+        mark.style.background = edit.color;
+        mark.style.left = `${r.xPct}%`;
+        mark.style.width = `${r.widthPct}%`;
+        const linePct = edit.type === 'underline' ? r.yPct + r.heightPct * 0.9 : r.yPct + r.heightPct * 0.5;
+        mark.style.top = `${linePct}%`;
+        mark.style.height = `${Math.max(0.25, r.heightPct * 0.07)}%`;
+      }
+      previewWrap.appendChild(mark);
+    });
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'edit-el textmark-del';
+    delBtn.dataset.editId = edit.id;
+    delBtn.textContent = '✕';
+    delBtn.title = window.veloraT ? window.veloraT('edit_close_btn') : 'Delete';
+    if (edit.rects[0]) {
+      delBtn.style.left = `${edit.rects[0].xPct}%`;
+      delBtn.style.top = `${edit.rects[0].yPct}%`;
+    }
+    delBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      edits = edits.filter((x) => x.id !== edit.id);
+      renderPageElements();
+      validateDownload();
+    });
+    previewWrap.appendChild(delBtn);
+  }
 
   // ---- drag helper (shared) ----
 
@@ -1665,6 +1874,8 @@
     sourcePassword = null;
     zoomPct = 100;
     applyZoom();
+    turnOffMarkMode();
+    turnOffDrawMode();
     headerFooterConfig = {
       headerLeft: '', headerCenter: '', headerRight: '',
       footerLeft: '', footerCenter: '', footerRight: '',
@@ -1853,6 +2064,30 @@
             drawOpts.blendMode = BlendMode.Multiply;
           }
           page.drawRectangle(drawOpts);
+        } else if (edit.type === 'textHighlight' || edit.type === 'underline' || edit.type === 'strikethrough') {
+          const { r, g, b } = hexToRgb(edit.color);
+          edit.rects.forEach((rect) => {
+            const rx = width * (rect.xPct / 100);
+            const rw = width * (rect.widthPct / 100);
+            const rh = height * (rect.heightPct / 100);
+            const ry = height - height * (rect.yPct / 100) - rh;
+            if (edit.type === 'textHighlight') {
+              page.drawRectangle({
+                x: rx, y: ry, width: rw, height: rh,
+                color: rgb(r, g, b),
+                opacity: (edit.opacity ?? 40) / 100,
+                blendMode: BlendMode.Multiply,
+              });
+            } else {
+              const lineY = edit.type === 'underline' ? ry + rh * 0.08 : ry + rh * 0.5;
+              page.drawLine({
+                start: { x: rx, y: lineY },
+                end: { x: rx + rw, y: lineY },
+                thickness: Math.max(0.6, rh * 0.06),
+                color: rgb(r, g, b),
+              });
+            }
+          });
         } else if (edit.type === 'shape') {
           const { r, g, b } = hexToRgb(edit.color);
           const thickness = edit.strokeWidthPct;

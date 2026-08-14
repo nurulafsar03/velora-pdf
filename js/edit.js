@@ -801,6 +801,7 @@
     screenshotMode = false;
     if (screenshotBtn) screenshotBtn.classList.remove('toggled');
     if (screenshotControls) screenshotControls.classList.remove('active');
+    previewWrap.classList.remove('snip-active');
     document.querySelectorAll('.edit-el').forEach((n) => { n.style.pointerEvents = ''; });
     if (snipEl) { snipEl.remove(); snipEl = null; }
     snipStart = null;
@@ -816,6 +817,7 @@
       screenshotMode = true;
       screenshotBtn.classList.add('toggled');
       if (screenshotControls) screenshotControls.classList.add('active');
+      previewWrap.classList.add('snip-active');
       document.querySelectorAll('.edit-el').forEach((n) => { n.style.pointerEvents = 'none'; });
     });
   }

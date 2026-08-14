@@ -283,6 +283,13 @@
   .whiteout-el:hover, .whiteout-el.active {
     border-color: var(--blueprint-dim);
   }
+  .highlight-el {
+    border: 1px dashed transparent;
+    cursor: grab;
+  }
+  .highlight-el:hover, .highlight-el.active {
+    border-color: var(--blueprint-dim);
+  }
 
   #drawToolBtn.toggled { border-color: var(--blueprint); color: var(--paper); background: rgba(111,151,201,0.12); }
 
@@ -492,7 +499,7 @@
   }
   .draw-controls button:hover { color: var(--paper); }
   .draw-controls .draw-sep { width: 1px; height: 18px; background: var(--line); }
-  .whiteout-el .wo-controls {
+  .whiteout-el .wo-controls, .highlight-el .wo-controls {
     position: absolute;
     top: -32px;
     left: 0;
@@ -506,7 +513,8 @@
     white-space: nowrap;
     z-index: 5;
   }
-  .whiteout-el:hover .wo-controls, .whiteout-el.active .wo-controls { display: flex; }
+  .whiteout-el:hover .wo-controls, .whiteout-el.active .wo-controls,
+  .highlight-el:hover .wo-controls, .highlight-el.active .wo-controls { display: flex; }
   .wo-controls .mini-swatch {
     width: 15px;
     height: 15px;
@@ -547,7 +555,7 @@
     accent-color: var(--blueprint);
     flex-shrink: 0;
   }
-  .whiteout-el .resize-handle {
+  .whiteout-el .resize-handle, .highlight-el .resize-handle {
     position: absolute;
     right: -5px;
     bottom: -5px;
@@ -558,8 +566,9 @@
     cursor: nwse-resize;
     display: none;
   }
-  .whiteout-el:hover .resize-handle, .whiteout-el.active .resize-handle { display: block; }
-  .whiteout-el .del-btn-box {
+  .whiteout-el:hover .resize-handle, .whiteout-el.active .resize-handle,
+  .highlight-el:hover .resize-handle, .highlight-el.active .resize-handle { display: block; }
+  .whiteout-el .del-btn-box, .highlight-el .del-btn-box {
     position: absolute;
     top: -10px;
     right: -10px;
@@ -575,8 +584,8 @@
     align-items: center;
     justify-content: center;
   }
-  .whiteout-el:hover .del-btn-box { display: flex; }
-  .whiteout-el .dup-btn-box {
+  .whiteout-el:hover .del-btn-box, .highlight-el:hover .del-btn-box { display: flex; }
+  .whiteout-el .dup-btn-box, .highlight-el .dup-btn-box {
     position: absolute;
     top: -10px;
     right: 14px;
@@ -593,7 +602,7 @@
     justify-content: center;
     z-index: 2;
   }
-  .whiteout-el:hover .dup-btn-box { display: flex; }
+  .whiteout-el:hover .dup-btn-box, .highlight-el:hover .dup-btn-box { display: flex; }
 
   .notes {
     max-width: 900px;
@@ -670,6 +679,84 @@
   }
   .password-modal-box .pw-error.visible { display: block; }
   .password-modal-actions { display: flex; gap: 10px; margin-top: 6px; }
+
+  /* Header/footer modal reuses the password-modal overlay pattern with
+     a wider box for the 6 text fields. */
+  .hf-modal-box {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 24px;
+    width: 460px;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+  }
+  .hf-modal-box h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    margin: 0 0 4px;
+    color: var(--paper);
+  }
+  .hf-modal-box p.hf-hint {
+    font-size: 12px;
+    color: var(--mist);
+    margin: 0 0 16px;
+    line-height: 1.5;
+  }
+  .hf-modal-box .hf-section-label {
+    font-size: 12px;
+    color: var(--paper-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 14px 0 6px;
+  }
+  .hf-modal-box .hf-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+  }
+  .hf-modal-box .hf-row input[type="text"] {
+    width: 100%;
+    background: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--paper);
+    padding: 8px 9px;
+    font-size: 12px;
+  }
+  .hf-modal-box .hf-style-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .hf-modal-box .hf-style-row label {
+    font-size: 12px;
+    color: var(--mist);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .hf-modal-box input[type="range"] { accent-color: var(--blueprint); width: 100px; }
+  .hf-modal-box input[type="color"] { width: 26px; height: 26px; border: none; background: none; cursor: pointer; padding: 0; }
+  .hf-modal-actions { display: flex; gap: 10px; margin-top: 18px; }
+
+  /* Header/footer preview overlay — fixed positions matching the PDF
+     export's left/center/right alignment near the page's top/bottom edge. */
+  .hf-preview {
+    position: absolute;
+    color: var(--ink);
+    font-family: Helvetica, Arial, sans-serif;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .hf-top { top: 4%; }
+  .hf-bottom { bottom: 4%; }
+  .hf-left { left: 6%; text-align: left; }
+  .hf-center { left: 50%; transform: translateX(-50%); text-align: center; }
+  .hf-right { right: 6%; text-align: right; }
 
   .back-link { display: inline-block; font-size: 13px; color: var(--mist); margin-bottom: 4px; }
   .back-link:hover { color: var(--blueprint); }
@@ -818,6 +905,8 @@
     </div>
     <button class="btn btn-ghost" id="addTextBtn" data-i18n="edit_add_text_btn">+ Add text</button>
     <button class="btn btn-ghost" id="addWhiteoutBtn" data-i18n="edit_add_whiteout_btn">+ Add whiteout</button>
+    <button class="btn btn-ghost" id="addHighlightBtn" data-i18n="edit_add_highlight_btn">+ Highlight</button>
+    <button class="btn btn-ghost" id="headerFooterBtn" data-i18n="edit_headerfooter_btn">+ Header &amp; Footer</button>
     <button class="btn btn-ghost" id="drawToolBtn" data-i18n="edit_draw_btn">+ Draw</button>
     <div class="shape-picker-wrap">
       <button class="btn btn-ghost" id="shapeToolBtn" data-i18n="edit_shape_btn">+ Shape</button>
@@ -901,6 +990,41 @@
   </div>
 </div>
 
+<div class="password-modal" id="headerFooterModal">
+  <div class="hf-modal-box">
+    <h3 data-i18n="edit_hf_title">Header &amp; footer</h3>
+    <p class="hf-hint" data-i18n="edit_hf_hint">Applies to every page. Use {page} and {pages} for the page number and total page count.</p>
+
+    <div class="hf-section-label" data-i18n="edit_hf_header_label">Header</div>
+    <div class="hf-row">
+      <input type="text" id="hfHeaderLeft" data-i18n-placeholder="edit_hf_left_ph" placeholder="Left">
+      <input type="text" id="hfHeaderCenter" data-i18n-placeholder="edit_hf_center_ph" placeholder="Center">
+      <input type="text" id="hfHeaderRight" data-i18n-placeholder="edit_hf_right_ph" placeholder="Right">
+    </div>
+
+    <div class="hf-section-label" data-i18n="edit_hf_footer_label">Footer</div>
+    <div class="hf-row">
+      <input type="text" id="hfFooterLeft" data-i18n-placeholder="edit_hf_left_ph" placeholder="Left">
+      <input type="text" id="hfFooterCenter" data-i18n-placeholder="edit_hf_center_ph" placeholder="Center">
+      <input type="text" id="hfFooterRight" data-i18n-placeholder="edit_hf_right_ph" placeholder="Right">
+    </div>
+
+    <div class="hf-style-row">
+      <label><span data-i18n="edit_hf_fontsize_label">Size</span>
+        <input type="range" id="hfFontSize" min="1" max="4" step="0.1" value="1.8">
+      </label>
+      <label><span data-i18n="edit_hf_color_label">Color</span>
+        <input type="color" id="hfColorPicker" value="#16140f">
+      </label>
+    </div>
+
+    <div class="hf-modal-actions">
+      <button class="btn btn-ghost" id="hfClearBtn" data-i18n="edit_hf_clear_btn">Clear</button>
+      <button class="btn btn-primary" id="hfCloseBtn" data-i18n="edit_close_btn">Close</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://unpkg.com/@cantoo/pdf-lib@2.7.1/dist/pdf-lib.min.js"></script>
 <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
 <script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
@@ -909,8 +1033,8 @@
 </script>
 <script src="js/handoff.js?v=1"></script>
 <script src="js/quick-actions.js?v=3"></script>
-<script src="js/edit.js?v=28"></script>
+<script src="js/edit.js?v=29"></script>
 <script src="js/nav.js?v=13"></script>
-<script src="js/i18n.js?v=18"></script>
+<script src="js/i18n.js?v=19"></script>
 </body>
 </html>

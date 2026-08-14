@@ -11,6 +11,7 @@
   const nextPageBtn = document.getElementById('nextPageBtn');
   const addTextBtn = document.getElementById('addTextBtn');
   const addWhiteoutBtn = document.getElementById('addWhiteoutBtn');
+  const addHighlightBtn = document.getElementById('addHighlightBtn');
   const drawToolBtn = document.getElementById('drawToolBtn');
   const drawControls = document.getElementById('drawControls');
   const drawColorPicker = document.getElementById('drawColorPicker');
@@ -41,9 +42,22 @@
   const zoomInBtn = document.getElementById('zoomInBtn');
   const zoomResetBtn = document.getElementById('zoomResetBtn');
   const zoomPctLabel = document.getElementById('zoomPctLabel');
+  const headerFooterBtn = document.getElementById('headerFooterBtn');
+  const hfModal = document.getElementById('headerFooterModal');
+  const hfHeaderLeft = document.getElementById('hfHeaderLeft');
+  const hfHeaderCenter = document.getElementById('hfHeaderCenter');
+  const hfHeaderRight = document.getElementById('hfHeaderRight');
+  const hfFooterLeft = document.getElementById('hfFooterLeft');
+  const hfFooterCenter = document.getElementById('hfFooterCenter');
+  const hfFooterRight = document.getElementById('hfFooterRight');
+  const hfFontSize = document.getElementById('hfFontSize');
+  const hfColorPicker = document.getElementById('hfColorPicker');
+  const hfClearBtn = document.getElementById('hfClearBtn');
+  const hfCloseBtn = document.getElementById('hfCloseBtn');
 
   const COLORS = ['#16140f', '#6f97c9', '#c1502e'];
   const WHITEOUT_COLORS = ['#ffffff', '#16140f', '#ede6d6'];
+  const HIGHLIGHT_COLORS = ['#ffeb3b', '#4caf50', '#ff4081', '#448aff', '#ff9800'];
   const GH = 'https://raw.githubusercontent.com/google/fonts/main';
 
   // Each custom entry's urls give the exact files that exist; missing
@@ -142,6 +156,108 @@
   let currentPage = 1;
   let edits = []; // { id, type, pageNum, xPct, yPct, widthPct, heightPct, text, color, fontSizePct }
   let idCounter = 0;
+
+  // Header/Footer is document-wide (applies to every page), not a
+  // per-page edit, so it's kept separately from `edits`.
+  const HF_MARGIN_X_PCT = 6;
+  const HF_MARGIN_Y_PCT = 4;
+  let headerFooterConfig = {
+    headerLeft: '', headerCenter: '', headerRight: '',
+    footerLeft: '', footerCenter: '', footerRight: '',
+    fontSizePct: 1.8,
+    color: '#16140f',
+  };
+  function hasAnyHeaderFooterText() {
+    return ['headerLeft', 'headerCenter', 'headerRight', 'footerLeft', 'footerCenter', 'footerRight']
+      .some((k) => (headerFooterConfig[k] || '').trim());
+  }
+  function substituteTokens(str, pageNum, totalPages) {
+    return str.replace(/\{page\}/g, pageNum).replace(/\{pages\}/g, totalPages);
+  }
+  function renderHeaderFooterPreview() {
+    previewWrap.querySelectorAll('.hf-preview').forEach((el) => el.remove());
+    if (!hasAnyHeaderFooterText()) return;
+    const slots = [
+      ['headerLeft', 'hf-top hf-left'],
+      ['headerCenter', 'hf-top hf-center'],
+      ['headerRight', 'hf-top hf-right'],
+      ['footerLeft', 'hf-bottom hf-left'],
+      ['footerCenter', 'hf-bottom hf-center'],
+      ['footerRight', 'hf-bottom hf-right'],
+    ];
+    slots.forEach(([key, cls]) => {
+      const raw = (headerFooterConfig[key] || '').trim();
+      if (!raw) return;
+      const el = document.createElement('div');
+      el.className = `hf-preview ${cls}`;
+      el.textContent = substituteTokens(raw, currentPage, pageCount || 1);
+      el.style.fontSize = `${pxFontSize(headerFooterConfig.fontSizePct)}px`;
+      el.style.color = headerFooterConfig.color;
+      previewWrap.appendChild(el);
+    });
+  }
+
+  // ---- header/footer modal ----
+
+  function hfSyncInputsFromConfig() {
+    hfHeaderLeft.value = headerFooterConfig.headerLeft;
+    hfHeaderCenter.value = headerFooterConfig.headerCenter;
+    hfHeaderRight.value = headerFooterConfig.headerRight;
+    hfFooterLeft.value = headerFooterConfig.footerLeft;
+    hfFooterCenter.value = headerFooterConfig.footerCenter;
+    hfFooterRight.value = headerFooterConfig.footerRight;
+    hfColorPicker.value = headerFooterConfig.color;
+  }
+
+  if (headerFooterBtn) {
+    headerFooterBtn.addEventListener('click', () => {
+      hfSyncInputsFromConfig();
+      hfModal.classList.add('active');
+    });
+  }
+
+  [
+    [hfHeaderLeft, 'headerLeft'], [hfHeaderCenter, 'headerCenter'], [hfHeaderRight, 'headerRight'],
+    [hfFooterLeft, 'footerLeft'], [hfFooterCenter, 'footerCenter'], [hfFooterRight, 'footerRight'],
+  ].forEach(([input, key]) => {
+    if (!input) return;
+    input.addEventListener('input', () => {
+      headerFooterConfig[key] = input.value;
+      renderHeaderFooterPreview();
+      validateDownload();
+    });
+  });
+
+  if (hfFontSize) {
+    hfFontSize.addEventListener('input', () => {
+      headerFooterConfig.fontSizePct = parseFloat(hfFontSize.value);
+      renderHeaderFooterPreview();
+    });
+  }
+  if (hfColorPicker) {
+    hfColorPicker.addEventListener('input', () => {
+      headerFooterConfig.color = hfColorPicker.value;
+      renderHeaderFooterPreview();
+    });
+  }
+  if (hfClearBtn) {
+    hfClearBtn.addEventListener('click', () => {
+      headerFooterConfig = {
+        headerLeft: '', headerCenter: '', headerRight: '',
+        footerLeft: '', footerCenter: '', footerRight: '',
+        fontSizePct: 1.8,
+        color: '#16140f',
+      };
+      hfSyncInputsFromConfig();
+      renderHeaderFooterPreview();
+      validateDownload();
+    });
+  }
+  if (hfCloseBtn) {
+    hfCloseBtn.addEventListener('click', () => {
+      hfModal.classList.remove('active');
+    });
+  }
   let activeEl = null;
   let drawMode = false;
   let drawColor = '#c1502e';
@@ -213,11 +329,13 @@
 
     edits.filter((e) => e.pageNum === currentPage).forEach((edit) => {
       if (edit.type === 'text') createTextDom(edit);
-      else if (edit.type === 'whiteout') createWhiteoutDom(edit);
+      else if (edit.type === 'whiteout' || edit.type === 'highlight') createWhiteoutDom(edit);
       else if (edit.type === 'drawing') renderDrawingSvg(edit);
       else if (edit.type === 'shape') createShapeDom(edit);
       else if (edit.type === 'image') createImageDom(edit);
     });
+
+    renderHeaderFooterPreview();
   }
 
   // Duplicate any edit (text, whiteout, shape, or image) as a new
@@ -726,14 +844,29 @@
     return rgbToHex(nr, ng, nb);
   }
 
+  function hexToRgba(hex, alpha) {
+    const n = parseInt(hex.replace('#', ''), 16);
+    const r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
   function createWhiteoutDom(edit) {
+    const isHighlight = edit.type === 'highlight';
+    const PALETTE = isHighlight ? HIGHLIGHT_COLORS : WHITEOUT_COLORS;
+
+    function paint() {
+      el.style.background = isHighlight
+        ? hexToRgba(edit.color, (edit.opacity ?? 40) / 100)
+        : edit.color;
+    }
+
     const el = document.createElement('div');
-    el.className = 'edit-el whiteout-el';
+    el.className = isHighlight ? 'edit-el highlight-el' : 'edit-el whiteout-el';
     el.style.left = `${edit.xPct}%`;
     el.style.top = `${edit.yPct}%`;
     el.style.width = `${edit.widthPct}%`;
     el.style.height = `${edit.heightPct}%`;
-    el.style.background = edit.color;
+    paint();
 
     const delBtn = document.createElement('button');
     delBtn.className = 'del-btn-box';
@@ -759,7 +892,7 @@
     const controls = document.createElement('div');
     controls.className = 'wo-controls';
 
-    WHITEOUT_COLORS.forEach((c) => {
+    PALETTE.forEach((c) => {
       const sw = document.createElement('span');
       sw.className = 'mini-swatch' + (c === edit.color ? ' selected' : '');
       sw.style.background = c;
@@ -769,7 +902,7 @@
         edit.baseColor = c;
         edit.colorAdjust = 0;
         adjustSlider.value = 0;
-        el.style.background = c;
+        paint();
         controls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.toggle('selected', s === sw));
         colorPicker.value = c;
       });
@@ -786,85 +919,87 @@
       edit.baseColor = e.target.value;
       edit.colorAdjust = 0;
       adjustSlider.value = 0;
-      el.style.background = edit.color;
+      paint();
       controls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.remove('selected'));
     });
     colorPicker.addEventListener('click', (e) => e.stopPropagation());
     colorPicker.addEventListener('mousedown', (e) => e.stopPropagation());
     controls.appendChild(colorPicker);
 
-    const eyedropperBtn = document.createElement('button');
-    eyedropperBtn.type = 'button';
-    eyedropperBtn.className = 'eyedropper-btn';
-    eyedropperBtn.title = 'Click anywhere on the page to pick that color';
-    eyedropperBtn.textContent = '💧';
-    eyedropperBtn.addEventListener('mousedown', (e) => e.stopPropagation());
-    eyedropperBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const canvas = previewWrap.querySelector('canvas');
-      if (!canvas) return;
+    if (!isHighlight) {
+      const eyedropperBtn = document.createElement('button');
+      eyedropperBtn.type = 'button';
+      eyedropperBtn.className = 'eyedropper-btn';
+      eyedropperBtn.title = 'Click anywhere on the page to pick that color';
+      eyedropperBtn.textContent = '💧';
+      eyedropperBtn.addEventListener('mousedown', (e) => e.stopPropagation());
+      eyedropperBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const canvas = previewWrap.querySelector('canvas');
+        if (!canvas) return;
 
-      previewWrap.style.cursor = 'crosshair';
-      eyedropperBtn.classList.add('toggled');
-      document.querySelectorAll('.edit-el').forEach((n) => { n.style.pointerEvents = 'none'; });
+        previewWrap.style.cursor = 'crosshair';
+        eyedropperBtn.classList.add('toggled');
+        document.querySelectorAll('.edit-el').forEach((n) => { n.style.pointerEvents = 'none'; });
 
-      function sampleAt(clientX, clientY) {
-        const rect = canvas.getBoundingClientRect();
-        const px = Math.round(((clientX - rect.left) / rect.width) * canvas.width);
-        const py = Math.round(((clientY - rect.top) / rect.height) * canvas.height);
-        const ctx = canvas.getContext('2d');
-        const radius = 3;
-        const x0 = Math.max(0, px - radius);
-        const y0 = Math.max(0, py - radius);
-        const w = Math.min(canvas.width, px + radius) - x0;
-        const h = Math.min(canvas.height, py + radius) - y0;
-        const data = ctx.getImageData(x0, y0, Math.max(1, w), Math.max(1, h)).data;
-        let r = 0, g = 0, b = 0, n = 0;
-        for (let i = 0; i < data.length; i += 4) {
-          r += data[i]; g += data[i + 1]; b += data[i + 2]; n++;
+        function sampleAt(clientX, clientY) {
+          const rect = canvas.getBoundingClientRect();
+          const px = Math.round(((clientX - rect.left) / rect.width) * canvas.width);
+          const py = Math.round(((clientY - rect.top) / rect.height) * canvas.height);
+          const ctx = canvas.getContext('2d');
+          const radius = 3;
+          const x0 = Math.max(0, px - radius);
+          const y0 = Math.max(0, py - radius);
+          const w = Math.min(canvas.width, px + radius) - x0;
+          const h = Math.min(canvas.height, py + radius) - y0;
+          const data = ctx.getImageData(x0, y0, Math.max(1, w), Math.max(1, h)).data;
+          let r = 0, g = 0, b = 0, n = 0;
+          for (let i = 0; i < data.length; i += 4) {
+            r += data[i]; g += data[i + 1]; b += data[i + 2]; n++;
+          }
+          r = Math.round(r / n); g = Math.round(g / n); b = Math.round(b / n);
+          return '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('');
         }
-        r = Math.round(r / n); g = Math.round(g / n); b = Math.round(b / n);
-        return '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('');
-      }
 
-      function onPick(ev) {
-        ev.stopPropagation();
-        ev.preventDefault();
-        const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
-        const clientY = ev.touches ? ev.touches[0].clientY : ev.clientY;
-        try {
-          const hex = sampleAt(clientX, clientY);
-          edit.color = hex;
-          edit.baseColor = hex;
-          edit.colorAdjust = 0;
-          adjustSlider.value = 0;
-          el.style.background = hex;
-          colorPicker.value = hex;
-          controls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.remove('selected'));
-        } catch (err) {
-          console.error('color sampling failed', err);
+        function onPick(ev) {
+          ev.stopPropagation();
+          ev.preventDefault();
+          const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+          const clientY = ev.touches ? ev.touches[0].clientY : ev.clientY;
+          try {
+            const hex = sampleAt(clientX, clientY);
+            edit.color = hex;
+            edit.baseColor = hex;
+            edit.colorAdjust = 0;
+            adjustSlider.value = 0;
+            paint();
+            colorPicker.value = hex;
+            controls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.remove('selected'));
+          } catch (err) {
+            console.error('color sampling failed', err);
+          }
+          cleanup();
         }
-        cleanup();
-      }
 
-      function onKey(ev) {
-        if (ev.key === 'Escape') cleanup();
-      }
+        function onKey(ev) {
+          if (ev.key === 'Escape') cleanup();
+        }
 
-      function cleanup() {
-        previewWrap.style.cursor = '';
-        eyedropperBtn.classList.remove('toggled');
-        document.querySelectorAll('.edit-el').forEach((n) => { n.style.pointerEvents = ''; });
-        previewWrap.removeEventListener('click', onPick, true);
-        previewWrap.removeEventListener('touchstart', onPick, true);
-        document.removeEventListener('keydown', onKey);
-      }
+        function cleanup() {
+          previewWrap.style.cursor = '';
+          eyedropperBtn.classList.remove('toggled');
+          document.querySelectorAll('.edit-el').forEach((n) => { n.style.pointerEvents = ''; });
+          previewWrap.removeEventListener('click', onPick, true);
+          previewWrap.removeEventListener('touchstart', onPick, true);
+          document.removeEventListener('keydown', onKey);
+        }
 
-      previewWrap.addEventListener('click', onPick, { capture: true, once: true });
-      previewWrap.addEventListener('touchstart', onPick, { capture: true, once: true, passive: false });
-      document.addEventListener('keydown', onKey);
-    });
-    controls.appendChild(eyedropperBtn);
+        previewWrap.addEventListener('click', onPick, { capture: true, once: true });
+        previewWrap.addEventListener('touchstart', onPick, { capture: true, once: true, passive: false });
+        document.addEventListener('keydown', onKey);
+      });
+      controls.appendChild(eyedropperBtn);
+    }
 
     const adjustSlider = document.createElement('input');
     adjustSlider.type = 'range';
@@ -878,10 +1013,27 @@
     adjustSlider.addEventListener('input', () => {
       edit.colorAdjust = parseInt(adjustSlider.value, 10);
       edit.color = adjustLightness(edit.baseColor, edit.colorAdjust);
-      el.style.background = edit.color;
+      paint();
       colorPicker.value = edit.color;
     });
     controls.appendChild(adjustSlider);
+
+    if (isHighlight) {
+      const opacitySlider = document.createElement('input');
+      opacitySlider.type = 'range';
+      opacitySlider.className = 'adjust-slider';
+      opacitySlider.min = '10';
+      opacitySlider.max = '80';
+      opacitySlider.value = String(edit.opacity ?? 40);
+      opacitySlider.title = 'Highlight opacity';
+      opacitySlider.addEventListener('mousedown', (e) => e.stopPropagation());
+      opacitySlider.addEventListener('click', (e) => e.stopPropagation());
+      opacitySlider.addEventListener('input', () => {
+        edit.opacity = parseInt(opacitySlider.value, 10);
+        paint();
+      });
+      controls.appendChild(opacitySlider);
+    }
 
     el.appendChild(controls);
 
@@ -1328,6 +1480,25 @@
     validateDownload();
   });
 
+  addHighlightBtn.addEventListener('click', () => {
+    const edit = {
+      id: newId(),
+      type: 'highlight',
+      pageNum: currentPage,
+      xPct: 15,
+      yPct: 15,
+      widthPct: 30,
+      heightPct: 6,
+      color: HIGHLIGHT_COLORS[0],
+      baseColor: HIGHLIGHT_COLORS[0],
+      colorAdjust: 0,
+      opacity: 40,
+    };
+    edits.push(edit);
+    renderPageElements();
+    validateDownload();
+  });
+
   // ---- shape tool ----
 
   shapeToolBtn.addEventListener('click', (e) => {
@@ -1494,6 +1665,12 @@
     sourcePassword = null;
     zoomPct = 100;
     applyZoom();
+    headerFooterConfig = {
+      headerLeft: '', headerCenter: '', headerRight: '',
+      footerLeft: '', footerCenter: '', footerRight: '',
+      fontSizePct: 1.8,
+      color: '#16140f',
+    };
 
     const arrayBuffer = await file.arrayBuffer();
     sourceArrayBuffer = arrayBuffer;
@@ -1576,7 +1753,7 @@
   // ---- download ----
 
   async function buildEditedPdf() {
-    const { PDFDocument, StandardFonts, rgb, LineCapStyle } = PDFLib;
+    const { PDFDocument, StandardFonts, rgb, LineCapStyle, BlendMode } = PDFLib;
     const loadOpts = sourcePassword ? { password: sourcePassword } : undefined;
     const pdfDoc = await PDFDocument.load(sourceArrayBuffer.slice(0), loadOpts);
     pdfDoc.registerFontkit(fontkit);
@@ -1663,13 +1840,19 @@
       const { width, height } = page.getSize();
 
       try {
-        if (edit.type === 'whiteout') {
+        if (edit.type === 'whiteout' || edit.type === 'highlight') {
+          const isHighlight = edit.type === 'highlight';
           const x = width * (edit.xPct / 100);
           const boxWidth = width * (edit.widthPct / 100);
           const boxHeight = height * (edit.heightPct / 100);
           const y = height - height * (edit.yPct / 100) - boxHeight;
-          const { r, g, b } = hexToRgb(edit.color || '#ffffff');
-          page.drawRectangle({ x, y, width: boxWidth, height: boxHeight, color: rgb(r, g, b) });
+          const { r, g, b } = hexToRgb(edit.color || (isHighlight ? '#ffeb3b' : '#ffffff'));
+          const drawOpts = { x, y, width: boxWidth, height: boxHeight, color: rgb(r, g, b) };
+          if (isHighlight) {
+            drawOpts.opacity = (edit.opacity ?? 40) / 100;
+            drawOpts.blendMode = BlendMode.Multiply;
+          }
+          page.drawRectangle(drawOpts);
         } else if (edit.type === 'shape') {
           const { r, g, b } = hexToRgb(edit.color);
           const thickness = edit.strokeWidthPct;
@@ -1755,6 +1938,44 @@
       } catch (editErr) {
         console.error('Skipped one edit that failed to render', edit, editErr);
         skippedCount += 1;
+      }
+    }
+
+    if (hasAnyHeaderFooterText()) {
+      const hfColor = hexToRgb(headerFooterConfig.color);
+      for (let i = 0; i < pages.length; i++) {
+        const page = pages[i];
+        const { width, height } = page.getSize();
+        const pageNum = i + 1;
+        const marginX = width * (HF_MARGIN_X_PCT / 100);
+        const marginY = height * (HF_MARGIN_Y_PCT / 100);
+        const fontSize = width * (headerFooterConfig.fontSizePct / 100);
+
+        const slots = [
+          [headerFooterConfig.headerLeft, height - marginY, 'left'],
+          [headerFooterConfig.headerCenter, height - marginY, 'center'],
+          [headerFooterConfig.headerRight, height - marginY, 'right'],
+          [headerFooterConfig.footerLeft, marginY, 'left'],
+          [headerFooterConfig.footerCenter, marginY, 'center'],
+          [headerFooterConfig.footerRight, marginY, 'right'],
+        ];
+
+        for (const [raw, y, align] of slots) {
+          if (!raw || !raw.trim()) continue;
+          try {
+            const text = substituteTokens(raw, pageNum, pages.length);
+            const effectiveFamily = BENGALI_RANGE.test(text) ? 'HindSiliguri' : 'Helvetica';
+            const font = await pickFont({ fontFamily: effectiveFamily, bold: false, italic: false });
+            const textWidth = font.widthOfTextAtSize(text, fontSize);
+            let x = marginX;
+            if (align === 'center') x = width / 2 - textWidth / 2;
+            if (align === 'right') x = width - marginX - textWidth;
+            page.drawText(text, { x, y, size: fontSize, font, color: rgb(hfColor.r, hfColor.g, hfColor.b) });
+          } catch (hfErr) {
+            console.error('Skipped one header/footer slot that failed to render', hfErr);
+            skippedCount += 1;
+          }
+        }
       }
     }
 

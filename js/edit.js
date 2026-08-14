@@ -40,6 +40,7 @@
   const actionsBar = document.getElementById('actionsBar');
   const downloadBtn = document.getElementById('downloadBtn');
   const viewPrintBtn = document.getElementById('viewPrintBtn');
+  const shareBtn = document.getElementById('shareBtn');
   const statusText = document.getElementById('statusText');
   const printModal = document.getElementById('printModal');
   const printPagesWrap = document.getElementById('printPagesWrap');
@@ -299,6 +300,7 @@
   function validateDownload() {
     downloadBtn.disabled = !sourceArrayBuffer;
     viewPrintBtn.disabled = !sourceArrayBuffer;
+    if (shareBtn) shareBtn.disabled = !sourceArrayBuffer;
 
     const counterEl = document.getElementById('editCount');
     if (counterEl) {
@@ -2412,6 +2414,47 @@
       validateDownload();
     }
   });
+
+  // ---- share (Web Share API — opens the device's native share sheet,
+  // which includes WhatsApp, Email, and any other installed app that
+  // accepts files. Only shown when the browser actually supports
+  // sharing files, since desktop support is inconsistent.) ----
+
+  if (shareBtn) {
+    (async () => {
+      try {
+        const probeFile = new File([new Blob(['x'])], 'probe.pdf', { type: 'application/pdf' });
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [probeFile] })) {
+          shareBtn.style.display = '';
+        }
+      } catch (probeErr) {
+        // Web Share (files) unsupported — leave the button hidden.
+      }
+    })();
+
+    shareBtn.addEventListener('click', async () => {
+      if (!sourceArrayBuffer) return;
+      shareBtn.disabled = true;
+      setStatus('preparing to share…');
+
+      try {
+        const { bytes } = await buildEditedPdf();
+        const filename = `${baseName(sourceFileName)}-edited.pdf`;
+        const file = new File([bytes], filename, { type: 'application/pdf' });
+        await navigator.share({ files: [file], title: filename });
+        setStatus('shared');
+      } catch (shareErr) {
+        if (shareErr && shareErr.name === 'AbortError') {
+          setStatus('');
+        } else {
+          console.error(shareErr);
+          setStatus('sharing failed — check the console');
+        }
+      } finally {
+        validateDownload();
+      }
+    });
+  }
 
   // ---- view & print ----
 

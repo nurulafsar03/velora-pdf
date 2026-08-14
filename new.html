@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="newpdf_title">New PDF — VeloraPDF</title>
+<meta name="description" content="Start a new PDF from a blank page, your camera, or existing images.">
+<link rel="icon" href="/favicon.ico?v=2" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png?v=2">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=2">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .page-header { padding: 40px 0 8px; }
+  .page-header h1 {
+    font-family: var(--font-display);
+    font-size: 34px;
+    font-weight: 500;
+    margin: 0 0 8px;
+  }
+  .page-header p.lede {
+    font-size: 15px;
+    color: var(--paper-dim);
+    max-width: 60ch;
+    margin: 0 0 8px;
+  }
+  .back-link { display: inline-block; font-size: 13px; color: var(--mist); margin-bottom: 4px; }
+  .back-link:hover { color: var(--blueprint); }
+
+  .newpdf-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+    padding: 28px 0 90px;
+  }
+  .newpdf-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px;
+    cursor: pointer;
+    display: block;
+    transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+  }
+  .newpdf-card:hover {
+    border-color: var(--blueprint-dim);
+    background: var(--surface-hi);
+    transform: translateY(-2px);
+  }
+  .newpdf-card .icon-tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--blueprint);
+    border: 1px solid var(--blueprint-dim);
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: var(--radius);
+    margin-bottom: 14px;
+  }
+  .newpdf-card h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 500;
+    margin: 0 0 6px;
+  }
+  .newpdf-card p {
+    font-size: 13px;
+    color: var(--mist);
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* Modals reuse the password-modal overlay pattern from edit.html */
+  .np-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .np-modal.active { display: flex; }
+  .np-modal-box {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 24px;
+    width: 380px;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+  }
+  .np-modal-box h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    margin: 0 0 8px;
+    color: var(--paper);
+  }
+  .np-modal-box p.np-hint {
+    font-size: 13px;
+    color: var(--mist);
+    margin: 0 0 16px;
+    line-height: 1.5;
+  }
+  .np-field-label {
+    font-size: 12px;
+    color: var(--paper-dim);
+    margin: 14px 0 6px;
+  }
+  .np-field-label:first-of-type { margin-top: 0; }
+  .np-modal-box select,
+  .np-modal-box input[type="number"] {
+    width: 100%;
+    background: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--paper);
+    padding: 9px 10px;
+    font-size: 14px;
+  }
+  .np-orientation-row { display: flex; gap: 8px; }
+  .np-orientation-row button {
+    flex: 1;
+    padding: 10px;
+    background: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--paper-dim);
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .np-orientation-row button.selected { border-color: var(--blueprint); color: var(--paper); background: rgba(111,151,201,0.12); }
+  .np-modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+
+  .np-scan-thumbs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 8px;
+    margin: 14px 0;
+  }
+  .np-scan-thumb {
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    aspect-ratio: 3 / 4;
+    background: var(--ink);
+  }
+  .np-scan-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .np-scan-thumb .np-scan-del {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--stamp);
+    color: var(--ink);
+    border: none;
+    font-size: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .np-scan-empty { font-size: 12px; color: var(--mist); padding: 10px 0; }
+  .np-status { font-family: var(--font-mono); font-size: 12px; color: var(--mist); margin-top: 10px; min-height: 16px; }
+</style>
+</head>
+<body>
+<div class="top-accent" aria-hidden="true"></div>
+
+<div class="wrap">
+  <header class="site">
+    <a class="brand" href="index.html"><img src="assets/logo-mark-light.svg" width="30" height="30" alt="" class="brand-icon"><span class="brand-text">velorapdf<span class="brand-tld">.online</span></span></a>
+    <nav class="site-links">
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-btn" type="button" aria-haspopup="true" aria-expanded="false">
+          <span data-i18n="nav_tools">Tools</span>
+          <svg class="chevron" width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-dropdown-panel mega">
+          <div class="mega-col">
+            <div class="mega-label" data-i18n="nav_group_organize">Organize</div>
+            <a href="merge.html" data-i18n="home_tool_merge_title">Merge PDF</a>
+            <a href="split.html" data-i18n="home_tool_split_title">Split PDF</a>
+            <a href="rotate.html" data-i18n="home_tool_rotate_title">Rotate PDF</a>
+            <a href="organize.html" data-i18n="home_tool_organize_title">Organize Pages</a>
+            <a href="edit.html" data-i18n="edit_title">Edit PDF</a>
+            <a href="view.html" data-i18n="view_title">View &amp; Print PDF</a>
+          </div>
+          <div class="mega-col">
+            <div class="mega-label tag-stamp" data-i18n="nav_group_security">Security &amp; marking</div>
+            <a href="watermark.html" data-i18n="home_tool_watermark_title">Watermark</a>
+            <a href="protect.html" data-i18n="home_tool_protect_title">Protect PDF</a>
+            <a href="sign.html" data-i18n="home_tool_sign_title">Sign PDF</a>
+          </div>
+          <div class="mega-col">
+            <div class="mega-label tag-ochre" data-i18n="nav_group_convert">Convert</div>
+            <a href="compress.html" data-i18n="home_tool_compress_title">Compress PDF</a>
+            <a href="img2pdf.html" data-i18n="home_tool_img2pdf_title">Image to PDF</a>
+            <a href="pdf2jpg.html" data-i18n="home_tool_pdf2jpg_title">PDF to JPG</a>
+            <a href="txt2pdf.html" data-i18n="home_tool_txt2pdf_title">TXT to PDF</a>
+            <a href="pdf2pptx.html" data-i18n="home_tool_pdf2pptx_title">PDF to PowerPoint</a>
+            <a href="pptx2pdf.html" data-i18n="home_tool_pptx2pdf_title">PowerPoint to PDF</a>
+            <a href="xlsx2pdf.html" data-i18n="home_tool_xlsx2pdf_title">Excel to PDF</a>
+            <a href="pdf2xlsx.html" data-i18n="home_tool_pdf2xlsx_title">PDF to Excel</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-btn" type="button" aria-haspopup="true" aria-expanded="false">
+          <span data-i18n="nav_more">More</span>
+          <svg class="chevron" width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-dropdown-panel simple">
+          <a href="blog.html" data-i18n="nav_blog">Blog</a>
+          <a href="about.html" data-i18n="footer_about">About</a>
+          <a href="privacy.html" data-i18n="footer_privacy">Privacy</a>
+          <a href="contact.html" data-i18n="footer_contact">Contact</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <div class="page-header">
+    <a class="back-link" href="index.html" data-i18n="newpdf_back">&larr; Back home</a>
+    <h1 data-i18n="newpdf_title_h1">New PDF</h1>
+    <p class="lede" data-i18n="newpdf_lede">Start a PDF from scratch, your camera, an existing PDF, or images — then it opens straight in Edit PDF, ready to work on.</p>
+  </div>
+
+  <div class="newpdf-grid">
+    <div class="newpdf-card" id="cardBlank">
+      <span class="icon-tag" data-i18n="newpdf_tag_new">New</span>
+      <h3 data-i18n="newpdf_blank_title">Blank page</h3>
+      <p data-i18n="newpdf_blank_desc">Choose a size and page count, start typing.</p>
+    </div>
+    <a class="newpdf-card" href="edit.html" style="text-decoration:none;">
+      <span class="icon-tag" data-i18n="newpdf_tag_open">Open</span>
+      <h3 data-i18n="newpdf_frompdf_title">From PDF</h3>
+      <p data-i18n="newpdf_frompdf_desc">Open an existing PDF and start editing it.</p>
+    </a>
+    <div class="newpdf-card" id="cardScanner">
+      <span class="icon-tag" data-i18n="newpdf_tag_new">New</span>
+      <h3 data-i18n="newpdf_scanner_title">From scanner</h3>
+      <p data-i18n="newpdf_scanner_desc">Capture pages with your camera and combine them.</p>
+    </div>
+    <a class="newpdf-card" href="img2pdf.html" style="text-decoration:none;">
+      <span class="icon-tag" data-i18n="newpdf_tag_open">Open</span>
+      <h3 data-i18n="newpdf_fromimage_title">From images</h3>
+      <p data-i18n="newpdf_fromimage_desc">Turn JPGs or PNGs already on your device into a PDF.</p>
+    </a>
+  </div>
+
+  <footer class="site">
+    <span data-i18n="footer_tagline">VeloraPDF — part of the Velora toolkit</span>
+    <span class="footer-links">
+      <a href="about.html" data-i18n="footer_about">About</a> · <a href="privacy.html" data-i18n="footer_privacy">Privacy</a> · <a href="contact.html" data-i18n="footer_contact">Contact</a>
+    </span>
+  </footer>
+</div>
+
+<!-- Blank page modal -->
+<div class="np-modal" id="blankModal">
+  <div class="np-modal-box">
+    <h3 data-i18n="newpdf_blank_modal_title">Blank page</h3>
+    <p class="np-hint" data-i18n="newpdf_blank_modal_hint">Creates an empty PDF, then opens it in Edit PDF so you can start typing right away.</p>
+
+    <div class="np-field-label" data-i18n="newpdf_size_label">Page size</div>
+    <select id="blankSizeSelect">
+      <option value="a4" selected>A4</option>
+      <option value="letter">Letter</option>
+      <option value="legal">Legal</option>
+    </select>
+
+    <div class="np-field-label" data-i18n="newpdf_orientation_label">Orientation</div>
+    <div class="np-orientation-row">
+      <button type="button" data-orientation="portrait" class="selected" id="orientPortraitBtn" data-i18n="newpdf_portrait">Portrait</button>
+      <button type="button" data-orientation="landscape" id="orientLandscapeBtn" data-i18n="newpdf_landscape">Landscape</button>
+    </div>
+
+    <div class="np-field-label" data-i18n="newpdf_pagecount_label">Number of pages</div>
+    <input type="number" id="blankPageCount" min="1" max="200" value="1">
+
+    <p class="np-status" id="blankStatus"></p>
+    <div class="np-modal-actions">
+      <button class="btn btn-ghost" id="blankCancelBtn" data-i18n="edit_pw_cancel">Cancel</button>
+      <button class="btn btn-primary" id="blankCreateBtn" data-i18n="newpdf_create_btn">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- Scanner modal -->
+<div class="np-modal" id="scannerModal">
+  <div class="np-modal-box">
+    <h3 data-i18n="newpdf_scanner_modal_title">From scanner</h3>
+    <p class="np-hint" data-i18n="newpdf_scanner_modal_hint">Capture one page at a time with your camera. Add as many as you need, then combine them into one PDF.</p>
+
+    <input type="file" id="scannerCaptureInput" accept="image/*" capture="environment" style="display:none">
+    <button class="btn btn-ghost" id="scannerAddBtn" data-i18n="newpdf_scanner_add_btn">+ Capture a page</button>
+
+    <div class="np-scan-thumbs" id="scannerThumbs"></div>
+    <p class="np-scan-empty" id="scannerEmpty" data-i18n="newpdf_scanner_empty">No pages captured yet.</p>
+
+    <p class="np-status" id="scannerStatus"></p>
+    <div class="np-modal-actions">
+      <button class="btn btn-ghost" id="scannerCancelBtn" data-i18n="edit_pw_cancel">Cancel</button>
+      <button class="btn btn-primary" id="scannerCreateBtn" data-i18n="newpdf_create_btn" disabled>Create</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/@cantoo/pdf-lib@2.7.1/dist/pdf-lib.min.js"></script>
+<script src="js/handoff.js?v=1"></script>
+<script>
+(() => {
+  'use strict';
+
+  // ---- blank page ----
+
+  const cardBlank = document.getElementById('cardBlank');
+  const blankModal = document.getElementById('blankModal');
+  const blankSizeSelect = document.getElementById('blankSizeSelect');
+  const orientPortraitBtn = document.getElementById('orientPortraitBtn');
+  const orientLandscapeBtn = document.getElementById('orientLandscapeBtn');
+  const blankPageCount = document.getElementById('blankPageCount');
+  const blankCreateBtn = document.getElementById('blankCreateBtn');
+  const blankCancelBtn = document.getElementById('blankCancelBtn');
+  const blankStatus = document.getElementById('blankStatus');
+
+  const PAGE_SIZES = {
+    a4: [595.28, 841.89],
+    letter: [612, 792],
+    legal: [612, 1008],
+  };
+  let orientation = 'portrait';
+
+  cardBlank.addEventListener('click', () => blankModal.classList.add('active'));
+  blankCancelBtn.addEventListener('click', () => blankModal.classList.remove('active'));
+
+  function setOrientation(o) {
+    orientation = o;
+    orientPortraitBtn.classList.toggle('selected', o === 'portrait');
+    orientLandscapeBtn.classList.toggle('selected', o === 'landscape');
+  }
+  orientPortraitBtn.addEventListener('click', () => setOrientation('portrait'));
+  orientLandscapeBtn.addEventListener('click', () => setOrientation('landscape'));
+
+  blankCreateBtn.addEventListener('click', async () => {
+    const count = Math.max(1, Math.min(200, parseInt(blankPageCount.value, 10) || 1));
+    let [w, h] = PAGE_SIZES[blankSizeSelect.value] || PAGE_SIZES.a4;
+    if (orientation === 'landscape') { [w, h] = [h, w]; }
+
+    blankCreateBtn.disabled = true;
+    blankStatus.textContent = 'creating…';
+    try {
+      const { PDFDocument } = PDFLib;
+      const pdfDoc = await PDFDocument.create();
+      for (let i = 0; i < count; i++) pdfDoc.addPage([w, h]);
+      const bytes = await pdfDoc.save();
+      await window.VeloraHandoff.navigateWithFile(bytes, 'blank.pdf', 'edit.html');
+    } catch (err) {
+      console.error(err);
+      blankStatus.textContent = 'failed — check the console';
+      blankCreateBtn.disabled = false;
+    }
+  });
+
+  // ---- scanner ----
+
+  const cardScanner = document.getElementById('cardScanner');
+  const scannerModal = document.getElementById('scannerModal');
+  const scannerCaptureInput = document.getElementById('scannerCaptureInput');
+  const scannerAddBtn = document.getElementById('scannerAddBtn');
+  const scannerThumbs = document.getElementById('scannerThumbs');
+  const scannerEmpty = document.getElementById('scannerEmpty');
+  const scannerCreateBtn = document.getElementById('scannerCreateBtn');
+  const scannerCancelBtn = document.getElementById('scannerCancelBtn');
+  const scannerStatus = document.getElementById('scannerStatus');
+
+  let scannedPages = []; // { arrayBuffer, type: 'png'|'jpg', naturalW, naturalH, dataUrl }
+
+  cardScanner.addEventListener('click', () => scannerModal.classList.add('active'));
+  scannerCancelBtn.addEventListener('click', () => scannerModal.classList.remove('active'));
+  scannerAddBtn.addEventListener('click', () => scannerCaptureInput.click());
+
+  function renderThumbs() {
+    scannerThumbs.innerHTML = '';
+    scannerEmpty.style.display = scannedPages.length ? 'none' : 'block';
+    scannedPages.forEach((page, idx) => {
+      const thumb = document.createElement('div');
+      thumb.className = 'np-scan-thumb';
+      const img = document.createElement('img');
+      img.src = page.dataUrl;
+      thumb.appendChild(img);
+      const del = document.createElement('button');
+      del.className = 'np-scan-del';
+      del.textContent = '✕';
+      del.addEventListener('click', () => {
+        scannedPages.splice(idx, 1);
+        renderThumbs();
+      });
+      thumb.appendChild(del);
+      scannerThumbs.appendChild(thumb);
+    });
+    scannerCreateBtn.disabled = scannedPages.length === 0;
+  }
+
+  scannerCaptureInput.addEventListener('change', async () => {
+    const file = scannerCaptureInput.files[0];
+    scannerCaptureInput.value = '';
+    if (!file) return;
+
+    const arrayBuffer = await file.arrayBuffer();
+    const dataUrl = await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.readAsDataURL(file);
+    });
+    const dims = await new Promise((resolve) => {
+      const im = new Image();
+      im.onload = () => resolve({ w: im.width, h: im.height });
+      im.src = dataUrl;
+    });
+
+    scannedPages.push({
+      arrayBuffer,
+      type: file.type === 'image/png' ? 'png' : 'jpg',
+      naturalW: dims.w,
+      naturalH: dims.h,
+      dataUrl,
+    });
+    renderThumbs();
+  });
+
+  scannerCreateBtn.addEventListener('click', async () => {
+    if (!scannedPages.length) return;
+    scannerCreateBtn.disabled = true;
+    scannerStatus.textContent = 'building PDF…';
+
+    try {
+      const { PDFDocument } = PDFLib;
+      const pdfDoc = await PDFDocument.create();
+
+      for (const page of scannedPages) {
+        const embedded = page.type === 'png'
+          ? await pdfDoc.embedPng(page.arrayBuffer)
+          : await pdfDoc.embedJpg(page.arrayBuffer);
+        // Treat image pixels as 96dpi and convert to PDF points (72dpi) —
+        // matches the same convention used by the Image to PDF tool.
+        const pageWidth = page.naturalW * 0.75;
+        const pageHeight = page.naturalH * 0.75;
+        const pdfPage = pdfDoc.addPage([pageWidth, pageHeight]);
+        pdfPage.drawImage(embedded, { x: 0, y: 0, width: pageWidth, height: pageHeight });
+      }
+
+      const bytes = await pdfDoc.save();
+      await window.VeloraHandoff.navigateWithFile(bytes, 'scanned.pdf', 'edit.html');
+    } catch (err) {
+      console.error(err);
+      scannerStatus.textContent = 'failed — check the console';
+      scannerCreateBtn.disabled = false;
+    }
+  });
+
+  renderThumbs();
+})();
+</script>
+<script src="js/nav.js?v=13"></script>
+<script src="js/i18n.js?v=23"></script>
+</body>
+</html>

@@ -16,6 +16,7 @@
   --paper-dim: #6b6247;
   --mist: #857a60;
   --page: #fffdf7;
+  --hero-card: #f7ddd6;
   --blueprint: #3d6693;
   --blueprint-dim: #a8c2dd;
   --stamp: #ad4526;
@@ -302,7 +303,7 @@ nav.site-links a:hover { color: var(--paper); }
   margin: auto;
   width: 220px;
   height: 290px;
-  background: var(--page);
+  background: var(--hero-card);
   border-radius: 4px;
   box-shadow: var(--shadow-card);
   transform-origin: bottom center;
@@ -310,7 +311,7 @@ nav.site-links a:hover { color: var(--paper); }
   display: flex;
   flex-direction: column;
   padding: 18px;
-  color: var(--ink);
+  color: var(--paper);
 }
 
 .stack .card .num {

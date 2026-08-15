@@ -5,6 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title id="pageTitle">Blog — VeloraPDF</title>
 <meta name="description" id="pageDescription" content="">
+<link rel="canonical" id="pageCanonical" href="https://www.velorapdf.online/blog-post.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="VeloraPDF">
+<meta property="og:title" id="ogTitle" content="Blog — VeloraPDF">
+<meta property="og:description" id="ogDescription" content="">
+<meta property="og:url" id="ogUrl" content="https://www.velorapdf.online/blog-post.html">
+<meta property="og:image" content="https://www.velorapdf.online/assets/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" id="twitterTitle" content="Blog — VeloraPDF">
+<meta name="twitter:description" id="twitterDescription" content="">
+<meta name="twitter:image" content="https://www.velorapdf.online/assets/og-image.png">
 <link rel="icon" href="/favicon.ico?v=2" sizes="any">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
@@ -209,6 +220,15 @@
 
     document.getElementById('pageTitle').textContent = `${post.title} — VeloraPDF Blog`;
     document.getElementById('pageDescription').setAttribute('content', post.subject || '');
+
+    const postUrl = `https://www.velorapdf.online/blog-post.html?slug=${encodeURIComponent(post.slug)}`;
+    const ogTitleText = `${post.title} — VeloraPDF Blog`;
+    document.getElementById('pageCanonical').setAttribute('href', postUrl);
+    document.getElementById('ogTitle').setAttribute('content', ogTitleText);
+    document.getElementById('ogDescription').setAttribute('content', post.subject || '');
+    document.getElementById('ogUrl').setAttribute('content', postUrl);
+    document.getElementById('twitterTitle').setAttribute('content', ogTitleText);
+    document.getElementById('twitterDescription').setAttribute('content', post.subject || '');
 
     const meta = document.getElementById('postMeta');
     if (post.tag) {

@@ -23,6 +23,8 @@
   --stamp-dim: #e3ab97;
   --ochre: #a87d35;
   --ochre-dim: #ddc48f;
+  --leaf: #4f7a52;
+  --leaf-dim: #bcd4b9;
 
   --font-display: 'Fraunces', serif;
   --font-body: 'Inter', system-ui, sans-serif;
@@ -516,6 +518,24 @@ footer.site .footer-links a:hover { color: var(--blueprint); }
 }
 .btn-ghost:hover { border-color: var(--blueprint-dim); color: var(--paper); }
 
+/* Tool toolbar action buttons (Edit PDF, and other tool pages that use
+   the same sticky .toolbar) — tinted light blue as a group, distinct
+   from the "send to another tool" row below (tinted light green). */
+.toolbar .btn-ghost {
+  background: rgba(61, 102, 147, 0.07);
+  border-color: var(--blueprint-dim);
+  color: var(--paper);
+}
+.toolbar .btn-ghost:hover {
+  background: rgba(61, 102, 147, 0.14);
+  border-color: var(--blueprint);
+}
+.toolbar .btn-ghost:disabled {
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--mist);
+}
+
 .btn-danger-ghost {
   background: transparent;
   border: 1px solid var(--stamp-dim);
@@ -653,16 +673,16 @@ body.rtl .prose ul { padding-right: 20px; }
   font-size: 13px;
   padding: 8px 14px;
   border-radius: var(--radius);
-  border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--paper-dim);
+  border: 1px solid var(--leaf-dim);
+  background: rgba(79, 122, 82, 0.08);
+  color: var(--paper);
   cursor: pointer;
   transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
 .quick-actions .qa-btn:hover {
-  border-color: var(--blueprint-dim);
+  border-color: var(--leaf);
   color: var(--paper);
-  background: var(--surface-hi);
+  background: rgba(79, 122, 82, 0.16);
 }
 
 @media (max-width: 760px) {

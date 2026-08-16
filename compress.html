@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title data-i18n="compress_title">Compress PDF — VeloraPDF</title>
-<meta name="description" content="Shrink PDF file size entirely in your browser.">
+<title>Compress PDF Online Free — Reduce File Size | VeloraPDF</title>
+<meta name="description" content="Shrink a large PDF file size for free, right in your browser. Choose your compression level — no upload, no file size limit.">
 <link rel="canonical" href="https://www.velorapdf.online/compress.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="VeloraPDF">
-<meta property="og:title" content="Compress PDF — VeloraPDF">
-<meta property="og:description" content="Shrink PDF file size entirely in your browser.">
+<meta property="og:title" content="Compress PDF Online Free — Reduce File Size | VeloraPDF">
+<meta property="og:description" content="Shrink a large PDF file size for free, right in your browser. Choose your compression level — no upload, no file size limit.">
 <meta property="og:url" content="https://www.velorapdf.online/compress.html">
 <meta property="og:image" content="https://www.velorapdf.online/assets/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Compress PDF — VeloraPDF">
-<meta name="twitter:description" content="Shrink PDF file size entirely in your browser.">
+<meta name="twitter:title" content="Compress PDF Online Free — Reduce File Size | VeloraPDF">
+<meta name="twitter:description" content="Shrink a large PDF file size for free, right in your browser. Choose your compression level — no upload, no file size limit.">
 <meta name="twitter:image" content="https://www.velorapdf.online/assets/og-image.png">
 <link rel="icon" href="/favicon.ico?v=2" sizes="any">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2">
@@ -162,7 +162,87 @@
   @media (max-width: 720px) {
     .workspace.active { grid-template-columns: 1fr; }
   }
+
+  .faq-section { max-width: 760px; padding: 40px 0; }
+  .faq-section h2 {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 500;
+    margin: 0 0 20px;
+    color: var(--paper);
+  }
+  .faq-item { border-bottom: 1px solid var(--line); padding: 16px 0; }
+  .faq-item:last-child { border-bottom: none; }
+  .faq-item h3 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0 0 8px;
+    color: var(--paper);
+  }
+  .faq-item p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--paper-dim);
+    margin: 0;
+  }
 </style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Compress PDF - VeloraPDF",
+  "applicationCategory": "Utility",
+  "operatingSystem": "Any (runs in web browser)",
+  "url": "https://www.velorapdf.online/compress.html",
+  "description": "Shrink a large PDF file size for free, right in your browser. Choose your compression level — no upload, no file size limit.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Will compressing my PDF reduce the quality?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "It can, depending on the compression level you choose. \"High quality\" keeps images closer to their original resolution, while \"Smallest size\" applies more aggressive compression that may visibly reduce image sharpness."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does compressing a PDF remove selectable text?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes — compression re-renders each page as a compressed image, so it's best for scanned or image-heavy documents. Text in the compressed file will no longer be selectable or searchable."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is there a file size limit for compressing PDFs online?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No hard limit — but very large files depend on your device's available memory, since everything is processed locally in your browser."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is my PDF uploaded to a server when I compress it?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Compression happens entirely on your device — the file is never sent over the network."
+      }
+    }
+  ]
+}
+</script>
 </head>
 <body>
 <div class="top-accent" aria-hidden="true"></div>
@@ -288,7 +368,28 @@
     <span class="status-text" id="statusText"></span>
   </div>
 
-  <footer class="site">
+  
+  <div class="faq-section">
+    <h2>Frequently asked questions</h2>
+    <div class="faq-item">
+      <h3>Will compressing my PDF reduce the quality?</h3>
+      <p>It can, depending on the compression level you choose. "High quality" keeps images closer to their original resolution, while "Smallest size" applies more aggressive compression that may visibly reduce image sharpness.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Does compressing a PDF remove selectable text?</h3>
+      <p>Yes — compression re-renders each page as a compressed image, so it's best for scanned or image-heavy documents. Text in the compressed file will no longer be selectable or searchable.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Is there a file size limit for compressing PDFs online?</h3>
+      <p>No hard limit — but very large files depend on your device's available memory, since everything is processed locally in your browser.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Is my PDF uploaded to a server when I compress it?</h3>
+      <p>No. Compression happens entirely on your device — the file is never sent over the network.</p>
+    </div>
+  </div>
+
+<footer class="site">
     <span data-i18n="footer_tagline">VeloraPDF — part of the Velora toolkit</span>
     <span class="footer-links">
       <a href="about.html" data-i18n="footer_about">About</a> · <a href="privacy.html" data-i18n="footer_privacy">Privacy</a> · <a href="contact.html" data-i18n="footer_contact">Contact</a>

@@ -114,6 +114,7 @@
   .post-notfound { color: var(--mist); font-size: 14px; padding: 20px 0 90px; display: none; }
   body.rtl .prose ul { padding-left: 0; padding-right: 20px; }
 </style>
+<script type="application/ld+json" id="articleSchema"></script>
 </head>
 <body>
 <div class="top-accent" aria-hidden="true"></div>
@@ -229,6 +230,21 @@
     document.getElementById('ogUrl').setAttribute('content', postUrl);
     document.getElementById('twitterTitle').setAttribute('content', ogTitleText);
     document.getElementById('twitterDescription').setAttribute('content', post.subject || '');
+
+    const articleSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: post.title,
+      description: post.subject || '',
+      datePublished: post.date,
+      dateModified: post.date,
+      inLanguage: post.lang,
+      url: postUrl,
+      author: { '@type': 'Organization', name: 'VeloraPDF' },
+      publisher: { '@type': 'Organization', name: 'VeloraPDF' },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': postUrl },
+    };
+    document.getElementById('articleSchema').textContent = JSON.stringify(articleSchema);
 
     const meta = document.getElementById('postMeta');
     if (post.tag) {

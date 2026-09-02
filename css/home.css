@@ -240,34 +240,35 @@ body.rtl .lang-menu { right: auto; left: 0; }
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 260px;
-  margin: -46px 0 0 -130px;
+  width: 148px;
+  height: 196px;
+  margin: -98px 0 0 -74px;
   display: flex;
-  align-items: center;
-  gap: 16px;
+  flex-direction: column;
+  gap: 14px;
   background: #fff;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 16px 18px;
+  padding: 16px;
   box-shadow: 0 14px 30px -18px rgba(21, 30, 53, .4);
   transition: transform .4s cubic-bezier(.2, .8, .2, 1);
 }
-.vp-hero-card:nth-child(1) { transform: rotate(-9deg) translateX(-110px); z-index: 1; }
-.vp-hero-card:nth-child(2) { transform: rotate(-3deg) translateX(-38px); z-index: 2; }
-.vp-hero-card:nth-child(3) { transform: rotate(4deg) translateX(38px); z-index: 3; }
-.vp-hero-card:nth-child(4) { transform: rotate(11deg) translateX(110px); z-index: 4; }
-.vp-hero-cards:hover .vp-hero-card:nth-child(1) { transform: rotate(-16deg) translateX(-150px) translateY(-10px); }
-.vp-hero-cards:hover .vp-hero-card:nth-child(2) { transform: rotate(-6deg) translateX(-55px) translateY(-4px); }
-.vp-hero-cards:hover .vp-hero-card:nth-child(3) { transform: rotate(6deg) translateX(55px) translateY(-4px); }
-.vp-hero-cards:hover .vp-hero-card:nth-child(4) { transform: rotate(16deg) translateX(150px) translateY(-10px); }
-body.rtl .vp-hero-card:nth-child(1) { transform: rotate(9deg) translateX(110px); }
-body.rtl .vp-hero-card:nth-child(2) { transform: rotate(3deg) translateX(38px); }
-body.rtl .vp-hero-card:nth-child(3) { transform: rotate(-4deg) translateX(-38px); }
-body.rtl .vp-hero-card:nth-child(4) { transform: rotate(-11deg) translateX(-110px); }
-body.rtl .vp-hero-cards:hover .vp-hero-card:nth-child(1) { transform: rotate(16deg) translateX(150px) translateY(-10px); }
-body.rtl .vp-hero-cards:hover .vp-hero-card:nth-child(2) { transform: rotate(6deg) translateX(55px) translateY(-4px); }
-body.rtl .vp-hero-cards:hover .vp-hero-card:nth-child(3) { transform: rotate(-6deg) translateX(-55px) translateY(-4px); }
-body.rtl .vp-hero-cards:hover .vp-hero-card:nth-child(4) { transform: rotate(-16deg) translateX(-150px) translateY(-10px); }
+.vp-hero-card:nth-child(1) { transform: rotate(-9deg) translateX(-84px); z-index: 1; }
+.vp-hero-card:nth-child(2) { transform: rotate(-3deg) translateX(-30px); z-index: 2; }
+.vp-hero-card:nth-child(3) { transform: rotate(4deg) translateX(30px); z-index: 3; }
+.vp-hero-card:nth-child(4) { transform: rotate(11deg) translateX(84px); z-index: 4; }
+.vp-hero-cards:hover .vp-hero-card:nth-child(1) { transform: rotate(-16deg) translateX(-115px) translateY(-10px); }
+.vp-hero-cards:hover .vp-hero-card:nth-child(2) { transform: rotate(-6deg) translateX(-42px) translateY(-4px); }
+.vp-hero-cards:hover .vp-hero-card:nth-child(3) { transform: rotate(6deg) translateX(42px) translateY(-4px); }
+.vp-hero-cards:hover .vp-hero-card:nth-child(4) { transform: rotate(16deg) translateX(115px) translateY(-10px); }
+body.rtl .vp-hero-card:nth-child(1) { transform: rotate(9deg) translateX(84px); }
+body.rtl .vp-hero-card:nth-child(2) { transform: rotate(3deg) translateX(30px); }
+body.rtl .vp-hero-card:nth-child(3) { transform: rotate(-4deg) translateX(-30px); }
+body.rtl .vp-hero-card:nth-child(4) { transform: rotate(-11deg) translateX(-84px); }
+body.rtl .vp-hero-cards:hover .vp-hero-card:nth-child(1) { transform: rotate(16deg) translateX(115px) translateY(-10px); }
+body.rtl .vp-hero-cards:hover .vp-hero-card:nth-child(2) { transform: rotate(6deg) translateX(42px) translateY(-4px); }
+body.rtl .vp-hero-cards:hover .vp-hero-card:nth-child(3) { transform: rotate(-6deg) translateX(-42px) translateY(-4px); }
+body.rtl .vp-hero-cards:hover .vp-hero-card:nth-child(4) { transform: rotate(-16deg) translateX(-115px) translateY(-10px); }
 .vp-num { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--ink-4); }
 .vp-lines { flex: 1; display: flex; flex-direction: column; gap: 7px; }
 .vp-lines i { display: block; height: 7px; border-radius: 4px; background: #EFF1F6; }

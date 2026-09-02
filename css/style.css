@@ -144,10 +144,22 @@ a { color: inherit; text-decoration: none; }
 .mega-col a, .mega-col .soon-item {
   font-size: 13px;
   color: var(--paper-dim);
-  padding: 4px 0;
+  padding: 4px 0 4px 16px;
   display: block;
+  position: relative;
 }
 .mega-col a:hover { color: var(--blueprint); }
+.mega-col a::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  margin-top: -3.5px;
+  border-radius: 50%;
+  background: oklch(0.68 0.15 var(--h, 220));
+}
 .mega-col .soon-item {
   color: var(--mist);
   display: flex;
@@ -162,6 +174,28 @@ a { color: inherit; text-decoration: none; }
   border-radius: 2px;
   padding: 0 4px;
 }
+
+/* Per-tool hue, matching the homepage's colour-coded tool cards.
+   Positional (nth-of-type) so no markup changes are needed on any page —
+   column order is identical everywhere: Organize / Security / Convert. */
+.mega-col:nth-child(1) a:nth-of-type(1) { --h: 258; } /* New PDF */
+.mega-col:nth-child(1) a:nth-of-type(2) { --h: 232; } /* Merge PDF */
+.mega-col:nth-child(1) a:nth-of-type(3) { --h: 205; } /* Split PDF */
+.mega-col:nth-child(1) a:nth-of-type(4) { --h: 188; } /* Rotate PDF */
+.mega-col:nth-child(1) a:nth-of-type(5) { --h: 168; } /* Organize Pages */
+.mega-col:nth-child(1) a:nth-of-type(6) { --h: 148; } /* Edit PDF */
+.mega-col:nth-child(1) a:nth-of-type(7) { --h: 128; } /* View & Print PDF */
+.mega-col:nth-child(2) a:nth-of-type(1) { --h: 104; } /* Watermark */
+.mega-col:nth-child(2) a:nth-of-type(2) { --h: 82; }  /* Protect PDF */
+.mega-col:nth-child(2) a:nth-of-type(3) { --h: 62; }  /* Sign PDF */
+.mega-col:nth-child(3) a:nth-of-type(1) { --h: 44; }  /* Compress PDF */
+.mega-col:nth-child(3) a:nth-of-type(2) { --h: 28; }  /* Image to PDF */
+.mega-col:nth-child(3) a:nth-of-type(3) { --h: 14; }  /* PDF to JPG */
+.mega-col:nth-child(3) a:nth-of-type(4) { --h: 358; } /* TXT to PDF */
+.mega-col:nth-child(3) a:nth-of-type(5) { --h: 340; } /* PDF to PowerPoint */
+.mega-col:nth-child(3) a:nth-of-type(6) { --h: 322; } /* PowerPoint to PDF */
+.mega-col:nth-child(3) a:nth-of-type(7) { --h: 300; } /* Excel to PDF */
+.mega-col:nth-child(3) a:nth-of-type(8) { --h: 278; } /* PDF to Excel */
 
 .nav-dropdown-panel.simple {
   display: flex;
@@ -179,6 +213,8 @@ a { color: inherit; text-decoration: none; }
 .nav-dropdown-panel.simple a:hover { color: var(--paper); background: var(--surface-hi); }
 
 body.rtl .nav-dropdown-panel { left: auto; right: 0; }
+body.rtl .mega-col a { padding-left: 0; padding-right: 16px; }
+body.rtl .mega-col a::before { left: auto; right: 0; }
 
 /* ---------- layout shell ---------- */
 

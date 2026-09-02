@@ -21,7 +21,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
 <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=2">
-<link rel="stylesheet" href="css/style.css?v=2">
+<link rel="stylesheet" href="css/style.css?v=3">
 <style>
   .page-header { padding: 40px 0 8px; }
   .page-header h1 {
@@ -48,22 +48,26 @@
   .newpdf-card {
     background: var(--surface);
     border: 1px solid var(--line);
+    border-top: 3px solid oklch(0.6 0.14 var(--h, 220));
     border-radius: var(--radius);
     padding: 22px;
     cursor: pointer;
     display: block;
-    transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
+    transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
   }
   .newpdf-card:hover {
-    border-color: var(--blueprint-dim);
+    border-color: oklch(0.6 0.12 var(--h, 220) / .6);
+    border-top-color: oklch(0.65 0.15 var(--h, 220));
     background: var(--surface-hi);
     transform: translateY(-2px);
+    box-shadow: 0 16px 32px -20px oklch(0.6 0.16 var(--h, 220) / .55);
   }
   .newpdf-card .icon-tag {
     font-family: var(--font-mono);
     font-size: 10px;
-    color: var(--blueprint);
-    border: 1px solid var(--blueprint-dim);
+    color: var(--paper);
+    background: oklch(0.72 0.13 var(--h, 220));
+    border: none;
     display: inline-block;
     padding: 2px 6px;
     border-radius: var(--radius);
@@ -254,22 +258,22 @@
   </div>
 
   <div class="newpdf-grid">
-    <div class="newpdf-card" id="cardBlank">
+    <div class="newpdf-card" id="cardBlank" style="--h:258">
       <span class="icon-tag" data-i18n="newpdf_tag_new">New</span>
       <h3 data-i18n="newpdf_blank_title">Blank page</h3>
       <p data-i18n="newpdf_blank_desc">Choose a size and page count, start typing.</p>
     </div>
-    <a class="newpdf-card" href="edit.html" style="text-decoration:none;">
+    <a class="newpdf-card" href="edit.html" style="text-decoration:none; --h:148">
       <span class="icon-tag" data-i18n="newpdf_tag_open">Open</span>
       <h3 data-i18n="newpdf_frompdf_title">From PDF</h3>
       <p data-i18n="newpdf_frompdf_desc">Open an existing PDF and start editing it.</p>
     </a>
-    <div class="newpdf-card" id="cardScanner">
+    <div class="newpdf-card" id="cardScanner" style="--h:82">
       <span class="icon-tag" data-i18n="newpdf_tag_new">New</span>
       <h3 data-i18n="newpdf_scanner_title">From scanner</h3>
       <p data-i18n="newpdf_scanner_desc">Capture pages with your camera and combine them.</p>
     </div>
-    <a class="newpdf-card" href="img2pdf.html" style="text-decoration:none;">
+    <a class="newpdf-card" href="img2pdf.html" style="text-decoration:none; --h:28">
       <span class="icon-tag" data-i18n="newpdf_tag_open">Open</span>
       <h3 data-i18n="newpdf_fromimage_title">From images</h3>
       <p data-i18n="newpdf_fromimage_desc">Turn JPGs or PNGs already on your device into a PDF.</p>
@@ -491,6 +495,6 @@
 })();
 </script>
 <script src="js/nav.js?v=13"></script>
-<script src="js/i18n.js?v=24"></script>
+<script src="js/i18n.js?v=25"></script>
 </body>
 </html>

@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Free Online PDF Tools — Merge, Split, Compress & Edit PDF | VeloraPDF</title>
+<title>Free Online PDF Tools — Merge, Split, Compress &amp; Edit PDF | VeloraPDF</title>
 <meta name="description" content="Free online PDF tools that run entirely in your browser — merge, split, compress, edit, and convert PDFs. No sign-up, no file size limit, nothing uploaded to any server.">
 <link rel="canonical" href="https://www.velorapdf.online/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="VeloraPDF">
-<meta property="og:title" content="Free Online PDF Tools — Merge, Split, Compress & Edit PDF | VeloraPDF">
+<meta property="og:title" content="Free Online PDF Tools — Merge, Split, Compress &amp; Edit PDF | VeloraPDF">
 <meta property="og:description" content="Free online PDF tools that run entirely in your browser — merge, split, compress, edit, and convert PDFs. No sign-up, no file size limit, nothing uploaded to any server.">
 <meta property="og:url" content="https://www.velorapdf.online/">
 <meta property="og:image" content="https://www.velorapdf.online/assets/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Free Online PDF Tools — Merge, Split, Compress & Edit PDF | VeloraPDF">
+<meta name="twitter:title" content="Free Online PDF Tools — Merge, Split, Compress &amp; Edit PDF | VeloraPDF">
 <meta name="twitter:description" content="Free online PDF tools that run entirely in your browser — merge, split, compress, edit, and convert PDFs. No sign-up, no file size limit, nothing uploaded to any server.">
 <meta name="twitter:image" content="https://www.velorapdf.online/assets/og-image.png">
 <link rel="icon" href="/favicon.ico?v=2" sizes="any">
@@ -21,7 +21,10 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
 <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png?v=2">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=2">
-<link rel="stylesheet" href="css/style.css?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/home.css?v=1">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -38,12 +41,14 @@
 </script>
 </head>
 <body>
-<div class="top-accent" aria-hidden="true"></div>
 
-<div class="wrap">
-  <header class="site">
-    <div class="brand"><img src="assets/logo-mark-light.svg" width="30" height="30" alt="" class="brand-icon"><span class="brand-text">velorapdf<span class="brand-tld">.online</span></span></div>
-    <nav class="site-links">
+<header class="vp-header">
+  <div class="vp-header-inner">
+    <a class="vp-brand" href="index.html">
+      <img src="assets/logo-mark-light.svg" width="32" height="32" alt="">
+      <span class="vp-brand-text">velorapdf<span class="vp-brand-tld">.online</span></span>
+    </a>
+    <nav class="vp-nav">
       <div class="nav-dropdown">
         <button class="nav-dropdown-btn" type="button" aria-haspopup="true" aria-expanded="false">
           <span data-i18n="nav_tools">Tools</span>
@@ -58,16 +63,16 @@
             <a href="rotate.html" data-i18n="home_tool_rotate_title">Rotate PDF</a>
             <a href="organize.html" data-i18n="home_tool_organize_title">Organize Pages</a>
             <a href="edit.html" data-i18n="edit_title">Edit PDF</a>
-            <a href="view.html" data-i18n="view_title">View &amp; Print PDF</a>
+            <a href="view.html" data-i18n="home_tool_view_title">View &amp; Print PDF</a>
           </div>
           <div class="mega-col">
-            <div class="mega-label tag-stamp" data-i18n="nav_group_security">Security &amp; marking</div>
+            <div class="mega-label" data-i18n="nav_group_security">Security &amp; marking</div>
             <a href="watermark.html" data-i18n="home_tool_watermark_title">Watermark</a>
             <a href="protect.html" data-i18n="home_tool_protect_title">Protect PDF</a>
             <a href="sign.html" data-i18n="home_tool_sign_title">Sign PDF</a>
           </div>
           <div class="mega-col">
-            <div class="mega-label tag-ochre" data-i18n="nav_group_convert">Convert</div>
+            <div class="mega-label" data-i18n="nav_group_convert">Convert</div>
             <a href="compress.html" data-i18n="home_tool_compress_title">Compress PDF</a>
             <a href="img2pdf.html" data-i18n="home_tool_img2pdf_title">Image to PDF</a>
             <a href="pdf2jpg.html" data-i18n="home_tool_pdf2jpg_title">PDF to JPG</a>
@@ -79,7 +84,6 @@
           </div>
         </div>
       </div>
-
       <div class="nav-dropdown">
         <button class="nav-dropdown-btn" type="button" aria-haspopup="true" aria-expanded="false">
           <span data-i18n="nav_more">More</span>
@@ -92,144 +96,335 @@
           <a href="contact.html" data-i18n="footer_contact">Contact</a>
         </div>
       </div>
+      <a class="vp-btn vp-btn-primary vp-btn-sm" href="#tools" data-i18n="nav_all_tools">All tools</a>
     </nav>
-  </header>
+  </div>
+</header>
 
-  <section class="hero">
-    <div>
-      <h1><span data-i18n="home_hero_pre">Your files never </span><em data-i18n="home_hero_em">leave the tab.</em></h1>
-      <p class="lede" data-i18n="home_hero_lede">
-        Merge, split, rotate, and compress PDFs right here in your browser.
-        Nothing is uploaded to a server — the moment you close the tab, it's
-        as if it never happened.
-      </p>
-      <div class="hero-note" data-i18n="home_hero_note">No account · No upload limit · Works offline once loaded</div>
+<section class="vp-hero">
+  <div class="vp-hero-copy">
+    <div class="vp-pill"><span></span><span data-i18n="home_pill">100% in-browser</span></div>
+    <h1><span data-i18n="home_hero_pre">Your files never </span><em data-i18n="home_hero_em">leave the tab.</em></h1>
+    <p class="vp-lede" data-i18n="home_hero_lede">Merge, split, rotate, and compress PDFs right here in your browser. Nothing is uploaded to a server — the moment you close the tab, it's as if it never happened.</p>
+    <div class="vp-cta-row">
+      <a class="vp-btn vp-btn-primary" href="merge.html" data-i18n="home_cta_merge">Merge a PDF</a>
+      <a class="vp-btn vp-btn-ghost" href="edit.html" data-i18n="home_cta_edit">Edit a PDF</a>
+    </div>
+    <div class="vp-hero-note" data-i18n="home_hero_note">No account · No upload limit · Works offline once loaded</div>
+  </div>
+  <div class="vp-hero-art" aria-hidden="true">
+    <span class="vp-hero-glow"></span>
+    <div class="vp-hero-cards">
+      <div class="vp-hero-card"><span class="vp-num">01</span><span class="vp-lines"><i style="width:78%"></i><i style="width:56%"></i><i style="width:68%"></i></span><span class="vp-chip">PDF</span></div>
+      <div class="vp-hero-card"><span class="vp-num">02</span><span class="vp-lines"><i style="width:70%"></i><i style="width:85%"></i><i style="width:50%"></i></span><span class="vp-chip">PDF</span></div>
+      <div class="vp-hero-card"><span class="vp-num">03</span><span class="vp-lines"><i style="width:90%"></i><i style="width:55%"></i><i style="width:65%"></i></span><span class="vp-chip">PDF</span></div>
+      <div class="vp-hero-card"><span class="vp-num">04</span><span class="vp-lines"><i style="width:60%"></i><i style="width:75%"></i><i style="width:80%"></i></span><span class="vp-chip">PDF</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="vp-strip">
+  <div class="vp-strip-inner">
+    <div><h3 data-i18n="home_trust_1_t">Nothing is uploaded</h3><p data-i18n="home_trust_1_b">Every operation happens in your own browser process.</p></div>
+    <div><h3 data-i18n="home_trust_2_t">No file size limit</h3><p data-i18n="home_trust_2_b">Your machine is the only constraint, not a server quota.</p></div>
+    <div><h3 data-i18n="home_trust_3_t">No account, ever</h3><p data-i18n="home_trust_3_b">Open a tool, use it, close the tab. That is the whole flow.</p></div>
+    <div><h3 data-i18n="home_trust_4_t">Works offline</h3><p data-i18n="home_trust_4_b">Once the page has loaded, it keeps working without a network.</p></div>
+  </div>
+</section>
+
+<div class="vp-tools-band">
+  <section class="vp-tools" id="tools">
+    <div class="vp-section-head">
+      <div class="vp-eyebrow" data-i18n="home_phase_label">Phase 1 — ready now</div>
+      <h2 data-i18n="home_tools_h">Every tool, no upload</h2>
+      <p data-i18n="home_tools_p">Pick a tool and drop a file in. Everything runs locally, so large files are as fast as your own machine.</p>
     </div>
 
-    <div class="stack" aria-hidden="true">
-      <div class="card">
-        <div class="num">01</div>
-        <div class="rule"></div>
-        <div class="lines"><span style="width:80%"></span><span style="width:60%"></span><span style="width:70%"></span></div>
+      <div class="vp-group-head"><span data-i18n="nav_group_organize">Organize</span><i></i></div>
+      <div class="vp-grid">
+        <a class="vp-tool" href="new.html" style="--h:258">
+          <span class="vp-tool-art">
+            <span class="vp-art-row">
+              <span class="vp-page" aria-hidden="true"><i class="vp-bar-1"></i><i></i><i></i><i></i></span>
+              <span class="vp-badge" aria-hidden="true">NEW</span>
+            </span>
+          </span>
+          <span class="vp-tool-meta">
+            <span class="vp-tool-name" data-i18n="nav_newpdf">New PDF</span>
+            <span class="vp-tool-desc">Start a blank document and add pages.</span>
+          </span>
+        </a>
+        <a class="vp-tool" href="merge.html" style="--h:232">
+          <span class="vp-tool-art">
+            <span class="vp-art-row">
+              <span class="vp-stack" aria-hidden="true"><i></i><i></i></span>
+              <span class="vp-page" aria-hidden="true"><i class="vp-bar-1"></i><i></i><i></i><i></i></span>
+              <span class="vp-arrow" aria-hidden="true">→</span>
+              <span class="vp-badge" aria-hidden="true">PDF</span>
+            </span>
+          </span>
+          <span class="vp-tool-meta">
+            <span class="vp-tool-name" data-i18n="home_tool_merge_title">Merge PDF</span>
+            <span class="vp-tool-desc" data-i18n="home_tool_merge_desc">Combine multiple PDFs into one, reorder pages by drag.</span>
+          </span>
+        </a>
+        <a class="vp-tool" href="split.html" style="--h:205">
+          <span class="vp-tool-art">
+            <span class="vp-art-row">
+              <span class="vp-page" aria-hidden="true"><i class="vp-bar-1"></i><i></i><i></i><i></i></span>
+              <span class="vp-arrow" aria-hidden="true">→</span>
+              <span class="vp-badge" aria-hidden="true">A|B</span>
+            </span>
+          </span>
+          <span class="vp-tool-meta">
+            <span class="vp-tool-name" data-i18n="home_tool_split_title">Split PDF</span>
+            <span class="vp-tool-desc" data-i18n="home_tool_split_desc">Pull pages out into separate files or ranges.</span>
+          </span>
+        </a>
+        <a class="vp-tool" href="rotate.html" style="--h:188">
+          <span class="vp-tool-art">
+            <span class="vp-art-row">
+              <span class="vp-page" aria-hidden="true"><i class="vp-bar-1"></i><i></i><i></i><i></i></span>
+              <span class="vp-badge" aria-hidden="true">↻</span>
+            </span>
+          </span>
+          <span class="vp-tool-meta">
+            <span class="vp-tool-name" data-i18n="home_tool_rotate_title">Rotate PDF</span>
+            <span class="vp-tool-desc" data-i18n="home_tool_rotate_desc">Fix sideways or upside-down pages.</span>
+          </span>
+        </a>
+        <a class="vp-tool" href="organize.html" style="--h:168">
+          <span class="vp-tool-art">
+            <span class="vp-art-row">
+              <span class="vp-stack" aria-hidden="true"><i></i><i></i></span>
+              <span class="vp-page" aria-hidden="true"><i class="vp-bar-1"></i><i></i><i></i><i></i></span>
+              <span class="vp-badge" aria-hidden="true">SORT</span>
+            </span>
+          </span>
+          <span class="vp-tool-meta">
+            <span class="vp-tool-name" data-i18n="home_tool_organize_title">Organize Pages</span>
+            <span class="vp-tool-desc" data-i18n="home_tool_organize_desc">Delete, reorder, or extract specific pages.</span>
+          </span>
+        </a>
+        <a class="vp-tool" href="edit.html" style="--h:148">
+          <span class="vp-tool-art">
+            <span class="vp-art-row">
+              <span class="vp-page" aria-hidden="true"><i class="vp-bar-1"></i><i></i><i></i><i></i></span>
+              <span class="vp-badge" aria-hidden="true">EDIT</span>
+            </span>
+          </span>
+          <span class="vp-tool-meta">
+            <span class="vp-tool-name" data-i18n="edit_title">Edit PDF</span>
+            <span class="vp-tool-desc" data-i18n="home_tool_edit_desc">Add text, or cover and relabel existing content.</span>
+          </span>
+        </a>
+        <a class="vp-tool" href="view.html" style="--h:128">
+          <span class="vp-tool-art">
+            <span class="vp-art-row">
+              <span class="vp-page" aria-hidden="true"><i class="vp-bar-1"></i><i></i><i></i><i></i></span>
+              <span class="vp-badge" aria-hidden="true">VIEW</span>
+            </span>
+          </span>
+          <span class="vp-tool-meta">
+            <span class="vp-tool-name" data-i18n="home_tool_view_title">View &amp; Print PDF</span>
+            <span class="vp-tool-desc" data-i18n="home_tool_view_desc">Preview any PDF and print it, no editing needed.</span>
+          </span>
+        </a>
       </div>
-      <div class="card">
-        <div class="num">02</div>
-        <div class="rule"></div>
-        <div class="lines"><span style="width:70%"></span><span style="width:85%"></span><span style="width:50%"></span></div>
+
+      <div class="vp-group-head"><span data-i18n="nav_group_security">Security &amp; marking</span><i></i></div>
+      <div class="vp-grid">
+        <a class="vp-tool" href="watermark.html" style="--h:104">
+          <span class="vp-tool-art">
+            <span class="vp-art-row">
+              <span class="vp-page" aria-hidden="true"><i class="vp-bar-1"></i><i></i><i></i><i></i></span>
+              <span class="vp-badge" aria-hidden="true">MARK</span>
+            </span>
+          </span>
+          <span class="vp-tool-meta">
+            <span class="vp-tool-name" data-i18n="home_tool_watermark_title">Watermark</span>
+            <span class="vp-tool-desc" data-i18n="home_tool_watermark_desc">Stamp text or a logo across every page.</span>
+          </span>
+        </a>
+        <a class="vp-tool" href="protect.html" style="--h:82">
+          <span class="vp-tool-art">
+            <span class="vp-art-row">
+              <span class="vp-page" aria-hidden="true"><i class="vp-bar-1"></i><i></i><i></i><i></i></span>
+              <span class="vp-badge" aria-hidden="true">LOCK</span>
+            </span>
+          </span>
+          <span class="vp-tool-meta">
+            <span class="vp-tool-name" data-i18n="home_tool_protect_title">Protect PDF</span>
+            <span class="vp-tool-desc" data-i18n="home_tool_protect_desc">Add a password before sharing.</span>
+          </span>
+        </a>
+        <a class="vp-tool" href="sign.html" style="--h:62">
+          <span class="vp-tool-art">
+            <span class="vp-art-row">
+              <span class="vp-page" aria-hidden="true"><i class="vp-bar-1"></i><i></i><i></i><i></i></span>
+              <span class="vp-badge" aria-hidden="true">SIGN</span>
+            </span>
+          </span>
+          <span class="vp-tool-meta">
+            <span class="vp-tool-name" data-i18n="home_tool_sign_title">Sign PDF</span>
+            <span class="vp-tool-desc" data-i18n="home_tool_sign_desc">Draw or type a signature and place it on the page.</span>
+          </span>
+        </a>
       </div>
-      <div class="card">
-        <div class="num">03</div>
-        <div class="rule"></div>
-        <div class="lines"><span style="width:90%"></span><span style="width:55%"></span><span style="width:65%"></span></div>
+
+      <div class="vp-group-head"><span data-i18n="nav_group_convert">Convert</span><i></i></div>
+      <div class="vp-grid">
+        <a class="vp-tool" href="compress.html" style="--h:44">
+          <span class="vp-tool-art">
+            <span class="vp-art-row">
+              <span class="vp-page" aria-hidden="true"><i class="vp-bar-1"></i><i></i><i></i><i></i></span>
+              <span class="vp-arrow" aria-hidden="true">→</span>
+              <span class="vp-badge" aria-hidden="true">ZIP</span>
+            </span>
+          </span>
+          <span class="vp-tool-meta">
+            <span class="vp-tool-name" data-i18n="home_tool_compress_title">Compress PDF</span>
+            <span class="vp-tool-desc" data-i18n="home_tool_compress_desc">Shrink file size by re-encoding embedded images.</span>
+          </span>
+        </a>
+        <a class="vp-tool" href="img2pdf.html" style="--h:28">
+          <span class="vp-tool-art">
+            <span class="vp-art-row">
+              <span class="vp-page" aria-hidden="true"><i class="vp-bar-1"></i><i></i><i></i><i></i></span>
+              <span class="vp-arrow" aria-hidden="true">→</span>
+              <span class="vp-badge" aria-hidden="true">PDF</span>
+            </span>
+          </span>
+          <span class="vp-tool-meta">
+            <span class="vp-tool-name" data-i18n="home_tool_img2pdf_title">Image to PDF</span>
+            <span class="vp-tool-desc" data-i18n="home_tool_img2pdf_desc">Turn JPGs and PNGs into a single PDF.</span>
+          </span>
+        </a>
+        <a class="vp-tool" href="pdf2jpg.html" style="--h:14">
+          <span class="vp-tool-art">
+            <span class="vp-art-row">
+              <span class="vp-page" aria-hidden="true"><i class="vp-bar-1"></i><i></i><i></i><i></i></span>
+              <span class="vp-arrow" aria-hidden="true">→</span>
+              <span class="vp-badge" aria-hidden="true">JPG</span>
+            </span>
+          </span>
+          <span class="vp-tool-meta">
+            <span class="vp-tool-name" data-i18n="home_tool_pdf2jpg_title">PDF to JPG</span>
+            <span class="vp-tool-desc" data-i18n="home_tool_pdf2jpg_desc">Export each page as an image.</span>
+          </span>
+        </a>
+        <a class="vp-tool" href="txt2pdf.html" style="--h:358">
+          <span class="vp-tool-art">
+            <span class="vp-art-row">
+              <span class="vp-page" aria-hidden="true"><i class="vp-bar-1"></i><i></i><i></i><i></i></span>
+              <span class="vp-arrow" aria-hidden="true">→</span>
+              <span class="vp-badge" aria-hidden="true">PDF</span>
+            </span>
+          </span>
+          <span class="vp-tool-meta">
+            <span class="vp-tool-name" data-i18n="home_tool_txt2pdf_title">TXT to PDF</span>
+            <span class="vp-tool-desc" data-i18n="home_tool_txt2pdf_desc">Turn a plain text file into a PDF.</span>
+          </span>
+        </a>
+        <a class="vp-tool" href="pdf2pptx.html" style="--h:340">
+          <span class="vp-tool-art">
+            <span class="vp-art-row">
+              <span class="vp-page" aria-hidden="true"><i class="vp-bar-1"></i><i></i><i></i><i></i></span>
+              <span class="vp-arrow" aria-hidden="true">→</span>
+              <span class="vp-badge" aria-hidden="true">PPT</span>
+            </span>
+          </span>
+          <span class="vp-tool-meta">
+            <span class="vp-tool-name" data-i18n="home_tool_pdf2pptx_title">PDF to PowerPoint</span>
+            <span class="vp-tool-desc" data-i18n="home_tool_pdf2pptx_desc">Each page becomes a slide.</span>
+          </span>
+        </a>
+        <a class="vp-tool" href="pptx2pdf.html" style="--h:322">
+          <span class="vp-tool-art">
+            <span class="vp-art-row">
+              <span class="vp-page" aria-hidden="true"><i class="vp-bar-1"></i><i></i><i></i><i></i></span>
+              <span class="vp-arrow" aria-hidden="true">→</span>
+              <span class="vp-badge" aria-hidden="true">PDF</span>
+            </span>
+          </span>
+          <span class="vp-tool-meta">
+            <span class="vp-tool-name" data-i18n="home_tool_pptx2pdf_title">PowerPoint to PDF</span>
+            <span class="vp-tool-desc" data-i18n="home_tool_pptx2pdf_desc">Best-effort: text and images per slide.</span>
+          </span>
+        </a>
+        <a class="vp-tool" href="xlsx2pdf.html" style="--h:300">
+          <span class="vp-tool-art">
+            <span class="vp-art-row">
+              <span class="vp-page" aria-hidden="true"><i class="vp-bar-1"></i><i></i><i></i><i></i></span>
+              <span class="vp-arrow" aria-hidden="true">→</span>
+              <span class="vp-badge" aria-hidden="true">PDF</span>
+            </span>
+          </span>
+          <span class="vp-tool-meta">
+            <span class="vp-tool-name" data-i18n="home_tool_xlsx2pdf_title">Excel to PDF</span>
+            <span class="vp-tool-desc" data-i18n="home_tool_xlsx2pdf_desc">Turn a spreadsheet into a PDF table.</span>
+          </span>
+        </a>
+        <a class="vp-tool" href="pdf2xlsx.html" style="--h:278">
+          <span class="vp-tool-art">
+            <span class="vp-art-row">
+              <span class="vp-page" aria-hidden="true"><i class="vp-bar-1"></i><i></i><i></i><i></i></span>
+              <span class="vp-arrow" aria-hidden="true">→</span>
+              <span class="vp-badge" aria-hidden="true">XLS</span>
+            </span>
+          </span>
+          <span class="vp-tool-meta">
+            <span class="vp-tool-name" data-i18n="home_tool_pdf2xlsx_title">PDF to Excel</span>
+            <span class="vp-tool-desc" data-i18n="home_tool_pdf2xlsx_desc">Pull text out of a PDF into a spreadsheet.</span>
+          </span>
+        </a>
       </div>
-      <div class="card">
-        <div class="num">04</div>
-        <div class="rule"></div>
-        <div class="lines"><span style="width:60%"></span><span style="width:75%"></span><span style="width:80%"></span></div>
-      </div>
-    </div>
   </section>
-
-  <section id="tools">
-    <div class="section-label" data-i18n="home_phase_label">Phase 1 — ready now</div>
-    <div class="tool-grid">
-      <a class="tool-card live" href="merge.html">
-        <div class="icon-tag">MERGE</div>
-        <h3 data-i18n="home_tool_merge_title">Merge PDF</h3>
-        <p data-i18n="home_tool_merge_desc">Combine multiple PDFs into one, reorder pages by drag.</p>
-      </a>
-      <a class="tool-card live" href="split.html">
-        <div class="icon-tag">SPLIT</div>
-        <h3 data-i18n="home_tool_split_title">Split PDF</h3>
-        <p data-i18n="home_tool_split_desc">Pull pages out into separate files or ranges.</p>
-      </a>
-      <a class="tool-card live" href="rotate.html">
-        <div class="icon-tag">ROTATE</div>
-        <h3 data-i18n="home_tool_rotate_title">Rotate PDF</h3>
-        <p data-i18n="home_tool_rotate_desc">Fix sideways or upside-down pages.</p>
-      </a>
-      <a class="tool-card live" href="organize.html">
-        <div class="icon-tag">ORGANIZE</div>
-        <h3 data-i18n="home_tool_organize_title">Organize Pages</h3>
-        <p data-i18n="home_tool_organize_desc">Delete, reorder, or extract specific pages.</p>
-      </a>
-      <a class="tool-card live" href="edit.html">
-        <div class="icon-tag">EDIT</div>
-        <h3 data-i18n="edit_title">Edit PDF</h3>
-        <p data-i18n="home_tool_edit_desc">Add text, or cover and relabel existing content.</p>
-      </a>
-      <a class="tool-card live" href="view.html">
-        <div class="icon-tag">VIEW</div>
-        <h3 data-i18n="home_tool_view_title">View &amp; Print PDF</h3>
-        <p data-i18n="home_tool_view_desc">Preview any PDF and print it, no editing needed.</p>
-      </a>
-      <a class="tool-card live" href="compress.html">
-        <div class="icon-tag tag-ochre">COMPRESS</div>
-        <h3 data-i18n="home_tool_compress_title">Compress PDF</h3>
-        <p data-i18n="home_tool_compress_desc">Shrink file size by re-encoding embedded images.</p>
-      </a>
-      <a class="tool-card live" href="watermark.html">
-        <div class="icon-tag tag-stamp">MARK</div>
-        <h3 data-i18n="home_tool_watermark_title">Watermark</h3>
-        <p data-i18n="home_tool_watermark_desc">Stamp text or a logo across every page.</p>
-      </a>
-      <a class="tool-card live" href="protect.html">
-        <div class="icon-tag tag-stamp">LOCK</div>
-        <h3 data-i18n="home_tool_protect_title">Protect PDF</h3>
-        <p data-i18n="home_tool_protect_desc">Add a password before sharing.</p>
-      </a>
-      <a class="tool-card live" href="sign.html">
-        <div class="icon-tag tag-stamp">SIGN</div>
-        <h3 data-i18n="home_tool_sign_title">Sign PDF</h3>
-        <p data-i18n="home_tool_sign_desc">Draw or type a signature and place it on the page.</p>
-      </a>
-      <a class="tool-card live" href="img2pdf.html">
-        <div class="icon-tag tag-ochre">IMG→PDF</div>
-        <h3 data-i18n="home_tool_img2pdf_title">Image to PDF</h3>
-        <p data-i18n="home_tool_img2pdf_desc">Turn JPGs and PNGs into a single PDF.</p>
-      </a>
-      <a class="tool-card live" href="pdf2jpg.html">
-        <div class="icon-tag tag-ochre">PDF→IMG</div>
-        <h3 data-i18n="home_tool_pdf2jpg_title">PDF to JPG</h3>
-        <p data-i18n="home_tool_pdf2jpg_desc">Export each page as an image.</p>
-      </a>
-      <a class="tool-card live" href="txt2pdf.html">
-        <div class="icon-tag tag-ochre">TXT→PDF</div>
-        <h3 data-i18n="home_tool_txt2pdf_title">TXT to PDF</h3>
-        <p data-i18n="home_tool_txt2pdf_desc">Turn a plain text file into a PDF.</p>
-      </a>
-      <a class="tool-card live" href="pdf2pptx.html">
-        <div class="icon-tag tag-ochre">PDF→PPT</div>
-        <h3 data-i18n="home_tool_pdf2pptx_title">PDF to PowerPoint</h3>
-        <p data-i18n="home_tool_pdf2pptx_desc">Each page becomes a slide.</p>
-      </a>
-      <a class="tool-card live" href="pptx2pdf.html">
-        <div class="icon-tag tag-ochre">PPT→PDF</div>
-        <h3 data-i18n="home_tool_pptx2pdf_title">PowerPoint to PDF</h3>
-        <p data-i18n="home_tool_pptx2pdf_desc">Best-effort: text and images per slide.</p>
-      </a>
-      <a class="tool-card live" href="xlsx2pdf.html">
-        <div class="icon-tag tag-ochre">XLS→PDF</div>
-        <h3 data-i18n="home_tool_xlsx2pdf_title">Excel to PDF</h3>
-        <p data-i18n="home_tool_xlsx2pdf_desc">Turn a spreadsheet into a PDF table.</p>
-      </a>
-      <a class="tool-card live" href="pdf2xlsx.html">
-        <div class="icon-tag tag-ochre">PDF→XLS</div>
-        <h3 data-i18n="home_tool_pdf2xlsx_title">PDF to Excel</h3>
-        <p data-i18n="home_tool_pdf2xlsx_desc">Pull text out of a PDF into a spreadsheet.</p>
-      </a>
-    </div>
-  </section>
-
-  <footer class="site">
-    <span data-i18n="footer_tagline">VeloraPDF — part of the Velora toolkit</span>
-    <span class="footer-links">
-      <a href="about.html" data-i18n="footer_about">About</a> · <a href="privacy.html" data-i18n="footer_privacy">Privacy</a> · <a href="contact.html" data-i18n="footer_contact">Contact</a>
-    </span>
-  </footer>
 </div>
 
+<section class="vp-steps-wrap">
+  <div class="vp-steps">
+    <div>
+      <div class="vp-eyebrow" data-i18n="home_how_label">How it works</div>
+      <h2 data-i18n="home_how_h">Three steps, then the tab forgets it</h2>
+      <ol class="vp-step-list">
+        <li><span class="vp-step-n">01</span><span><b data-i18n="home_step_1_t">Open a tool</b><em data-i18n="home_step_1_b">Eighteen tools, each a single page with one job.</em></span></li>
+        <li><span class="vp-step-n">02</span><span><b data-i18n="home_step_2_t">Drop your file</b><em data-i18n="home_step_2_b">It is read locally — no request leaves the browser.</em></span></li>
+        <li><span class="vp-step-n">03</span><span><b data-i18n="home_step_3_t">Download the result</b><em data-i18n="home_step_3_b">Save it, close the tab, and nothing remains behind.</em></span></li>
+      </ol>
+    </div>
+    <div class="vp-shot" aria-hidden="true">
+      <span>[ product shot ]</span>
+      <span>drop a screenshot of the editor here</span>
+    </div>
+  </div>
+</section>
+
+<section class="vp-faq">
+  <div class="vp-faq-head">
+    <h2 data-i18n="home_faq_h">Common questions</h2>
+    <a href="about.html" data-i18n="home_faq_link">About VeloraPDF</a>
+  </div>
+  <div class="vp-faq-grid">
+    <div class="vp-faq-card"><h3 data-i18n="home_faq_1_q">Are my documents really private?</h3><p data-i18n="home_faq_1_a">Yes. The tools are plain JavaScript running on your device; there is no server to receive a file.</p></div>
+    <div class="vp-faq-card"><h3 data-i18n="home_faq_2_q">Is there a paid plan?</h3><p data-i18n="home_faq_2_a">No. Every tool on the site is free and has no watermark or page cap.</p></div>
+    <div class="vp-faq-card"><h3 data-i18n="home_faq_3_q">Which browsers work?</h3><p data-i18n="home_faq_3_a">Any current Chrome, Edge, Firefox, or Safari on desktop and mobile.</p></div>
+    <div class="vp-faq-card"><h3 data-i18n="home_faq_4_q">Can I use it for confidential work?</h3><p data-i18n="home_faq_4_a">That is the point of the local-only design — nothing is transmitted, logged, or stored.</p></div>
+  </div>
+</section>
+
+<footer class="vp-footer">
+  <div class="vp-footer-inner">
+    <span data-i18n="footer_tagline">VeloraPDF — part of the Velora toolkit</span>
+    <span class="vp-footer-links">
+      <a href="about.html" data-i18n="footer_about">About</a>
+      <a href="privacy.html" data-i18n="footer_privacy">Privacy</a>
+      <a href="contact.html" data-i18n="footer_contact">Contact</a>
+    </span>
+  </div>
+</footer>
+
 <script src="js/nav.js?v=13"></script>
-<script src="js/i18n.js?v=24"></script>
+<script src="js/i18n.js?v=25"></script>
 </body>
 </html>

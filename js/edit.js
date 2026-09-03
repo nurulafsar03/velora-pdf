@@ -355,6 +355,7 @@
         textLayerDiv.className = 'textLayer';
         textLayerDiv.style.width = `${viewport.width}px`;
         textLayerDiv.style.height = `${viewport.height}px`;
+        textLayerDiv.style.setProperty('--scale-factor', String(viewport.scale));
         previewWrap.appendChild(textLayerDiv);
         const task = pdfjsLib.renderTextLayer({
           textContentSource: textContent,

@@ -746,7 +746,29 @@
     validateDownload();
   }
 
-  function captureTextReplace(clickTarget) {
+  function findSpanNear(clientX, clientY) {
+    const tl = previewWrap.querySelector('.textLayer');
+    if (!tl) return null;
+    const spans = tl.querySelectorAll('span');
+    let inside = null;
+    let nearest = null;
+    let nearestDist = Infinity;
+    spans.forEach((span) => {
+      if (!span.textContent || !span.textContent.trim()) return;
+      const rect = span.getBoundingClientRect();
+      if (rect.width < 1 || rect.height < 1) return;
+      if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+        inside = span;
+      }
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dist = Math.hypot(clientX - cx, clientY - cy);
+      if (dist < nearestDist) { nearestDist = dist; nearest = span; }
+    });
+    return inside || (nearestDist < 40 ? nearest : null);
+  }
+
+  function captureTextReplace(clickTarget, clientX, clientY) {
     if (textMarkMode !== 'replace') return;
 
     let originalText = '';
@@ -759,15 +781,21 @@
       const range = sel.getRangeAt(0);
       r = range.getBoundingClientRect();
       originalText = sel.toString();
-    } else if (clickTarget) {
-      // A plain click, no drag: read the clicked text-layer span's own
-      // position and text directly. This avoids the Selection/Range API
-      // entirely for the common case, since browsers handle a bare click's
-      // resulting selection state inconsistently.
-      const tl = previewWrap.querySelector('.textLayer');
-      const span = tl && tl.contains(clickTarget)
-        ? (clickTarget.closest('span') || (clickTarget.tagName === 'SPAN' ? clickTarget : null))
-        : null;
+    } else {
+      // A plain click, no drag: find the text-layer span at (or nearest)
+      // the click point directly, without relying on the Selection API or
+      // on event.target hit-testing (both can miss on very thin/kerned
+      // glyph spans).
+      let span = null;
+      if (clickTarget) {
+        const tl = previewWrap.querySelector('.textLayer');
+        span = tl && tl.contains(clickTarget)
+          ? (clickTarget.closest('span') || (clickTarget.tagName === 'SPAN' ? clickTarget : null))
+          : null;
+      }
+      if (!span && typeof clientX === 'number') {
+        span = findSpanNear(clientX, clientY);
+      }
       if (span && span.textContent && span.textContent.trim()) {
         r = span.getBoundingClientRect();
         originalText = span.textContent;
@@ -775,7 +803,7 @@
     }
     if (sel) sel.removeAllRanges();
     if (!r || r.width < 2 || r.height < 2 || !originalText.trim()) {
-      console.log('[Edit existing text] nothing captured', { hasDragSelection, clickTarget, r, originalText });
+      console.log('[Edit existing text] nothing captured', { hasDragSelection, clickTarget, clientX, clientY, r, originalText });
       return;
     }
     console.log('[Edit existing text] captured', { originalText, r });
@@ -834,16 +862,21 @@
       return;
     }
     const target = e.target;
+    const clientX = e.clientX;
+    const clientY = e.clientY;
     setTimeout(() => {
-      if (textMarkMode === 'replace') captureTextReplace(target);
+      if (textMarkMode === 'replace') captureTextReplace(target, clientX, clientY);
       else captureTextMark();
     }, 0);
   });
   previewWrap.addEventListener('touchend', (e) => {
     if (!textMarkMode) return;
     const target = e.target;
+    const touch = (e.changedTouches && e.changedTouches[0]) || null;
+    const clientX = touch ? touch.clientX : undefined;
+    const clientY = touch ? touch.clientY : undefined;
     setTimeout(() => {
-      if (textMarkMode === 'replace') captureTextReplace(target);
+      if (textMarkMode === 'replace') captureTextReplace(target, clientX, clientY);
       else captureTextMark();
     }, 0);
   });

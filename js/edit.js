@@ -745,9 +745,26 @@
     validateDownload();
   }
 
-  function captureTextReplace() {
+  function captureTextReplace(clickTarget) {
     if (textMarkMode !== 'replace') return;
-    const sel = window.getSelection();
+    let sel = window.getSelection();
+
+    // A plain click (no drag) leaves the selection collapsed. In that case,
+    // fall back to selecting the whole text-layer span under the click so
+    // a single click is enough to make that line editable.
+    if ((!sel || sel.rangeCount === 0 || sel.isCollapsed) && clickTarget) {
+      const tl = previewWrap.querySelector('.textLayer');
+      const span = tl && tl.contains(clickTarget)
+        ? (clickTarget.closest('span') || (clickTarget.tagName === 'SPAN' ? clickTarget : null))
+        : null;
+      if (span && span.textContent && span.textContent.trim()) {
+        const range = document.createRange();
+        range.selectNodeContents(span);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    }
+
     if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
 
     const range = sel.getRangeAt(0);
@@ -805,11 +822,19 @@
 
   previewWrap.addEventListener('mouseup', (e) => {
     if (!textMarkMode || !e.target.closest('.textLayer')) return;
-    setTimeout(textMarkMode === 'replace' ? captureTextReplace : captureTextMark, 0);
+    const target = e.target;
+    setTimeout(() => {
+      if (textMarkMode === 'replace') captureTextReplace(target);
+      else captureTextMark();
+    }, 0);
   });
   previewWrap.addEventListener('touchend', (e) => {
     if (!textMarkMode) return;
-    setTimeout(textMarkMode === 'replace' ? captureTextReplace : captureTextMark, 0);
+    const target = e.target;
+    setTimeout(() => {
+      if (textMarkMode === 'replace') captureTextReplace(target);
+      else captureTextMark();
+    }, 0);
   });
 
   function createTextMarkDom(edit) {

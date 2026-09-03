@@ -15,6 +15,7 @@
   const highlightTextBtn = document.getElementById('highlightTextBtn');
   const underlineBtn = document.getElementById('underlineBtn');
   const strikethroughBtn = document.getElementById('strikethroughBtn');
+  const replaceTextBtn = document.getElementById('replaceTextBtn');
   const textMarkControls = document.getElementById('textMarkControls');
   const textMarkSwatches = document.getElementById('textMarkSwatches');
   const textMarkColorPicker = document.getElementById('textMarkColorPicker');
@@ -138,6 +139,8 @@
   // previewWrap's actual on-screen width (which changes with zoom and
   // window resizing) — the standard technique pdf.js's own viewer uses.
   let currentViewportDims = null;
+  let currentPagePtWidth = 612;
+  let currentPagePtHeight = 792;
   function positionTextLayer() {
     const textLayerDiv = previewWrap.querySelector('.textLayer');
     if (!textLayerDiv || !currentViewportDims || !currentViewportDims.width) return;
@@ -323,6 +326,8 @@
     try {
       const page = await pdfDocProxy.getPage(pageNum);
       const baseViewport = page.getViewport({ scale: 1 });
+      currentPagePtWidth = baseViewport.width;
+      currentPagePtHeight = baseViewport.height;
 
       // Cap the rendered resolution so very large scanned pages don't
       // blow past canvas memory limits and silently fail to render.
@@ -664,7 +669,7 @@
   function turnOffMarkMode() {
     if (!textMarkMode) return;
     textMarkMode = null;
-    [highlightTextBtn, underlineBtn, strikethroughBtn].forEach((b) => b && b.classList.remove('toggled'));
+    [highlightTextBtn, underlineBtn, strikethroughBtn, replaceTextBtn].forEach((b) => b && b.classList.remove('toggled'));
     if (textMarkControls) textMarkControls.classList.remove('active');
     const tl = previewWrap.querySelector('.textLayer');
     if (tl) tl.classList.remove('active');
@@ -680,7 +685,7 @@
     if (!turningOn) return;
     textMarkMode = mode;
     btn.classList.add('toggled');
-    if (textMarkControls) textMarkControls.classList.add('active');
+    if (textMarkControls && mode !== 'replace') textMarkControls.classList.add('active');
     const tl = previewWrap.querySelector('.textLayer');
     if (tl) tl.classList.add('active');
     document.querySelectorAll('.edit-el').forEach((n) => { n.style.pointerEvents = 'none'; });
@@ -692,6 +697,7 @@
   if (highlightTextBtn) highlightTextBtn.addEventListener('click', () => enterMarkMode('highlight', highlightTextBtn));
   if (underlineBtn) underlineBtn.addEventListener('click', () => enterMarkMode('underline', underlineBtn));
   if (strikethroughBtn) strikethroughBtn.addEventListener('click', () => enterMarkMode('strikethrough', strikethroughBtn));
+  if (replaceTextBtn) replaceTextBtn.addEventListener('click', () => enterMarkMode('replace', replaceTextBtn));
   if (textMarkDoneBtn) textMarkDoneBtn.addEventListener('click', turnOffMarkMode);
   if (textMarkColorPicker) {
     textMarkColorPicker.addEventListener('input', (e) => {
@@ -739,13 +745,71 @@
     validateDownload();
   }
 
+  function captureTextReplace() {
+    if (textMarkMode !== 'replace') return;
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
+
+    const range = sel.getRangeAt(0);
+    const r = range.getBoundingClientRect();
+    const originalText = sel.toString();
+    sel.removeAllRanges();
+    if (r.width < 2 || r.height < 2 || !originalText.trim()) return;
+
+    const wrapRect = previewWrap.getBoundingClientRect();
+    const xPct = ((r.left - wrapRect.left) / wrapRect.width) * 100;
+    const yPct = ((r.top - wrapRect.top) / wrapRect.height) * 100;
+    const widthPct = (r.width / wrapRect.width) * 100;
+    const heightPct = (r.height / wrapRect.height) * 100;
+
+    // Convert the selection's screen height into our text tool's
+    // percent-of-page-WIDTH font size convention.
+    const heightPts = (heightPct / 100) * currentPagePtHeight;
+    const fontSizePts = heightPts * 0.82;
+    let fontSizePct = (fontSizePts / currentPagePtWidth) * 100;
+    fontSizePct = Math.max(1, Math.min(12, fontSizePct));
+
+    const padPct = heightPct * 0.12;
+
+    const whiteoutEdit = {
+      id: newId(),
+      type: 'whiteout',
+      pageNum: currentPage,
+      xPct: Math.max(0, xPct - padPct / 2),
+      yPct: Math.max(0, yPct - padPct / 2),
+      widthPct: widthPct + padPct,
+      heightPct: heightPct + padPct,
+      color: '#ffffff',
+      baseColor: '#ffffff',
+      colorAdjust: 0,
+    };
+    const textEdit = {
+      id: newId(),
+      type: 'text',
+      pageNum: currentPage,
+      xPct: whiteoutEdit.xPct + padPct / 2,
+      yPct: whiteoutEdit.yPct + padPct / 2,
+      text: originalText,
+      color: '#16140f',
+      fontSizePct,
+      fontFamily: /[\u0980-\u09FF]/.test(originalText) ? 'HindSiliguri' : 'Helvetica',
+      bold: false,
+      italic: false,
+      rotation: 0,
+    };
+
+    edits.push(whiteoutEdit, textEdit);
+    renderPageElements();
+    validateDownload();
+  }
+
   previewWrap.addEventListener('mouseup', (e) => {
     if (!textMarkMode || !e.target.closest('.textLayer')) return;
-    setTimeout(captureTextMark, 0);
+    setTimeout(textMarkMode === 'replace' ? captureTextReplace : captureTextMark, 0);
   });
   previewWrap.addEventListener('touchend', (e) => {
     if (!textMarkMode) return;
-    setTimeout(captureTextMark, 0);
+    setTimeout(textMarkMode === 'replace' ? captureTextReplace : captureTextMark, 0);
   });
 
   function createTextMarkDom(edit) {

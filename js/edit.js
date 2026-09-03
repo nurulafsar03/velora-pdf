@@ -747,31 +747,37 @@
 
   function captureTextReplace(clickTarget) {
     if (textMarkMode !== 'replace') return;
-    let sel = window.getSelection();
 
-    // A plain click (no drag) leaves the selection collapsed. In that case,
-    // fall back to selecting the whole text-layer span under the click so
-    // a single click is enough to make that line editable.
-    if ((!sel || sel.rangeCount === 0 || sel.isCollapsed) && clickTarget) {
+    let originalText = '';
+    let r = null;
+    const sel = window.getSelection();
+    const hasDragSelection = !!(sel && sel.rangeCount > 0 && !sel.isCollapsed && sel.toString().trim());
+
+    if (hasDragSelection) {
+      // The user dragged to select a custom range of text.
+      const range = sel.getRangeAt(0);
+      r = range.getBoundingClientRect();
+      originalText = sel.toString();
+    } else if (clickTarget) {
+      // A plain click, no drag: read the clicked text-layer span's own
+      // position and text directly. This avoids the Selection/Range API
+      // entirely for the common case, since browsers handle a bare click's
+      // resulting selection state inconsistently.
       const tl = previewWrap.querySelector('.textLayer');
       const span = tl && tl.contains(clickTarget)
         ? (clickTarget.closest('span') || (clickTarget.tagName === 'SPAN' ? clickTarget : null))
         : null;
       if (span && span.textContent && span.textContent.trim()) {
-        const range = document.createRange();
-        range.selectNodeContents(span);
-        sel.removeAllRanges();
-        sel.addRange(range);
+        r = span.getBoundingClientRect();
+        originalText = span.textContent;
       }
     }
-
-    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
-
-    const range = sel.getRangeAt(0);
-    const r = range.getBoundingClientRect();
-    const originalText = sel.toString();
-    sel.removeAllRanges();
-    if (r.width < 2 || r.height < 2 || !originalText.trim()) return;
+    if (sel) sel.removeAllRanges();
+    if (!r || r.width < 2 || r.height < 2 || !originalText.trim()) {
+      console.log('[Edit existing text] nothing captured', { hasDragSelection, clickTarget, r, originalText });
+      return;
+    }
+    console.log('[Edit existing text] captured', { originalText, r });
 
     const wrapRect = previewWrap.getBoundingClientRect();
     const xPct = ((r.left - wrapRect.left) / wrapRect.width) * 100;
@@ -821,7 +827,11 @@
   }
 
   previewWrap.addEventListener('mouseup', (e) => {
-    if (!textMarkMode || !e.target.closest('.textLayer')) return;
+    if (!textMarkMode) return;
+    if (!e.target.closest('.textLayer')) {
+      if (textMarkMode === 'replace') console.log('[Edit existing text] click missed the text layer', e.target);
+      return;
+    }
     const target = e.target;
     setTimeout(() => {
       if (textMarkMode === 'replace') captureTextReplace(target);

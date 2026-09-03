@@ -853,6 +853,17 @@
     edits.push(whiteoutEdit, textEdit);
     renderPageElements();
     validateDownload();
+
+    requestAnimationFrame(() => {
+      const contentEl = previewWrap.querySelector(`[data-edit-id="${textEdit.id}"] .text-content`);
+      if (!contentEl) return;
+      contentEl.focus();
+      const range = document.createRange();
+      range.selectNodeContents(contentEl);
+      const s = window.getSelection();
+      s.removeAllRanges();
+      s.addRange(range);
+    });
   }
 
   previewWrap.addEventListener('mouseup', (e) => {

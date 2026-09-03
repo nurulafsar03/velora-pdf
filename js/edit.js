@@ -588,7 +588,7 @@
   }
 
   drawToolBtn.addEventListener('click', () => {
-    if (!drawMode) { turnOffMarkMode(); turnOffScreenshotMode(); }
+    if (!drawMode) { turnOffMarkMode(); turnOffScreenshotMode(); disarmTool(); }
     drawMode = !drawMode;
     drawToolBtn.classList.toggle('toggled', drawMode);
     drawControls.classList.toggle('active', drawMode);
@@ -681,6 +681,7 @@
   function enterMarkMode(mode, btn) {
     turnOffDrawMode();
     turnOffScreenshotMode();
+    disarmTool();
     const turningOn = textMarkMode !== mode;
     turnOffMarkMode();
     if (!turningOn) return;
@@ -991,6 +992,7 @@
       turnOffDrawMode();
       turnOffMarkMode();
       turnOffScreenshotMode();
+      disarmTool();
       if (!turningOn) return;
       screenshotMode = true;
       screenshotBtn.classList.add('toggled');
@@ -1965,42 +1967,83 @@
 
   // ---- toolbar actions ----
 
-  addTextBtn.addEventListener('click', () => {
-    const edit = {
-      id: newId(),
-      type: 'text',
-      pageNum: currentPage,
-      xPct: 15,
-      yPct: 15,
-      text: 'Text',
-      color: COLORS[0],
-      fontSizePct: 5.5,
-      fontFamily: 'Helvetica',
-      bold: false,
-      italic: false,
-    };
-    edits.push(edit);
-    renderPageElements();
-    validateDownload();
+  let armedTool = null; // 'text' | 'whiteout' | null
+
+  function disarmTool() {
+    armedTool = null;
+    if (addTextBtn) addTextBtn.classList.remove('toggled');
+    if (addWhiteoutBtn) addWhiteoutBtn.classList.remove('toggled');
+    previewWrap.style.cursor = '';
+  }
+
+  function armTool(tool, btn) {
+    turnOffDrawMode();
+    turnOffMarkMode();
+    turnOffScreenshotMode();
+    const turningOn = armedTool !== tool;
+    disarmTool();
+    if (!turningOn) return;
+    armedTool = tool;
+    btn.classList.add('toggled');
+    previewWrap.style.cursor = 'crosshair';
+  }
+
+  function placeArmedToolAt(clientX, clientY) {
+    const wrapRect = previewWrap.getBoundingClientRect();
+    const xPct = Math.max(0, ((clientX - wrapRect.left) / wrapRect.width) * 100 - 1);
+    const yPct = Math.max(0, ((clientY - wrapRect.top) / wrapRect.height) * 100 - 2);
+
+    if (armedTool === 'text') {
+      const textEdit = {
+        id: newId(),
+        type: 'text',
+        pageNum: currentPage,
+        xPct,
+        yPct,
+        text: '',
+        color: COLORS[0],
+        fontSizePct: 3.2,
+        fontFamily: 'Helvetica',
+        bold: false,
+        italic: false,
+      };
+      edits.push(textEdit);
+      renderPageElements();
+      validateDownload();
+      focusTextEditBox(textEdit.id, false);
+    } else if (armedTool === 'whiteout') {
+      const whiteoutEdit = {
+        id: newId(),
+        type: 'whiteout',
+        pageNum: currentPage,
+        xPct,
+        yPct,
+        widthPct: 30,
+        heightPct: 6,
+        color: '#ffffff',
+        baseColor: '#ffffff',
+        colorAdjust: 0,
+      };
+      edits.push(whiteoutEdit);
+      renderPageElements();
+      validateDownload();
+    }
+  }
+
+  previewWrap.addEventListener('mouseup', (e) => {
+    if (!armedTool) return;
+    if (e.target.closest('.edit-el') || e.target.closest('.draw-controls')) return;
+    placeArmedToolAt(e.clientX, e.clientY);
+  });
+  previewWrap.addEventListener('touchend', (e) => {
+    if (!armedTool) return;
+    if (e.target.closest('.edit-el') || e.target.closest('.draw-controls')) return;
+    const touch = e.changedTouches && e.changedTouches[0];
+    if (touch) placeArmedToolAt(touch.clientX, touch.clientY);
   });
 
-  addWhiteoutBtn.addEventListener('click', () => {
-    const edit = {
-      id: newId(),
-      type: 'whiteout',
-      pageNum: currentPage,
-      xPct: 15,
-      yPct: 15,
-      widthPct: 30,
-      heightPct: 6,
-      color: '#ffffff',
-      baseColor: '#ffffff',
-      colorAdjust: 0,
-    };
-    edits.push(edit);
-    renderPageElements();
-    validateDownload();
-  });
+  addTextBtn.addEventListener('click', () => armTool('text', addTextBtn));
+  addWhiteoutBtn.addEventListener('click', () => armTool('whiteout', addWhiteoutBtn));
 
   addHighlightBtn.addEventListener('click', () => {
     const edit = {
@@ -2294,6 +2337,7 @@
     edits = [];
     drawMode = false;
     currentStroke = null;
+    disarmTool();
     removeLiveDrawSvg();
     drawToolBtn.classList.remove('toggled');
     drawControls.classList.remove('active');

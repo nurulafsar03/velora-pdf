@@ -769,7 +769,7 @@
   }
 
   function captureTextReplace(clickTarget, clientX, clientY) {
-    if (textMarkMode !== 'replace') return;
+    if (textMarkMode !== 'replace') return false;
 
     let originalText = '';
     let r = null;
@@ -803,8 +803,7 @@
     }
     if (sel) sel.removeAllRanges();
     if (!r || r.width < 2 || r.height < 2 || !originalText.trim()) {
-      console.log('[Edit existing text] nothing captured', { hasDragSelection, clickTarget, clientX, clientY, r, originalText });
-      return;
+      return false;
     }
     console.log('[Edit existing text] captured', { originalText, r });
 
@@ -853,31 +852,60 @@
     edits.push(whiteoutEdit, textEdit);
     renderPageElements();
     validateDownload();
+    focusTextEditBox(textEdit.id, true);
+    return true;
+  }
 
+  function focusTextEditBox(editId, selectAll) {
     requestAnimationFrame(() => {
-      const contentEl = previewWrap.querySelector(`[data-edit-id="${textEdit.id}"] .text-content`);
+      const contentEl = previewWrap.querySelector(`[data-edit-id="${editId}"] .text-content`);
       if (!contentEl) return;
       contentEl.focus();
       const range = document.createRange();
       range.selectNodeContents(contentEl);
+      if (!selectAll) range.collapse(false);
       const s = window.getSelection();
       s.removeAllRanges();
       s.addRange(range);
     });
   }
 
+  function addBlankTextAt(clientX, clientY) {
+    const wrapRect = previewWrap.getBoundingClientRect();
+    const xPct = Math.max(0, ((clientX - wrapRect.left) / wrapRect.width) * 100 - 1);
+    const yPct = Math.max(0, ((clientY - wrapRect.top) / wrapRect.height) * 100 - 2);
+    const textEdit = {
+      id: newId(),
+      type: 'text',
+      pageNum: currentPage,
+      xPct,
+      yPct,
+      text: '',
+      color: '#16140f',
+      fontSizePct: 3.2,
+      fontFamily: 'Helvetica',
+      bold: false,
+      italic: false,
+    };
+    edits.push(textEdit);
+    renderPageElements();
+    validateDownload();
+    focusTextEditBox(textEdit.id, false);
+  }
+
   previewWrap.addEventListener('mouseup', (e) => {
     if (!textMarkMode) return;
-    if (!e.target.closest('.textLayer')) {
-      if (textMarkMode === 'replace') console.log('[Edit existing text] click missed the text layer', e.target);
-      return;
-    }
+    if (textMarkMode !== 'replace' && !e.target.closest('.textLayer')) return;
     const target = e.target;
     const clientX = e.clientX;
     const clientY = e.clientY;
     setTimeout(() => {
-      if (textMarkMode === 'replace') captureTextReplace(target, clientX, clientY);
-      else captureTextMark();
+      if (textMarkMode === 'replace') {
+        const ok = captureTextReplace(target, clientX, clientY);
+        if (!ok) addBlankTextAt(clientX, clientY);
+      } else {
+        captureTextMark();
+      }
     }, 0);
   });
   previewWrap.addEventListener('touchend', (e) => {
@@ -887,8 +915,12 @@
     const clientX = touch ? touch.clientX : undefined;
     const clientY = touch ? touch.clientY : undefined;
     setTimeout(() => {
-      if (textMarkMode === 'replace') captureTextReplace(target, clientX, clientY);
-      else captureTextMark();
+      if (textMarkMode === 'replace') {
+        const ok = captureTextReplace(target, clientX, clientY);
+        if (!ok && typeof clientX === 'number') addBlankTextAt(clientX, clientY);
+      } else {
+        captureTextMark();
+      }
     }, 0);
   });
 

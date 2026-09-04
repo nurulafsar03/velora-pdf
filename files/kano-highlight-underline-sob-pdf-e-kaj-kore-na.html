@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>প্রতিটা PDF-এ Highlight/Underline কেন কাজ করে না? — VeloraPDF Blog</title>
+<meta name="description" content="VeloraPDF-এর Highlight, Underline, আর Strikethrough টুল কিছু PDF-এ কাজ করে, কিছুতে করে না — এটা বাগ না, এটা PDF ফাইলের নিজের গঠনের একটা মৌলিক পার্থক্যের ফল।">
+<link rel="canonical" href="https://www.velorapdf.online/blog/kano-highlight-underline-sob-pdf-e-kaj-kore-na.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="VeloraPDF">
+<meta property="og:title" content="প্রতিটা PDF-এ Highlight/Underline কেন কাজ করে না? — VeloraPDF Blog">
+<meta property="og:description" content="VeloraPDF-এর Highlight, Underline, আর Strikethrough টুল কিছু PDF-এ কাজ করে, কিছুতে করে না — এটা বাগ না, এটা PDF ফাইলের নিজের গঠনের একটা মৌলিক পার্থক্যের ফল।">
+<meta property="og:url" content="https://www.velorapdf.online/blog/kano-highlight-underline-sob-pdf-e-kaj-kore-na.html">
+<meta property="og:image" content="https://www.velorapdf.online/assets/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="প্রতিটা PDF-এ Highlight/Underline কেন কাজ করে না? — VeloraPDF Blog">
+<meta name="twitter:description" content="VeloraPDF-এর Highlight, Underline, আর Strikethrough টুল কিছু PDF-এ কাজ করে, কিছুতে করে না — এটা বাগ না, এটা PDF ফাইলের নিজের গঠনের একটা মৌলিক পার্থক্যের ফল।">
+<meta name="twitter:image" content="https://www.velorapdf.online/assets/og-image.png">
+<link rel="icon" href="/favicon.ico?v=2" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png?v=2">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=2">
+<link rel="stylesheet" href="/css/style.css?v=2">
+<style>
+  .page-header { padding: 40px 0 8px; }
+  .back-link { display: inline-block; font-size: 13px; color: var(--mist); margin-bottom: 4px; }
+  .back-link:hover { color: var(--blueprint); }
+
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+  }
+  .post-meta .blog-tag {
+    color: var(--blueprint);
+    border: 1px solid var(--blueprint-dim);
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: var(--radius);
+  }
+  .post-meta .blog-date { color: var(--mist); }
+
+  .post-title {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 500;
+    line-height: 1.15;
+    margin: 0 0 10px;
+  }
+  .post-subject {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--paper-dim);
+    max-width: 62ch;
+    margin: 0 0 30px;
+  }
+
+  .prose { max-width: 62ch; padding-bottom: 60px; }
+  .prose p { color: var(--paper-dim); line-height: 1.7; font-size: 15px; margin: 0 0 18px; }
+  .prose h2 {
+    font-family: var(--font-display);
+    font-size: 22px;
+    font-weight: 500;
+    margin: 34px 0 12px;
+    color: var(--paper);
+  }
+  .prose h3 {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 500;
+    margin: 22px 0 10px;
+    color: var(--paper);
+  }
+  .prose ul {
+    color: var(--paper-dim);
+    line-height: 1.7;
+    font-size: 15px;
+    padding-left: 20px;
+    margin: 0 0 18px;
+  }
+  .prose ul li { margin-bottom: 6px; }
+  .prose .callout {
+    border-left: 2px solid var(--blueprint-dim);
+    background: rgba(111, 151, 201, 0.06);
+    padding: 14px 18px;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    color: var(--paper-dim);
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0 0 18px;
+  }
+  body.rtl .prose .callout {
+    border-left: none;
+    border-right: 2px solid var(--blueprint-dim);
+    border-radius: var(--radius) 0 0 var(--radius);
+  }
+  .prose .conclusion {
+    margin-top: 30px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--paper);
+  }
+  body.rtl .prose ul { padding-left: 0; padding-right: 20px; }
+</style>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"প্রতিটা PDF-এ Highlight/Underline কেন কাজ করে না?","description":"VeloraPDF-এর Highlight, Underline, আর Strikethrough টুল কিছু PDF-এ কাজ করে, কিছুতে করে না — এটা বাগ না, এটা PDF ফাইলের নিজের গঠনের একটা মৌলিক পার্থক্যের ফল।","datePublished":"2026-08-14","dateModified":"2026-08-14","inLanguage":"bn","url":"https://www.velorapdf.online/blog/kano-highlight-underline-sob-pdf-e-kaj-kore-na.html","author":{"@type":"Organization","name":"VeloraPDF"},"publisher":{"@type":"Organization","name":"VeloraPDF"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://www.velorapdf.online/blog/kano-highlight-underline-sob-pdf-e-kaj-kore-na.html"}}</script>
+</head>
+<body>
+<div class="top-accent" aria-hidden="true"></div>
+
+<div class="wrap">
+  <header class="site">
+    <a class="brand" href="/index.html"><img src="/assets/logo-mark-light.svg" width="30" height="30" alt="" class="brand-icon"><span class="brand-text">velorapdf<span class="brand-tld">.online</span></span></a>
+    <nav class="site-links">
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-btn" type="button" aria-haspopup="true" aria-expanded="false">
+          <span data-i18n="nav_tools">Tools</span>
+          <svg class="chevron" width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-dropdown-panel mega">
+          <div class="mega-col">
+            <div class="mega-label" data-i18n="nav_group_organize">Organize</div>
+            <a href="/new.html" data-i18n="nav_newpdf">New PDF</a>
+            <a href="/merge.html" data-i18n="home_tool_merge_title">Merge PDF</a>
+            <a href="/split.html" data-i18n="home_tool_split_title">Split PDF</a>
+            <a href="/rotate.html" data-i18n="home_tool_rotate_title">Rotate PDF</a>
+            <a href="/organize.html" data-i18n="home_tool_organize_title">Organize Pages</a>
+            <a href="/edit.html" data-i18n="edit_title">Edit PDF</a>
+            <a href="/view.html" data-i18n="view_title">View &amp; Print PDF</a>
+          </div>
+          <div class="mega-col">
+            <div class="mega-label tag-stamp" data-i18n="nav_group_security">Security &amp; marking</div>
+            <a href="/watermark.html" data-i18n="home_tool_watermark_title">Watermark</a>
+            <a href="/protect.html" data-i18n="home_tool_protect_title">Protect PDF</a>
+            <a href="/sign.html" data-i18n="home_tool_sign_title">Sign PDF</a>
+          </div>
+          <div class="mega-col">
+            <div class="mega-label tag-ochre" data-i18n="nav_group_convert">Convert</div>
+            <a href="/compress.html" data-i18n="home_tool_compress_title">Compress PDF</a>
+            <a href="/img2pdf.html" data-i18n="home_tool_img2pdf_title">Image to PDF</a>
+            <a href="/pdf2jpg.html" data-i18n="home_tool_pdf2jpg_title">PDF to JPG</a>
+            <a href="/txt2pdf.html" data-i18n="home_tool_txt2pdf_title">TXT to PDF</a>
+            <a href="/pdf2pptx.html" data-i18n="home_tool_pdf2pptx_title">PDF to PowerPoint</a>
+            <a href="/pptx2pdf.html" data-i18n="home_tool_pptx2pdf_title">PowerPoint to PDF</a>
+            <a href="/xlsx2pdf.html" data-i18n="home_tool_xlsx2pdf_title">Excel to PDF</a>
+            <a href="/pdf2xlsx.html" data-i18n="home_tool_pdf2xlsx_title">PDF to Excel</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-btn" type="button" aria-haspopup="true" aria-expanded="false">
+          <span data-i18n="nav_more">More</span>
+          <svg class="chevron" width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-dropdown-panel simple">
+          <a href="/blog.html" data-i18n="nav_blog">Blog</a>
+          <a href="/about.html" data-i18n="footer_about">About</a>
+          <a href="/privacy.html" data-i18n="footer_privacy">Privacy</a>
+          <a href="/contact.html" data-i18n="footer_contact">Contact</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <div class="page-header">
+    <a class="back-link" href="/blog.html" data-i18n="blog_post_back">&larr; Back to blog</a>
+  </div>
+
+  <div id="postContent">
+    <div class="post-meta"><span class="blog-tag">গাইড</span><span class="blog-date">2026-08-14</span></div>
+    <h1 class="post-title">প্রতিটা PDF-এ Highlight/Underline কেন কাজ করে না?</h1>
+    <p class="post-subject">VeloraPDF-এর Highlight, Underline, আর Strikethrough টুল কিছু PDF-এ কাজ করে, কিছুতে করে না — এটা বাগ না, এটা PDF ফাইলের নিজের গঠনের একটা মৌলিক পার্থক্যের ফল।</p>
+    <div class="prose">
+      <p>VeloraPDF-এর Edit PDF টুলে Highlight, Underline, আর Strikethrough — এই তিনটা টুল দিয়ে আপনি PDF-এর যেকোনো টেক্সট মাউস দিয়ে সিলেক্ট করে সরাসরি মার্ক করতে পারেন। বেশিরভাগ ক্ষেত্রেই এটা নিখুঁতভাবে কাজ করে। কিন্তু মাঝেমধ্যে দেখা যায় — একটা PDF খুলে টেক্সটের উপর মাউস ড্র্যাগ করলেও কিছুই সিলেক্ট হচ্ছে না। এটা বাগ না — এটা PDF ফাইলের নিজের গঠনের একটা মৌলিক পার্থক্যের ফল।</p>
+      <h2>দুই ধরনের PDF</h2>
+      <p>সব PDF দেখতে একইরকম মনে হলেও, ভেতরে দুই সম্পূর্ণ ভিন্ন উপায়ে তৈরি হতে পারে।</p>
+      <h3>প্রথম ধরন — আসল টেক্সটসহ PDF</h3>
+      <p>Word, Google Docs, বা যেকোনো ওয়ার্ড প্রসেসর থেকে যখন আপনি &quot;Save as PDF&quot; বা &quot;Export to PDF&quot; করেন, তখন প্রতিটা অক্ষর PDF ফাইলের ভেতরে আসল টেক্সট ডেটা হিসেবে সংরক্ষিত থাকে — ঠিক যেমন একটা ওয়েবপেজে লেখা টেক্সট থাকে। এই ধরনের PDF-এ আপনি মাউস দিয়ে টেক্সট সিলেক্ট করতে পারেন, কপি-পেস্ট করতে পারেন, আর সার্চ করতে পারেন।</p>
+      <h3>দ্বিতীয় ধরন — স্ক্যান করা বা ছবি-ভিত্তিক PDF</h3>
+      <p>যখন একটা কাগজের ডকুমেন্ট স্ক্যানার বা ফোনের ক্যামেরা দিয়ে PDF বানানো হয়, তখন প্রতিটা পেজ আসলে একটা ছবি — একদম আপনার ফোনে তোলা কোনো JPG-এর মতো। এই ছবির মধ্যে মানুষের চোখে টেক্সট দেখা যায় ঠিকই, কিন্তু PDF ফাইলের ভেতরে কোনো &quot;অক্ষর&quot; বলে কিছু সংরক্ষিত নেই — শুধু pixel-এর সমষ্টি। এই ধরনের PDF-এ আপনি টেক্সট সিলেক্ট করতে পারবেন না, কপি করতে পারবেন না, এমনকি Ctrl+F দিয়ে সার্চও করতে পারবেন না — Adobe Acrobat, Chrome, বা যেকোনো PDF viewer-এই না, শুধু VeloraPDF-এ না।</p>
+      <h2>এটা কীভাবে বুঝবেন</h2>
+      <p>সহজ একটা পরীক্ষা: PDF-টা খুলে যেকোনো লাইনের উপর মাউস দিয়ে ড্র্যাগ করে দেখুন।</p>
+      <ul>
+        <li>টেক্সট নীল হয়ে সিলেক্ট হলে — এটা আসল টেক্সটসহ PDF। Highlight/Underline/Strikethrough সরাসরি কাজ করবে।</li>
+        <li>কিছুই সিলেক্ট না হলে (পুরো পেজটাই যেন একটা ছবি) — এটা স্ক্যান করা/ছবি-ভিত্তিক PDF।</li>
+      </ul>
+      <h2>ছবি-ভিত্তিক PDF-এ তাহলে কী করবেন</h2>
+      <p>VeloraPDF-এর Edit PDF টুলে Area Highlight নামে আরেকটা টুল আছে, যেটা টেক্সট সিলেক্ট করার উপর নির্ভর করে না। এটা দিয়ে আপনি ম্যানুয়ালি একটা রঙিন, স্বচ্ছ (semi-transparent) বক্স এঁকে যেকোনো জায়গায় বসাতে পারেন — মার্কার দিয়ে হাইলাইট করার মতোই দেখতে, শুধু জায়গাটা নিজে হাতে ঠিক করে দিতে হয়। এটা টেক্সট-ভিত্তিক না হওয়ায় স্ক্যান করা PDF সহ যেকোনো PDF-এই কাজ করে।</p>
+      <p class="callout">সংক্ষেপে: PDF-টা &quot;আসল টেক্সট&quot; নাকি &quot;স্ক্যান করা ছবি&quot; — সেটা নির্ধারণ করে Highlight/Underline/Strikethrough কাজ করবে কিনা। আসল টেক্সট হলে সরাসরি সিলেক্ট করে মার্ক করুন। ছবি হলে Area Highlight ব্যবহার করুন।</p>
+      <h2>কেন এটা নিজে থেকে ঠিক হয়ে যায় না</h2>
+      <p>এই আচরণটা আসলে ব্রাউজারের সীমাবদ্ধতা না — এটা সমস্যার ধরনের পার্থক্য। &quot;একটা ছবিতে কোন অক্ষর কোথায় আছে&quot; বের করা একটা আলাদা কাজ, যাকে বলে OCR (Optical Character Recognition)। PDF রেন্ডার করা লাইব্রেরি আর OCR ইঞ্জিন — দুটো সম্পূর্ণ ভিন্ন প্রযুক্তি, একটা আরেকটার বদলি না। ছবি-ভিত্তিক PDF-এ টেক্সট সিলেক্ট করা সম্ভব করতে হলে আলাদা করে একটা OCR ইঞ্জিন যোগ করতে হবে, যেটা ভবিষ্যতে যোগ হতে পারে।</p>
+      <p class="conclusion">তাহলে পরের বার কোনো PDF-এ Highlight কাজ না করলে, বুঝে নিন — এটা স্ক্যান করা একটা ফাইল। Area Highlight টুলটা ব্যবহার করুন, কাজ হয়ে যাবে।</p>
+    </div>
+  </div>
+
+  <footer class="site">
+    <span data-i18n="footer_tagline">VeloraPDF — part of the Velora toolkit</span>
+    <span class="footer-links">
+      <a href="/about.html" data-i18n="footer_about">About</a> · <a href="/privacy.html" data-i18n="footer_privacy">Privacy</a> · <a href="/contact.html" data-i18n="footer_contact">Contact</a>
+    </span>
+  </footer>
+</div>
+
+<script src="/js/nav.js?v=13"></script>
+<script src="/js/i18n.js?v=25"></script>
+</body>
+</html>

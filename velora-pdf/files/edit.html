@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="edit_title">Edit PDF — VeloraPDF</title>
+<meta name="description" content="Add text or cover content on any PDF page, entirely in your browser.">
+<link rel="icon" href="/favicon.ico?v=2" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png?v=2">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=2">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  @font-face { font-family: 'Lato'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/lato/Lato-Regular.ttf'); font-weight: 400; font-style: normal; }
+  @font-face { font-family: 'Lato'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/lato/Lato-Bold.ttf'); font-weight: 700; font-style: normal; }
+  @font-face { font-family: 'Lato'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/lato/Lato-Italic.ttf'); font-weight: 400; font-style: italic; }
+  @font-face { font-family: 'Lato'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/lato/Lato-BoldItalic.ttf'); font-weight: 700; font-style: italic; }
+
+  @font-face { font-family: 'Poppins'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/Poppins-Regular.ttf'); font-weight: 400; font-style: normal; }
+  @font-face { font-family: 'Poppins'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/Poppins-Bold.ttf'); font-weight: 700; font-style: normal; }
+  @font-face { font-family: 'Poppins'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/Poppins-Italic.ttf'); font-weight: 400; font-style: italic; }
+  @font-face { font-family: 'Poppins'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/poppins/Poppins-BoldItalic.ttf'); font-weight: 700; font-style: italic; }
+
+  @font-face { font-family: 'PT Serif'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/ptserif/PT_Serif-Web-Regular.ttf'); font-weight: 400; font-style: normal; }
+  @font-face { font-family: 'PT Serif'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/ptserif/PT_Serif-Web-Bold.ttf'); font-weight: 700; font-style: normal; }
+  @font-face { font-family: 'PT Serif'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/ptserif/PT_Serif-Web-Italic.ttf'); font-weight: 400; font-style: italic; }
+  @font-face { font-family: 'PT Serif'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/ptserif/PT_Serif-Web-BoldItalic.ttf'); font-weight: 700; font-style: italic; }
+
+  @font-face { font-family: 'Courier Prime'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/courierprime/CourierPrime-Regular.ttf'); font-weight: 400; font-style: normal; }
+  @font-face { font-family: 'Courier Prime'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/courierprime/CourierPrime-Bold.ttf'); font-weight: 700; font-style: normal; }
+  @font-face { font-family: 'Courier Prime'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/courierprime/CourierPrime-Italic.ttf'); font-weight: 400; font-style: italic; }
+  @font-face { font-family: 'Courier Prime'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/courierprime/CourierPrime-BoldItalic.ttf'); font-weight: 700; font-style: italic; }
+
+  @font-face { font-family: 'Space Mono'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/spacemono/SpaceMono-Regular.ttf'); font-weight: 400; font-style: normal; }
+  @font-face { font-family: 'Space Mono'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/spacemono/SpaceMono-Bold.ttf'); font-weight: 700; font-style: normal; }
+  @font-face { font-family: 'Space Mono'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/spacemono/SpaceMono-Italic.ttf'); font-weight: 400; font-style: italic; }
+  @font-face { font-family: 'Space Mono'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/spacemono/SpaceMono-BoldItalic.ttf'); font-weight: 700; font-style: italic; }
+
+  @font-face { font-family: 'Fira Mono'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/firamono/FiraMono-Regular.ttf'); font-weight: 400; font-style: normal; }
+  @font-face { font-family: 'Fira Mono'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/firamono/FiraMono-Bold.ttf'); font-weight: 700; font-style: normal; }
+
+  @font-face { font-family: 'Kalam'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/kalam/Kalam-Regular.ttf'); font-weight: 400; font-style: normal; }
+  @font-face { font-family: 'Kalam'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/kalam/Kalam-Bold.ttf'); font-weight: 700; font-style: normal; }
+
+  @font-face { font-family: 'Oleo Script'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/oleoscript/OleoScript-Regular.ttf'); font-weight: 400; font-style: normal; }
+  @font-face { font-family: 'Oleo Script'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/oleoscript/OleoScript-Bold.ttf'); font-weight: 700; font-style: normal; }
+
+  @font-face { font-family: 'Indie Flower'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/indieflower/IndieFlower-Regular.ttf'); }
+  @font-face { font-family: 'Architects Daughter'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/architectsdaughter/ArchitectsDaughter-Regular.ttf'); }
+  @font-face { font-family: 'Pacifico'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/pacifico/Pacifico-Regular.ttf'); }
+  @font-face { font-family: 'Great Vibes'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/greatvibes/GreatVibes-Regular.ttf'); }
+  @font-face { font-family: 'Bebas Neue'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/bebasneue/BebasNeue-Regular.ttf'); }
+  @font-face { font-family: 'Anton'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/anton/Anton-Regular.ttf'); }
+  @font-face { font-family: 'Abril Fatface'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/abrilfatface/AbrilFatface-Regular.ttf'); }
+  @font-face { font-family: 'Righteous'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/righteous/Righteous-Regular.ttf'); }
+  @font-face { font-family: 'Lobster'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/lobster/Lobster-Regular.ttf'); }
+
+  @font-face { font-family: 'Hind Siliguri'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/hindsiliguri/HindSiliguri-Regular.ttf'); font-weight: 400; font-style: normal; }
+  @font-face { font-family: 'Hind Siliguri'; src: url('https://raw.githubusercontent.com/google/fonts/main/ofl/hindsiliguri/HindSiliguri-Bold.ttf'); font-weight: 700; font-style: normal; }
+
+  .tool-header { padding: 40px 0 8px; }
+  .tool-header h1 {
+    font-family: var(--font-display);
+    font-size: 34px;
+    font-weight: 500;
+    margin: 0 0 8px;
+  }
+  .tool-header p {
+    color: var(--paper-dim);
+    margin: 0 0 24px;
+    font-size: 15px;
+    border-left: 2px solid var(--blueprint-dim);
+    padding-left: 14px;
+  }
+
+  .dropzone {
+    border: 1.5px dashed var(--line);
+    border-radius: var(--radius);
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--mist);
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  .dropzone.drag-over {
+    border-color: var(--blueprint);
+    background: rgba(111, 151, 201, 0.06);
+    color: var(--paper);
+  }
+  .dropzone .dz-title {
+    font-family: var(--font-display);
+    font-size: 18px;
+    color: var(--paper);
+    margin-bottom: 6px;
+  }
+  .dropzone .dz-sub { font-size: 13px; font-family: var(--font-mono); }
+  .dropzone input { display: none; }
+
+  .toolbar {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 0;
+    flex-wrap: wrap;
+  }
+  .toolbar.active { display: flex; }
+  .toolbar .doc-name {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--paper-dim);
+    border: 1px solid var(--line);
+    padding: 6px 10px;
+    border-radius: var(--radius);
+  }
+  .toolbar .page-nav { display: flex; align-items: center; gap: 6px; }
+  .toolbar .page-nav input {
+    width: 55px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--paper);
+    padding: 6px 8px;
+    font-size: 13px;
+    font-family: var(--font-mono);
+    text-align: center;
+  }
+  .toolbar .page-nav span { font-family: var(--font-mono); font-size: 12px; color: var(--mist); }
+
+  .workspace { display: none; }
+  .workspace.active { display: block; }
+
+  .preview-canvas-wrap {
+    background: var(--paper);
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+    max-width: 720px;
+    min-height: 120px;
+  }
+  .btn-ghost:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    border-color: var(--line);
+    color: var(--mist);
+  }
+  .preview-canvas-wrap canvas { display: block; width: 100%; height: auto; }
+
+  .edit-el {
+    position: absolute;
+    touch-action: none;
+  }
+
+  .text-el {
+    display: inline-flex;
+    flex-direction: column;
+    border: 2px dashed transparent;
+    background: transparent;
+    border-radius: 3px;
+    padding: 2px 5px;
+    max-width: 90%;
+  }
+  .text-el:focus-within {
+    border-color: #16140f;
+    background: rgba(255, 255, 255, 0.75);
+  }
+  .text-el:hover, .text-el.active {
+    border-color: var(--blueprint);
+    background: rgba(255, 255, 255, 0.88);
+  }
+  .text-el .drag-strip {
+    height: 10px;
+    margin: -2px -5px 4px;
+    background: rgba(111, 151, 201, 0.4);
+    cursor: grab;
+    border-radius: 3px 3px 0 0;
+    display: none;
+  }
+  .text-el:hover .drag-strip, .text-el:focus-within .drag-strip, .text-el.active .drag-strip { display: block; }
+  .text-el .text-content {
+    display: inline-block;
+    background: transparent;
+    outline: none;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    line-height: 1.25;
+    min-width: 24px;
+    min-height: 1em;
+  }
+  .text-el .el-controls {
+    position: absolute;
+    top: -32px;
+    left: 0;
+    display: none;
+    align-items: center;
+    gap: 2px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 3px;
+    white-space: nowrap;
+    z-index: 5;
+  }
+  .text-el:hover .el-controls, .text-el.active .el-controls { display: flex; }
+  .el-controls button {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+    background: none;
+    border: none;
+    color: var(--paper-dim);
+    cursor: pointer;
+    border-radius: 2px;
+  }
+  .el-controls button:hover { color: var(--paper); background: var(--surface-hi); }
+  .el-controls button.toggled { color: var(--blueprint); background: rgba(111,151,201,0.15); }
+  .el-controls .mini-swatch {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    cursor: pointer;
+    margin: 0 1px;
+    border: 1px solid transparent;
+    flex-shrink: 0;
+  }
+  .el-controls .mini-swatch.selected { border-color: var(--paper); }
+  .el-controls .color-picker {
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .el-controls .font-select {
+    background: var(--surface);
+    color: var(--paper-dim);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    font-size: 11px;
+    padding: 2px 3px;
+    cursor: pointer;
+    flex-shrink: 0;
+    max-width: 100px;
+  }
+  .el-controls .ctrl-sep { width: 1px; height: 16px; background: var(--line); margin: 0 2px; flex-shrink: 0; }
+  .el-controls .del-btn { color: var(--stamp); font-weight: 700; }
+
+  .whiteout-el {
+    background: #ffffff;
+    border: 1px dashed transparent;
+    cursor: grab;
+  }
+  .whiteout-el:hover, .whiteout-el.active {
+    border-color: var(--blueprint-dim);
+  }
+
+  #drawToolBtn.toggled { border-color: var(--blueprint); color: var(--paper); background: rgba(111,151,201,0.12); }
+
+  .shape-picker-wrap { position: relative; display: inline-block; }
+  .shape-picker-popover {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 10px;
+    box-shadow: var(--shadow-card);
+    z-index: 20;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    width: 150px;
+  }
+  .shape-picker-popover.active { display: grid; }
+  .shape-picker-popover button {
+    width: 44px;
+    height: 44px;
+    background: var(--surface-hi);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--paper-dim);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .shape-picker-popover button:hover { border-color: var(--blueprint-dim); color: var(--paper); }
+  .shape-picker-popover svg { width: 20px; height: 20px; }
+
+  .shape-el, .image-el {
+    cursor: grab;
+  }
+  .shape-el svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .resize-handle-dot {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: var(--blueprint);
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    z-index: 7;
+    display: none;
+  }
+  .shape-el:hover .resize-handle-dot, .shape-el.active .resize-handle-dot,
+  .image-el:hover .resize-handle-dot, .image-el.active .resize-handle-dot { display: block; }
+  .resize-handle-dot.corner { right: -5px; bottom: -5px; cursor: nwse-resize; }
+  .resize-handle-dot.edge-top { left: 50%; top: -5px; margin-left: -5px; cursor: ns-resize; }
+  .resize-handle-dot.edge-bottom { left: 50%; bottom: -5px; margin-left: -5px; cursor: ns-resize; }
+  .resize-handle-dot.edge-left { top: 50%; left: -5px; margin-top: -5px; cursor: ew-resize; }
+  .resize-handle-dot.edge-right { top: 50%; right: -5px; margin-top: -5px; cursor: ew-resize; }
+  .shape-el .rotate-handle, .image-el .rotate-handle {
+    position: absolute;
+    right: -6px;
+    top: -22px;
+    width: 14px;
+    height: 14px;
+    background: var(--ochre);
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    cursor: grab;
+    display: none;
+    z-index: 8;
+  }
+  .shape-el:hover .rotate-handle, .shape-el.active .rotate-handle,
+  .image-el:hover .rotate-handle, .image-el.active .rotate-handle { display: block; }
+  .shape-el .del-btn-box, .image-el .del-btn-box {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--stamp);
+    color: var(--ink);
+    border: none;
+    font-size: 12px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+  .shape-el:hover .del-btn-box, .image-el:hover .del-btn-box { display: flex; }
+
+  .shape-controls {
+    position: absolute;
+    top: -34px;
+    left: 0;
+    display: none;
+    align-items: center;
+    gap: 3px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 3px;
+    white-space: nowrap;
+    z-index: 5;
+  }
+  .shape-el:hover .shape-controls, .shape-el.active .shape-controls,
+  .image-el:hover .shape-controls, .image-el.active .shape-controls { display: flex; }
+  .shape-controls .mini-swatch {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 1px solid var(--line);
+  }
+  .shape-controls .mini-swatch.selected { border-color: var(--blueprint); border-width: 2px; }
+  .shape-controls .color-picker { width: 18px; height: 18px; border: none; background: none; padding: 0; cursor: pointer; }
+  .shape-controls select { background: var(--ink); color: var(--paper-dim); border: 1px solid var(--line); border-radius: 2px; font-size: 11px; padding: 2px; }
+  .shape-controls .stroke-slider { width: 60px; accent-color: var(--blueprint); }
+
+  .image-el img { width: 100%; height: 100%; display: block; pointer-events: none; }
+
+  .draw-overlay-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    touch-action: none;
+    z-index: 3;
+  }
+  .draw-overlay-svg.interactive { cursor: crosshair; }
+
+  .draw-controls {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 6px 8px;
+    z-index: 6;
+    box-shadow: var(--shadow-card);
+  }
+  .draw-controls .drag-grip {
+    cursor: grab;
+    color: var(--mist);
+    font-size: 13px;
+    padding: 0 2px;
+    user-select: none;
+    line-height: 1;
+  }
+  .draw-controls .drag-grip:active { cursor: grabbing; }
+  .draw-controls.active { display: flex; }
+  .draw-controls .mini-swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 1px solid var(--line);
+  }
+  .draw-controls .mini-swatch.selected { border-color: var(--paper); border-width: 2px; }
+  .draw-controls select.stroke-select {
+    background: var(--ink);
+    color: var(--paper-dim);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    font-size: 12px;
+    padding: 3px 4px;
+  }
+  .draw-controls .stroke-slider {
+    width: 70px;
+    accent-color: var(--blueprint);
+  }
+  .draw-controls .stroke-val {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--paper-dim);
+    min-width: 26px;
+  }
+  .draw-controls button {
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 2px;
+    border: 1px solid var(--line);
+    background: var(--surface-hi);
+    color: var(--paper-dim);
+    cursor: pointer;
+  }
+  .draw-controls button:hover { color: var(--paper); }
+  .draw-controls .draw-sep { width: 1px; height: 18px; background: var(--line); }
+  .whiteout-el .wo-controls {
+    position: absolute;
+    top: -32px;
+    left: 0;
+    display: none;
+    align-items: center;
+    gap: 3px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 3px;
+    white-space: nowrap;
+    z-index: 5;
+  }
+  .whiteout-el:hover .wo-controls, .whiteout-el.active .wo-controls { display: flex; }
+  .wo-controls .mini-swatch {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    cursor: pointer;
+    margin: 0 1px;
+    border: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .wo-controls .mini-swatch.selected { border-color: var(--blueprint); border-width: 2px; }
+  .wo-controls .color-picker {
+    width: 20px;
+    height: 20px;
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .wo-controls .eyedropper-btn {
+    width: 22px;
+    height: 22px;
+    background: none;
+    border: none;
+    color: var(--paper-dim);
+    cursor: pointer;
+    border-radius: 2px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .wo-controls .eyedropper-btn:hover { color: var(--paper); background: var(--surface-hi); }
+  .wo-controls .eyedropper-btn.toggled { color: var(--blueprint); background: rgba(111, 151, 201, 0.2); }
+  .wo-controls .eyedropper-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .wo-controls .adjust-slider {
+    width: 60px;
+    accent-color: var(--blueprint);
+    flex-shrink: 0;
+  }
+  .whiteout-el .resize-handle {
+    position: absolute;
+    right: -5px;
+    bottom: -5px;
+    width: 12px;
+    height: 12px;
+    background: var(--blueprint);
+    border-radius: 2px;
+    cursor: nwse-resize;
+    display: none;
+  }
+  .whiteout-el:hover .resize-handle, .whiteout-el.active .resize-handle { display: block; }
+  .whiteout-el .del-btn-box {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--stamp);
+    color: var(--ink);
+    border: none;
+    font-size: 12px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .whiteout-el:hover .del-btn-box { display: flex; }
+
+  .notes {
+    max-width: 720px;
+    margin: 20px 0;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+  .notes p {
+    font-size: 12px;
+    color: var(--mist);
+    line-height: 1.6;
+    margin: 0 0 6px;
+  }
+  .notes p:last-child { margin-bottom: 0; }
+
+  .actions-bar {
+    display: none;
+    align-items: center;
+    gap: 14px;
+    padding: 20px 0 80px;
+    border-top: 1px solid var(--line);
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .actions-bar.active { display: flex; }
+
+  .status-text { font-family: var(--font-mono); font-size: 12px; color: var(--mist); }
+
+  .password-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .password-modal.active { display: flex; }
+  .password-modal-box {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 24px;
+    width: 320px;
+  }
+  .password-modal-box h3 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    margin: 0 0 8px;
+    color: var(--paper);
+  }
+  .password-modal-box p {
+    font-size: 13px;
+    color: var(--mist);
+    margin: 0 0 16px;
+  }
+  .password-modal-box input {
+    width: 100%;
+    background: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    color: var(--paper);
+    padding: 10px 12px;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+  .password-modal-box .pw-error {
+    color: var(--stamp);
+    font-size: 12px;
+    margin-bottom: 8px;
+    display: none;
+  }
+  .password-modal-box .pw-error.visible { display: block; }
+  .password-modal-actions { display: flex; gap: 10px; margin-top: 6px; }
+
+  .back-link { display: inline-block; font-size: 13px; color: var(--mist); margin-bottom: 4px; }
+  .back-link:hover { color: var(--blueprint); }
+
+  .print-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--ink);
+    z-index: 100;
+    overflow-y: auto;
+  }
+  .print-modal.active { display: block; }
+  .print-modal-bar {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 24px;
+    z-index: 2;
+  }
+  .print-modal-bar span {
+    font-size: 12px;
+    color: var(--mist);
+    font-family: var(--font-mono);
+    max-width: 60ch;
+  }
+  .print-modal-actions { display: flex; gap: 10px; flex-shrink: 0; }
+  .print-pages-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 24px;
+  }
+  .print-page-canvas {
+    max-width: 100%;
+    box-shadow: 0 12px 30px -14px rgba(0, 0, 0, 0.6);
+    background: #fff;
+  }
+
+  @media print {
+    body > *:not(.print-modal) { display: none !important; }
+    .print-modal {
+      position: static;
+      background: #fff;
+      overflow: visible;
+    }
+    .print-modal-bar { display: none !important; }
+    .print-pages-wrap { padding: 0; gap: 0; }
+    .print-page-canvas {
+      box-shadow: none;
+      max-width: 100%;
+      page-break-after: always;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="top-accent" aria-hidden="true"></div>
+
+<div class="wrap">
+  <header class="site">
+    <a class="brand" href="index.html"><img src="assets/logo-mark-light.svg" width="30" height="30" alt="" class="brand-icon"><span class="brand-text">velorapdf<span class="brand-tld">.online</span></span></a>
+    <nav class="site-links">
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-btn" type="button" aria-haspopup="true" aria-expanded="false">
+          <span data-i18n="nav_tools">Tools</span>
+          <svg class="chevron" width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-dropdown-panel mega">
+          <div class="mega-col">
+            <div class="mega-label" data-i18n="nav_group_organize">Organize</div>
+            <a href="merge.html" data-i18n="home_tool_merge_title">Merge PDF</a>
+            <a href="split.html" data-i18n="home_tool_split_title">Split PDF</a>
+            <a href="rotate.html" data-i18n="home_tool_rotate_title">Rotate PDF</a>
+            <a href="organize.html" data-i18n="home_tool_organize_title">Organize Pages</a>
+            <a href="edit.html" data-i18n="edit_title">Edit PDF</a>
+            <a href="view.html" data-i18n="view_title">View &amp; Print PDF</a>
+          </div>
+          <div class="mega-col">
+            <div class="mega-label tag-stamp" data-i18n="nav_group_security">Security &amp; marking</div>
+            <a href="watermark.html" data-i18n="home_tool_watermark_title">Watermark</a>
+            <a href="protect.html" data-i18n="home_tool_protect_title">Protect PDF</a>
+            <a href="sign.html" data-i18n="home_tool_sign_title">Sign PDF</a>
+          </div>
+          <div class="mega-col">
+            <div class="mega-label tag-ochre" data-i18n="nav_group_convert">Convert</div>
+            <a href="compress.html" data-i18n="home_tool_compress_title">Compress PDF</a>
+            <a href="img2pdf.html" data-i18n="home_tool_img2pdf_title">Image to PDF</a>
+            <a href="pdf2jpg.html" data-i18n="home_tool_pdf2jpg_title">PDF to JPG</a>
+            <a href="txt2pdf.html" data-i18n="home_tool_txt2pdf_title">TXT to PDF</a>
+            <a href="pdf2pptx.html" data-i18n="home_tool_pdf2pptx_title">PDF to PowerPoint</a>
+            <a href="pptx2pdf.html" data-i18n="home_tool_pptx2pdf_title">PowerPoint to PDF</a>
+            <a href="xlsx2pdf.html" data-i18n="home_tool_xlsx2pdf_title">Excel to PDF</a>
+            <a href="pdf2xlsx.html" data-i18n="home_tool_pdf2xlsx_title">PDF to Excel</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-btn" type="button" aria-haspopup="true" aria-expanded="false">
+          <span data-i18n="nav_more">More</span>
+          <svg class="chevron" width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-dropdown-panel simple">
+          <a href="about.html" data-i18n="footer_about">About</a>
+          <a href="privacy.html" data-i18n="footer_privacy">Privacy</a>
+          <a href="contact.html" data-i18n="footer_contact">Contact</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <div class="tool-header">
+    <a class="back-link" href="index.html" data-i18n="edit_back">&larr; Back to tools</a>
+    <h1 data-i18n="edit_title">Edit PDF</h1>
+    <p data-i18n="edit_subtitle">Add new text anywhere, or cover existing content with a white box and type over it. This can't reflow or rewrite the PDF's original text directly — see the notes below for what that means.</p>
+  </div>
+
+  <label class="dropzone" id="dropzone">
+    <div class="dz-title" data-i18n="edit_dz_title">Drop a PDF here, or click to browse</div>
+    <div class="dz-sub" data-i18n="edit_dz_sub">one file at a time &middot; nothing is uploaded</div>
+    <input type="file" id="fileInput" accept="application/pdf">
+  </label>
+
+  <div class="toolbar" id="toolbar">
+    <span class="doc-name" id="docName"></span>
+    <span class="doc-name" id="editCount" style="color: var(--blueprint); border-color: var(--blueprint-dim);"></span>
+    <div class="page-nav">
+      <span data-i18n="edit_page_label">Page</span>
+      <button type="button" class="btn btn-ghost" id="prevPageBtn" style="padding:6px 10px">&larr;</button>
+      <input type="number" id="pageNum" min="1" value="1">
+      <span id="pageOf"></span>
+      <button type="button" class="btn btn-ghost" id="nextPageBtn" style="padding:6px 10px">&rarr;</button>
+    </div>
+    <button class="btn btn-ghost" id="addTextBtn" data-i18n="edit_add_text_btn">+ Add text</button>
+    <button class="btn btn-ghost" id="addWhiteoutBtn" data-i18n="edit_add_whiteout_btn">+ Add whiteout</button>
+    <button class="btn btn-ghost" id="drawToolBtn" data-i18n="edit_draw_btn">+ Draw</button>
+    <div class="shape-picker-wrap">
+      <button class="btn btn-ghost" id="shapeToolBtn" data-i18n="edit_shape_btn">+ Shape</button>
+      <div class="shape-picker-popover" id="shapePopover">
+        <button type="button" data-shape="rect" title="Rectangle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="1"/></svg></button>
+        <button type="button" data-shape="circle" title="Circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg></button>
+        <button type="button" data-shape="line" title="Line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="20" x2="20" y2="4"/></svg></button>
+        <button type="button" data-shape="arrow" title="Arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="20" x2="20" y2="4"/><path d="M11 4h9v9"/></svg></button>
+        <button type="button" data-shape="cross" title="Cross"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg></button>
+        <button type="button" data-shape="check" title="Check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 13l5 5 11-13"/></svg></button>
+        <button type="button" data-shape="checkbox" title="Checkbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 12l3 3 7-7"/></svg></button>
+      </div>
+    </div>
+    <button class="btn btn-ghost" id="imageToolBtn" data-i18n="edit_image_btn">+ Image</button>
+    <input type="file" id="imageInput" accept="image/png,image/jpeg" style="display:none">
+    <button class="btn btn-ghost" id="changeFileBtn" data-i18n="edit_change_file">Use a different file</button>
+  </div>
+
+<div class="quick-actions" id="quickActions"></div>
+
+  <div class="workspace" id="workspace">
+    <div class="preview-canvas-wrap" id="previewWrap">
+      <div class="draw-controls" id="drawControls">
+        <span class="drag-grip" id="drawControlsGrip">⠿</span>
+        <div class="mini-swatch selected" data-color="#c1502e" style="background:#c1502e"></div>
+        <div class="mini-swatch" data-color="#16140f" style="background:#16140f"></div>
+        <div class="mini-swatch" data-color="#6f97c9" style="background:#6f97c9"></div>
+        <input type="color" id="drawColorPicker" class="color-picker" value="#c1502e" title="Custom color">
+        <div class="draw-sep"></div>
+        <input type="range" class="stroke-slider" id="strokeSelect" min="0.5" max="10" step="0.5" value="3" title="Stroke width">
+        <span class="stroke-val" id="strokeVal">3pt</span>
+        <div class="draw-sep"></div>
+        <button type="button" id="clearDrawingBtn" data-i18n="edit_draw_clear">Clear</button>
+        <button type="button" id="doneDrawingBtn" data-i18n="edit_draw_done">Done</button>
+      </div>
+    </div>
+
+    <div class="notes">
+      <p data-i18n="edit_note_latin">Added text supports Latin characters only (standard PDF fonts).</p>
+      <p data-i18n="edit_note_whiteout">Whiteout visually covers content — the original text underneath still exists in the file and isn't securely removed. Don't rely on it for confidential redaction.</p>
+    </div>
+  </div>
+
+  <div class="actions-bar" id="actionsBar">
+    <button class="btn btn-primary" id="downloadBtn" data-i18n="edit_download_btn" disabled>Download edited PDF</button>
+    <button class="btn btn-ghost" id="viewPrintBtn" data-i18n="edit_view_print_btn" disabled>View &amp; print</button>
+    <span class="status-text" id="statusText"></span>
+  </div>
+
+  <footer class="site">
+    <span data-i18n="footer_tagline">VeloraPDF — part of the Velora toolkit</span>
+    <span class="footer-links">
+      <a href="about.html" data-i18n="footer_about">About</a> · <a href="privacy.html" data-i18n="footer_privacy">Privacy</a> · <a href="contact.html" data-i18n="footer_contact">Contact</a>
+    </span>
+  </footer>
+</div>
+
+<div class="print-modal" id="printModal">
+  <div class="print-modal-bar">
+    <span data-i18n="edit_view_print_hint">This uses the same renderer as the editor, so it should match what you saw while editing.</span>
+    <div class="print-modal-actions">
+      <button class="btn btn-primary" id="printNowBtn" data-i18n="edit_print_now_btn">Print</button>
+      <button class="btn btn-ghost" id="closePrintModalBtn" data-i18n="edit_close_btn">Close</button>
+    </div>
+  </div>
+  <div class="print-pages-wrap" id="printPagesWrap"></div>
+</div>
+
+<div class="password-modal" id="passwordModal">
+  <div class="password-modal-box">
+    <h3 data-i18n="edit_pw_title">Password protected</h3>
+    <p data-i18n="edit_pw_subtitle">This PDF needs a password to open.</p>
+    <input type="password" id="passwordInput" autocomplete="off">
+    <div class="pw-error" id="passwordError" data-i18n="edit_pw_wrong">Incorrect password — try again.</div>
+    <div class="password-modal-actions">
+      <button class="btn btn-primary" id="passwordUnlockBtn" data-i18n="edit_pw_unlock">Unlock</button>
+      <button class="btn btn-ghost" id="passwordCancelBtn" data-i18n="edit_pw_cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/@cantoo/pdf-lib@2.7.1/dist/pdf-lib.min.js"></script>
+<script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
+<script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+</script>
+<script src="js/handoff.js?v=1"></script>
+<script src="js/quick-actions.js?v=3"></script>
+<script src="js/edit.js?v=27"></script>
+<script src="js/nav.js?v=13"></script>
+<script src="js/i18n.js?v=17"></script>
+</body>
+</html>

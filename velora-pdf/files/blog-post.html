@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redirecting… — VeloraPDF Blog</title>
+<meta name="robots" content="noindex">
+<script>
+(() => {
+  const params = new URLSearchParams(window.location.search);
+  const slug = params.get('slug');
+  window.location.replace(slug ? `/blog/${encodeURIComponent(slug)}.html` : '/blog.html');
+})();
+</script>
+</head>
+<body>
+<p>Redirecting to the blog post… If you are not redirected, <a href="/blog.html">go to the blog</a>.</p>
+</body>
+</html>

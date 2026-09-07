@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-i18n="privacy_title">Privacy — VeloraPDF</title>
+<meta name="description" content="What VeloraPDF sees, stores, and sends — in plain terms.">
+<link rel="icon" href="/favicon.ico?v=2" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png?v=2">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=2">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .page-header { padding: 40px 0 8px; }
+  .page-header h1 {
+    font-family: var(--font-display);
+    font-size: 34px;
+    font-weight: 500;
+    margin: 0 0 8px;
+  }
+  .prose { max-width: 66ch; padding-bottom: 90px; }
+  .prose p, .prose li { color: var(--paper-dim); line-height: 1.7; font-size: 15px; }
+  .prose ul { margin: 0 0 18px; padding-left: 20px; }
+  .prose li { margin-bottom: 8px; }
+  .prose h2 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 500;
+    margin: 34px 0 12px;
+    color: var(--paper);
+  }
+  .updated {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--mist);
+    margin: 0 0 24px;
+  }
+  .check-table {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin: 20px 0 30px;
+  }
+  .check-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    font-size: 14px;
+    gap: 12px;
+  }
+  .check-row:last-child { border-bottom: none; }
+  .check-row .label { color: var(--paper); }
+  .check-row .val { font-family: var(--font-mono); font-size: 12px; white-space: nowrap; }
+  .val.no { color: var(--blueprint); }
+  .val.yes { color: var(--stamp); }
+  .back-link { display: inline-block; font-size: 13px; color: var(--mist); margin-bottom: 4px; }
+  .back-link:hover { color: var(--blueprint); }
+</style>
+</head>
+<body>
+<div class="top-accent" aria-hidden="true"></div>
+
+<div class="wrap">
+  <header class="site">
+    <a class="brand" href="index.html"><img src="assets/logo-mark-light.svg" width="30" height="30" alt="" class="brand-icon"><span class="brand-text">velorapdf<span class="brand-tld">.online</span></span></a>
+    <nav class="site-links">
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-btn" type="button" aria-haspopup="true" aria-expanded="false">
+          <span data-i18n="nav_tools">Tools</span>
+          <svg class="chevron" width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-dropdown-panel mega">
+          <div class="mega-col">
+            <div class="mega-label" data-i18n="nav_group_organize">Organize</div>
+            <a href="merge.html" data-i18n="home_tool_merge_title">Merge PDF</a>
+            <a href="split.html" data-i18n="home_tool_split_title">Split PDF</a>
+            <a href="rotate.html" data-i18n="home_tool_rotate_title">Rotate PDF</a>
+            <a href="organize.html" data-i18n="home_tool_organize_title">Organize Pages</a>
+            <a href="edit.html" data-i18n="edit_title">Edit PDF</a>
+            <a href="view.html" data-i18n="view_title">View &amp; Print PDF</a>
+          </div>
+          <div class="mega-col">
+            <div class="mega-label tag-stamp" data-i18n="nav_group_security">Security &amp; marking</div>
+            <a href="watermark.html" data-i18n="home_tool_watermark_title">Watermark</a>
+            <a href="protect.html" data-i18n="home_tool_protect_title">Protect PDF</a>
+            <a href="sign.html" data-i18n="home_tool_sign_title">Sign PDF</a>
+          </div>
+          <div class="mega-col">
+            <div class="mega-label tag-ochre" data-i18n="nav_group_convert">Convert</div>
+            <a href="compress.html" data-i18n="home_tool_compress_title">Compress PDF</a>
+            <a href="img2pdf.html" data-i18n="home_tool_img2pdf_title">Image to PDF</a>
+            <a href="pdf2jpg.html" data-i18n="home_tool_pdf2jpg_title">PDF to JPG</a>
+            <a href="txt2pdf.html" data-i18n="home_tool_txt2pdf_title">TXT to PDF</a>
+            <a href="pdf2pptx.html" data-i18n="home_tool_pdf2pptx_title">PDF to PowerPoint</a>
+            <a href="pptx2pdf.html" data-i18n="home_tool_pptx2pdf_title">PowerPoint to PDF</a>
+            <a href="xlsx2pdf.html" data-i18n="home_tool_xlsx2pdf_title">Excel to PDF</a>
+            <a href="pdf2xlsx.html" data-i18n="home_tool_pdf2xlsx_title">PDF to Excel</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-dropdown">
+        <button class="nav-dropdown-btn" type="button" aria-haspopup="true" aria-expanded="false">
+          <span data-i18n="nav_more">More</span>
+          <svg class="chevron" width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="nav-dropdown-panel simple">
+          <a href="about.html" data-i18n="footer_about">About</a>
+          <a href="privacy.html" data-i18n="footer_privacy">Privacy</a>
+          <a href="contact.html" data-i18n="footer_contact">Contact</a>
+        </div>
+      </div>
+    </nav>
+  </header>
+
+  <div class="page-header">
+    <a class="back-link" href="index.html" data-i18n="privacy_back">&larr; Back home</a>
+    <h1 data-i18n="privacy_title">Privacy</h1>
+  </div>
+
+  <div class="prose">
+    <p class="updated" data-i18n="privacy_updated">Last updated: August 2026</p>
+
+    <p class="lede-para" data-i18n="privacy_intro">
+      The short version: your files stay on your device. Here's the exact
+      breakdown of what happens when you use a tool on this site.
+    </p>
+
+    <div class="check-table">
+      <div class="check-row"><span class="label" data-i18n="privacy_row1_label">Your PDF is uploaded to a server</span><span class="val no" data-i18n="privacy_no">No</span></div>
+      <div class="check-row"><span class="label" data-i18n="privacy_row2_label">Your PDF's content is stored anywhere</span><span class="val no" data-i18n="privacy_no">No</span></div>
+      <div class="check-row"><span class="label" data-i18n="privacy_row3_label">An account or sign-up is required</span><span class="val no" data-i18n="privacy_no">No</span></div>
+      <div class="check-row"><span class="label" data-i18n="privacy_row4_label">File names are logged</span><span class="val no" data-i18n="privacy_no">No</span></div>
+      <div class="check-row"><span class="label" data-i18n="privacy_row5_label">The site loads code from third-party CDNs</span><span class="val yes" data-i18n="privacy_yes">Yes</span></div>
+      <div class="check-row"><span class="label" data-i18n="privacy_row6_label">Cloudflare (our host) sees standard request logs</span><span class="val yes" data-i18n="privacy_yes">Yes</span></div>
+    </div>
+
+    <h2 data-i18n="privacy_h2_1">How a file is processed</h2>
+    <p data-i18n="privacy_p1">
+      When you choose or drop a PDF, it's read into your browser's memory
+      using the File API — the same mechanism any website uses to let you
+      attach a file. The actual merge, split, or rotate operation runs
+      inside your browser using JavaScript libraries. The output file is
+      generated locally and handed to you as a download. Your file's
+      content never becomes a network request.
+    </p>
+
+    <h2 data-i18n="privacy_h2_2">What does leave your device</h2>
+    <p data-i18n="privacy_p2">
+      Two things, neither of which is your file:
+    </p>
+    <ul>
+      <li data-i18n="privacy_li1">
+        The page itself. Loading VeloraPDF means your
+        browser requests the HTML, CSS, and JavaScript from Cloudflare's
+        servers, and editing libraries from a public code CDN. This is
+        just code, not your data — the same way loading any website
+        downloads the site's own script files.
+      </li>
+      <li data-i18n="privacy_li2">
+        Standard hosting logs. Cloudflare, who hosts this
+        site, sees the same request metadata (IP address, browser type,
+        page requested) that any web host sees for any site. We don't add
+        analytics or tracking scripts on top of that.
+      </li>
+    </ul>
+
+    <h2 data-i18n="privacy_h2_3">Cookies</h2>
+    <p data-i18n="privacy_p3">
+      VeloraPDF doesn't set any cookies of its own. There's no login, so
+      there's nothing to remember about you between visits.
+    </p>
+
+    <h2 data-i18n="privacy_h2_4">Questions</h2>
+    <p data-i18n="privacy_p4">
+      If anything here is unclear, or you've found a case where a tool
+      behaves differently than described, reach out via the
+      contact page.
+    </p>
+  </div>
+
+  <footer class="site">
+    <span data-i18n="footer_tagline">VeloraPDF — part of the Velora toolkit</span>
+    <span class="footer-links">
+      <a href="about.html" data-i18n="footer_about">About</a> · <a href="privacy.html" data-i18n="footer_privacy">Privacy</a> · <a href="contact.html" data-i18n="footer_contact">Contact</a>
+    </span>
+  </footer>
+</div>
+
+<script src="js/nav.js?v=13"></script>
+<script src="js/i18n.js?v=17"></script>
+</body>
+</html>

@@ -86,7 +86,7 @@
   }
 
   .dropzone {
-    border: 1.5px dashed var(--line);
+    border: 1.5px dashed oklch(0.62 0.14 148 / 0.5);
     border-radius: var(--radius);
     padding: 48px 24px;
     text-align: center;
@@ -94,9 +94,13 @@
     cursor: pointer;
     transition: border-color 0.2s ease, background 0.2s ease;
   }
+  .dropzone:hover {
+    border-color: oklch(0.62 0.14 148);
+    background: oklch(0.62 0.14 148 / 0.05);
+  }
   .dropzone.drag-over {
-    border-color: var(--blueprint);
-    background: rgba(111, 151, 201, 0.06);
+    border-color: oklch(0.62 0.14 148);
+    background: oklch(0.62 0.14 148 / 0.08);
     color: var(--paper);
   }
   .dropzone .dz-title {

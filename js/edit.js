@@ -297,6 +297,7 @@
   let drawMode = false;
   let drawColor = '#c1502e';
   let drawToolType = 'pen';
+  let drawControlsAutoPositioned = false;
   let currentStroke = null; // { points: [] } while actively drawing
 
   function setStatus(msg) { statusText.textContent = msg; }
@@ -603,7 +604,10 @@
   function startStroke(e) {
     if (!drawMode || e.target.closest('#drawControls')) return;
     e.preventDefault();
-    positionDrawControlsNear(e);
+    if (!drawControlsAutoPositioned) {
+      positionDrawControlsNear(e);
+      drawControlsAutoPositioned = true;
+    }
     const strokeWidthPct = parseFloat(strokeSelect.value);
     currentStroke = { color: drawColor, widthPct: strokeWidthPct, toolType: drawToolType, points: [pointFromEvent(e)] };
     liveDrawPoly = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
@@ -707,6 +711,7 @@
     if (drawMode) {
       ensureLiveDrawSvg();
       updateDrawCursor();
+      drawControlsAutoPositioned = false;
     } else {
       removeLiveDrawSvg();
       previewWrap.style.cursor = '';

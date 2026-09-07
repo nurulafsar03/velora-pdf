@@ -449,12 +449,12 @@
   }
 
   function renderDrawingSvg(edit) {
-    const old = previewWrap.querySelector('.drawing-svg[data-static="1"]');
+    const old = previewWrap.querySelector(`.drawing-svg[data-edit-id="${edit.id}"]`);
     if (old) old.remove();
 
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('class', 'draw-overlay-svg drawing-svg');
-    svg.setAttribute('data-static', '1');
+    svg.setAttribute('data-edit-id', edit.id);
     svg.setAttribute('viewBox', '0 0 100 100');
     svg.setAttribute('preserveAspectRatio', 'none');
     svg.style.pointerEvents = 'none';
@@ -517,6 +517,7 @@
     const el = document.createElement('div');
     el.className = 'edit-el drawing-frame-el';
     el.dataset.editId = edit.id;
+    el.style.pointerEvents = drawMode ? 'none' : '';
     el.style.left = `${frame.xPct}%`;
     el.style.top = `${frame.yPct}%`;
     el.style.width = `${frame.widthPct}%`;
@@ -639,13 +640,10 @@
   function endStroke() {
     if (!drawMode || !currentStroke) return;
     if (currentStroke.points.length > 1) {
-      let drawingEdit = findDrawingEdit(currentPage);
-      if (!drawingEdit) {
-        drawingEdit = { id: newId(), type: 'drawing', pageNum: currentPage, strokes: [] };
-        edits.push(drawingEdit);
-      }
-      drawingEdit.strokes.push(currentStroke);
+      const drawingEdit = { id: newId(), type: 'drawing', pageNum: currentPage, strokes: [currentStroke] };
+      edits.push(drawingEdit);
       renderDrawingSvg(drawingEdit);
+      createDrawingFrameDom(drawingEdit);
     }
     currentStroke = null;
     liveDrawPoly = null;

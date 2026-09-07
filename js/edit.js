@@ -28,6 +28,7 @@
   const strokeVal = document.getElementById('strokeVal');
   strokeSelect.addEventListener('input', () => {
     strokeVal.textContent = `${strokeSelect.value}pt`;
+    updateDrawCursor();
   });
   const clearDrawingBtn = document.getElementById('clearDrawingBtn');
   const doneDrawingBtn = document.getElementById('doneDrawingBtn');
@@ -495,6 +496,17 @@
     }
   }
 
+  function updateDrawCursor() {
+    if (!drawMode) return;
+    const widthPt = parseFloat(strokeSelect.value) || 3;
+    const size = Math.max(8, Math.min(60, widthPt * 5));
+    const half = size / 2;
+    const fillOpacity = drawToolType === 'brush' ? 0.55 : 0.95;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><circle cx="${half}" cy="${half}" r="${half - 1}" fill="${drawColor}" fill-opacity="${fillOpacity}" stroke="#ffffff" stroke-width="1.5"/></svg>`;
+    const dataUri = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+    previewWrap.style.cursor = `url("${dataUri}") ${half} ${half}, crosshair`;
+  }
+
   function pointFromEvent(e) {
     const rect = previewWrap.getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -603,6 +615,7 @@
     drawControls.classList.remove('active');
     document.querySelectorAll('.edit-el').forEach((n) => { n.style.pointerEvents = ''; });
     removeLiveDrawSvg();
+    previewWrap.style.cursor = '';
   }
 
   drawToolBtn.addEventListener('click', () => {
@@ -613,8 +626,10 @@
     document.querySelectorAll('.edit-el').forEach((n) => { n.style.pointerEvents = drawMode ? 'none' : ''; });
     if (drawMode) {
       ensureLiveDrawSvg();
+      updateDrawCursor();
     } else {
       removeLiveDrawSvg();
+      previewWrap.style.cursor = '';
     }
   });
 
@@ -630,6 +645,7 @@
     btn.addEventListener('click', () => {
       drawToolType = btn.dataset.toolType;
       drawToolTypeGroup.querySelectorAll('.tool-type-btn').forEach((b) => b.classList.toggle('selected', b === btn));
+      updateDrawCursor();
     });
   });
 
@@ -638,11 +654,13 @@
       drawColor = sw.dataset.color;
       drawControls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.toggle('selected', s === sw));
       drawColorPicker.value = drawColor;
+      updateDrawCursor();
     });
   });
   drawColorPicker.addEventListener('input', (e) => {
     drawColor = e.target.value;
     drawControls.querySelectorAll('.mini-swatch').forEach((s) => s.classList.remove('selected'));
+    updateDrawCursor();
   });
 
   previewWrap.addEventListener('mousedown', startStroke);

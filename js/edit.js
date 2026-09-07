@@ -394,7 +394,7 @@
     edits.filter((e) => e.pageNum === currentPage).forEach((edit) => {
       if (edit.type === 'text') createTextDom(edit);
       else if (edit.type === 'whiteout' || edit.type === 'highlight') createWhiteoutDom(edit);
-      else if (edit.type === 'drawing') renderDrawingSvg(edit);
+      else if (edit.type === 'drawing') { renderDrawingSvg(edit); createDrawingFrameDom(edit); }
       else if (edit.type === 'shape') createShapeDom(edit);
       else if (edit.type === 'image') createImageDom(edit);
       else if (edit.type === 'textHighlight' || edit.type === 'underline' || edit.type === 'strikethrough') createTextMarkDom(edit);
@@ -436,6 +436,7 @@
     resizeDebounce = setTimeout(() => {
       refreshTextFontSizes();
       positionTextLayer();
+      updateDrawCursor();
     }, 100);
   });
 
@@ -475,6 +476,83 @@
     previewWrap.insertBefore(svg, previewWrap.firstChild.nextSibling);
   }
 
+  function computeDrawingBBox(edit) {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    edit.strokes.forEach((s) => s.points.forEach((p) => {
+      minX = Math.min(minX, p.xPct); maxX = Math.max(maxX, p.xPct);
+      minY = Math.min(minY, p.yPct); maxY = Math.max(maxY, p.yPct);
+    }));
+    if (!isFinite(minX)) return { xPct: 0, yPct: 0, widthPct: 0, heightPct: 0 };
+    const pad = 1.5;
+    const x = Math.max(0, minX - pad);
+    const y = Math.max(0, minY - pad);
+    return {
+      xPct: x,
+      yPct: y,
+      widthPct: Math.min(100, maxX + pad) - x,
+      heightPct: Math.min(100, maxY + pad) - y,
+    };
+  }
+
+  function remapDrawingPoints(edit, oldFrame, newFrame) {
+    const oldW = oldFrame.widthPct || 0.0001;
+    const oldH = oldFrame.heightPct || 0.0001;
+    edit.strokes.forEach((stroke) => {
+      stroke.points.forEach((p) => {
+        const fx = (p.xPct - oldFrame.xPct) / oldW;
+        const fy = (p.yPct - oldFrame.yPct) / oldH;
+        p.xPct = newFrame.xPct + fx * newFrame.widthPct;
+        p.yPct = newFrame.yPct + fy * newFrame.heightPct;
+      });
+    });
+  }
+
+  function createDrawingFrameDom(edit) {
+    if (!edit.strokes || !edit.strokes.length) return;
+    const bbox = computeDrawingBBox(edit);
+    if (bbox.widthPct <= 0 || bbox.heightPct <= 0) return;
+    let frame = { ...bbox };
+    let prevFrame = { ...bbox };
+
+    const el = document.createElement('div');
+    el.className = 'edit-el drawing-frame-el';
+    el.dataset.editId = edit.id;
+    el.style.left = `${frame.xPct}%`;
+    el.style.top = `${frame.yPct}%`;
+    el.style.width = `${frame.widthPct}%`;
+    el.style.height = `${frame.heightPct}%`;
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'del-btn-box';
+    delBtn.textContent = '✕';
+    delBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      edits = edits.filter((x) => x.id !== edit.id);
+      renderPageElements();
+      validateDownload();
+    });
+    el.appendChild(delBtn);
+
+    function applyTransform() {
+      remapDrawingPoints(edit, prevFrame, frame);
+      prevFrame = { ...frame };
+      renderDrawingSvg(edit);
+      validateDownload();
+    }
+
+    wireDrag(el, frame, () => {
+      el.style.left = `${frame.xPct}%`;
+      el.style.top = `${frame.yPct}%`;
+      applyTransform();
+    });
+
+    wireMultiResize(el, frame, { aspectLocked: false }, () => {
+      applyTransform();
+    });
+
+    previewWrap.appendChild(el);
+  }
+
   // ---- draw tool ----
 
   let liveDrawSvg = null;
@@ -499,10 +577,14 @@
   function updateDrawCursor() {
     if (!drawMode) return;
     const widthPt = parseFloat(strokeSelect.value) || 3;
-    const size = Math.max(8, Math.min(60, widthPt * 5));
+    // The live stroke uses vector-effect="non-scaling-stroke", so its
+    // rendered thickness stays close to the raw pt value in device pixels,
+    // regardless of previewWrap's actual displayed size.
+    const pixelWidth = widthPt * 1.3;
+    const size = Math.max(4, Math.min(40, pixelWidth));
     const half = size / 2;
     const fillOpacity = drawToolType === 'brush' ? 0.55 : 0.95;
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><circle cx="${half}" cy="${half}" r="${half - 1}" fill="${drawColor}" fill-opacity="${fillOpacity}" stroke="#ffffff" stroke-width="1.5"/></svg>`;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}"><circle cx="${half}" cy="${half}" r="${Math.max(1, half - 1)}" fill="${drawColor}" fill-opacity="${fillOpacity}" stroke="#ffffff" stroke-width="1"/></svg>`;
     const dataUri = `data:image/svg+xml,${encodeURIComponent(svg)}`;
     previewWrap.style.cursor = `url("${dataUri}") ${half} ${half}, crosshair`;
   }

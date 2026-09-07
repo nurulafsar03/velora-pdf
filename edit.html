@@ -459,7 +459,7 @@
     border: 1.5px dashed transparent;
     border-radius: 4px;
   }
-  .drawing-frame-el:hover, .drawing-frame-el.active {
+  .drawing-frame-el.active {
     border-color: var(--blueprint-dim);
     background: rgba(111, 151, 201, 0.05);
   }
@@ -476,7 +476,7 @@
   }
   .shape-el:hover .resize-handle-dot, .shape-el.active .resize-handle-dot,
   .image-el:hover .resize-handle-dot, .image-el.active .resize-handle-dot,
-  .drawing-frame-el:hover .resize-handle-dot, .drawing-frame-el.active .resize-handle-dot { display: block; }
+  .drawing-frame-el.active .resize-handle-dot { display: block; }
   .resize-handle-dot.corner { right: -5px; bottom: -5px; cursor: nwse-resize; }
   .resize-handle-dot.edge-top { left: 50%; top: -5px; margin-left: -5px; cursor: ns-resize; }
   .resize-handle-dot.edge-bottom { left: 50%; bottom: -5px; margin-left: -5px; cursor: ns-resize; }
@@ -514,7 +514,7 @@
     justify-content: center;
     z-index: 2;
   }
-  .shape-el:hover .del-btn-box, .image-el:hover .del-btn-box, .drawing-frame-el:hover .del-btn-box { display: flex; }
+  .shape-el:hover .del-btn-box, .image-el:hover .del-btn-box, .drawing-frame-el.active .del-btn-box { display: flex; }
   .shape-el .dup-btn-box, .image-el .dup-btn-box {
     position: absolute;
     top: -10px;

@@ -192,7 +192,7 @@
     posts.forEach((post) => {
       const a = document.createElement('a');
       a.className = 'blog-card';
-      a.href = `blog-post.html?slug=${encodeURIComponent(post.slug)}`;
+      a.href = `/blog/${encodeURIComponent(post.slug)}.html`;
 
       const meta = document.createElement('div');
       meta.className = 'blog-meta';
@@ -222,6 +222,6 @@
 })();
 </script>
 <script src="js/nav.js?v=13"></script>
-<script src="js/i18n.js?v=24"></script>
+<script src="js/i18n.js?v=26"></script>
 </body>
 </html>

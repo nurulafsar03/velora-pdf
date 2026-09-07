@@ -22,6 +22,7 @@
   const textMarkDoneBtn = document.getElementById('textMarkDoneBtn');
   const drawToolBtn = document.getElementById('drawToolBtn');
   const drawControls = document.getElementById('drawControls');
+  const drawToolTypeGroup = document.getElementById('drawToolTypeGroup');
   const drawColorPicker = document.getElementById('drawColorPicker');
   const strokeSelect = document.getElementById('strokeSelect');
   const strokeVal = document.getElementById('strokeVal');
@@ -294,6 +295,7 @@
   let activeEl = null;
   let drawMode = false;
   let drawColor = '#c1502e';
+  let drawToolType = 'pen';
   let currentStroke = null; // { points: [] } while actively drawing
 
   function setStatus(msg) { statusText.textContent = msg; }
@@ -465,6 +467,7 @@
       poly.setAttribute('stroke-linecap', 'round');
       poly.setAttribute('stroke-linejoin', 'round');
       poly.setAttribute('vector-effect', 'non-scaling-stroke');
+      if (stroke.toolType === 'brush') poly.setAttribute('stroke-opacity', '0.55');
       svg.appendChild(poly);
     });
 
@@ -505,8 +508,9 @@
   function startStroke(e) {
     if (!drawMode || e.target.closest('#drawControls')) return;
     e.preventDefault();
+    positionDrawControlsNear(e);
     const strokeWidthPct = parseFloat(strokeSelect.value);
-    currentStroke = { color: drawColor, widthPct: strokeWidthPct, points: [pointFromEvent(e)] };
+    currentStroke = { color: drawColor, widthPct: strokeWidthPct, toolType: drawToolType, points: [pointFromEvent(e)] };
     liveDrawPoly = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
     liveDrawPoly.setAttribute('fill', 'none');
     liveDrawPoly.setAttribute('stroke', drawColor);
@@ -514,7 +518,21 @@
     liveDrawPoly.setAttribute('stroke-linecap', 'round');
     liveDrawPoly.setAttribute('stroke-linejoin', 'round');
     liveDrawPoly.setAttribute('vector-effect', 'non-scaling-stroke');
+    if (drawToolType === 'brush') liveDrawPoly.setAttribute('stroke-opacity', '0.55');
     liveDrawSvg.appendChild(liveDrawPoly);
+  }
+
+  function positionDrawControlsNear(e) {
+    const rect = previewWrap.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    let left = clientX - rect.left - 24;
+    let top = clientY - rect.top - (drawControls.offsetHeight + 16);
+    if (top < 0) top = clientY - rect.top + 24;
+    left = Math.max(0, Math.min(rect.width - drawControls.offsetWidth, left));
+    top = Math.max(0, Math.min(rect.height - drawControls.offsetHeight, top));
+    drawControls.style.left = `${left}px`;
+    drawControls.style.top = `${top}px`;
   }
 
   function moveStroke(e) {
@@ -606,6 +624,13 @@
     edits = edits.filter((e) => !(e.type === 'drawing' && e.pageNum === currentPage));
     renderPageElements();
     validateDownload();
+  });
+
+  drawToolTypeGroup.querySelectorAll('.tool-type-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      drawToolType = btn.dataset.toolType;
+      drawToolTypeGroup.querySelectorAll('.tool-type-btn').forEach((b) => b.classList.toggle('selected', b === btn));
+    });
   });
 
   drawControls.querySelectorAll('.mini-swatch').forEach((sw) => {
@@ -2531,6 +2556,7 @@
           edit.strokes.forEach((stroke) => {
             const { r, g, b } = hexToRgb(stroke.color);
             const thickness = stroke.widthPct;
+            const opacity = stroke.toolType === 'brush' ? 0.55 : 1;
             for (let i = 0; i < stroke.points.length - 1; i++) {
               const p1 = stroke.points[i];
               const p2 = stroke.points[i + 1];
@@ -2539,6 +2565,7 @@
                 end: { x: width * (p2.xPct / 100), y: height - height * (p2.yPct / 100) },
                 thickness,
                 color: rgb(r, g, b),
+                opacity,
                 lineCap: LineCapStyle.Round,
               });
             }

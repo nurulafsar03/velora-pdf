@@ -511,18 +511,19 @@
       if (lines.length === 0) lines.push([]);
 
       lines.forEach((line) => {
-        const lineHeight = Math.max(14, ...(line.map((w) => w.kind === 'field' ? (w.heightPt || 16) + 4 : (w.sizePt || 12) * 1.35)), 14);
+        const lineHeight = Math.max(14, ...(line.map((w) => w.kind === 'field' ? Math.max(14, (w.heightPt || 16) - 3 + 6) : (w.sizePt || 12) * 1.35)), 14);
         ensureSpace(lineHeight);
         const lineWidth = line.reduce((sum, w) => sum + w.width, 0);
         let x = marginX;
         if (align === 'center') x = marginX + (maxWidth - lineWidth) / 2;
         else if (align === 'right') x = marginX + (maxWidth - lineWidth);
 
+        const BASELINE_GAP = 3; // small gap below the text baseline, matching descender space
         line.forEach((w) => {
           if (w.kind === 'field') {
             const fw = w.width;
             const fh = w.heightPt || (w.fieldType === 'checkbox' ? 16 : Math.max(16, w.sizePt * 1.3));
-            const fy = y - fh + 2;
+            const fy = y - BASELINE_GAP;
             try {
               if (w.fieldType === 'checkbox') {
                 const cb = form.createCheckBox(w.fieldName);

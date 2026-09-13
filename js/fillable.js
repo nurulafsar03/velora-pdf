@@ -150,6 +150,39 @@
     if (!e.target.closest('.fb-dropdown-wrap')) fieldMenu.classList.remove('active');
   });
 
+  function wireFieldResize(el) {
+    const handle = document.createElement('span');
+    handle.className = 'fb-field-resize';
+    handle.contentEditable = 'false';
+    el.appendChild(handle);
+
+    let resizing = false;
+    let startX = 0, startY = 0, startW = 0, startH = 0;
+
+    function down(e) {
+      resizing = true;
+      const rect = el.getBoundingClientRect();
+      startX = e.clientX; startY = e.clientY;
+      startW = rect.width; startH = rect.height;
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    function move(e) {
+      if (!resizing) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      const minW = el.dataset.fieldType === 'checkbox' ? 14 : 40;
+      const minH = el.dataset.fieldType === 'checkbox' ? 14 : 18;
+      el.style.width = `${Math.max(minW, startW + dx)}px`;
+      el.style.height = `${Math.max(minH, startH + dy)}px`;
+    }
+    function up() { resizing = false; }
+
+    handle.addEventListener('mousedown', down);
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  }
+
   function buildFieldEl(type, opts) {
     fieldCounter += 1;
     const el = document.createElement('span');
@@ -167,13 +200,18 @@
     if (type === 'text' || type === 'email') {
       el.appendChild(document.createTextNode(type === 'email' ? 'email field' : 'text field'));
       el.style.width = '140px';
+      el.style.height = '22px';
     } else if (type === 'checkbox') {
-      el.appendChild(document.createTextNode('☐'));
+      el.appendChild(document.createTextNode('✕'));
+      el.style.width = '20px';
+      el.style.height = '20px';
     } else if (type === 'dropdown') {
       el.dataset.options = JSON.stringify(opts || ['Option 1']);
       el.appendChild(document.createTextNode(`${(opts || ['Option 1'])[0]} ▾`));
       el.style.width = '160px';
+      el.style.height = '22px';
     }
+    wireFieldResize(el);
     return el;
   }
 
@@ -353,12 +391,15 @@
           }
         } else if (node.nodeType === Node.ELEMENT_NODE) {
           if (node.classList && node.classList.contains('fb-field')) {
+            const rect = node.getBoundingClientRect();
             runs.push({
               kind: 'field',
               fieldType: node.dataset.fieldType,
               fieldName: node.dataset.fieldName,
               options: node.dataset.options ? JSON.parse(node.dataset.options) : null,
               sizePt: fontSizePtFor(blockEl),
+              widthPt: rect.width * pxToPt,
+              heightPt: rect.height * pxToPt,
             });
             return;
           }
@@ -374,7 +415,7 @@
       const words = [];
       runs.forEach((run) => {
         if (run.kind === 'field') {
-          const w = run.fieldType === 'checkbox' ? 16 : 130;
+          const w = run.widthPt || (run.fieldType === 'checkbox' ? 16 : 130);
           words.push({ ...run, width: w });
         } else {
           run.text.split(/(\s+)/).forEach((piece) => {
@@ -405,7 +446,7 @@
       if (lines.length === 0) lines.push([]);
 
       lines.forEach((line) => {
-        const lineHeight = Math.max(14, ...(line.map((w) => (w.sizePt || 12) * 1.35)), 14);
+        const lineHeight = Math.max(14, ...(line.map((w) => w.kind === 'field' ? (w.heightPt || 16) + 4 : (w.sizePt || 12) * 1.35)), 14);
         ensureSpace(lineHeight);
         const lineWidth = line.reduce((sum, w) => sum + w.width, 0);
         let x = marginX;
@@ -415,7 +456,7 @@
         line.forEach((w) => {
           if (w.kind === 'field') {
             const fw = w.width;
-            const fh = w.fieldType === 'checkbox' ? 16 : Math.max(16, w.sizePt * 1.3);
+            const fh = w.heightPt || (w.fieldType === 'checkbox' ? 16 : Math.max(16, w.sizePt * 1.3));
             const fy = y - fh + 2;
             try {
               if (w.fieldType === 'checkbox') {

@@ -150,8 +150,21 @@
     cursor: default;
     position: relative;
   }
-  .fb-field[data-field-type="text"] { min-width: 120px; resize: horizontal; overflow: hidden; }
-  .fb-field[data-field-type="checkbox"] { width: 20px; height: 20px; padding: 0; font-size: 13px; }
+  .fb-field[data-field-type="text"], .fb-field[data-field-type="email"] { min-width: 60px; }
+  .fb-field[data-field-type="checkbox"] { width: 20px; height: 20px; padding: 0; font-size: 13px; min-width: 14px; min-height: 14px; }
+  .fb-field .fb-field-resize {
+    position: absolute;
+    right: -3px;
+    bottom: -3px;
+    width: 9px;
+    height: 9px;
+    background: #6f97c9;
+    border: 1px solid #fff;
+    border-radius: 2px;
+    cursor: nwse-resize;
+    display: none;
+  }
+  .fb-field:hover .fb-field-resize { display: block; }
   .fb-field .fb-field-del {
     position: absolute;
     top: -9px;
@@ -319,7 +332,7 @@
 
 <script src="https://unpkg.com/@cantoo/pdf-lib@2.7.1/dist/pdf-lib.min.js"></script>
 <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
-<script src="js/fillable.js?v=1"></script>
+<script src="js/fillable.js?v=2"></script>
 <script src="js/nav.js?v=13"></script>
 <script src="js/i18n.js?v=27"></script>
 </body>

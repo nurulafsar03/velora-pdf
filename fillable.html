@@ -216,6 +216,27 @@
   .fb-modal-opt-row button { background: none; border: none; color: var(--stamp); cursor: pointer; font-size: 14px; }
   .fb-modal-actions { display: flex; gap: 10px; margin-top: 14px; }
 
+  .fb-page-break {
+    display: block;
+    height: 0;
+    border-top: 2px dashed #6f97c9;
+    margin: 22px 0;
+    position: relative;
+    user-select: none;
+  }
+  .fb-page-break::after {
+    content: 'Page break';
+    position: absolute;
+    top: -9px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    padding: 0 8px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: #6f97c9;
+  }
+
   @media (max-width: 860px) {
     .fb-page { width: 100%; padding: 40px 24px; }
   }
@@ -310,6 +331,15 @@
       <button type="button" data-field="dropdown">▾ Dropdown (multi-line options)</button>
     </div>
   </div>
+
+  <div class="fb-sep"></div>
+
+  <select id="pageSizeSelect" title="Page size">
+    <option value="a4">A4</option>
+    <option value="letter">Letter</option>
+    <option value="legal">Legal</option>
+  </select>
+  <button class="fb-btn" id="pageBreakBtn" style="width:auto;padding:0 10px;" title="Insert page break (Ctrl+N)">⊞ Page break</button>
 </div>
 
 <div class="fb-scroll">
@@ -332,7 +362,7 @@
 
 <script src="https://unpkg.com/@cantoo/pdf-lib@2.7.1/dist/pdf-lib.min.js"></script>
 <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
-<script src="js/fillable.js?v=2"></script>
+<script src="js/fillable.js?v=3"></script>
 <script src="js/nav.js?v=13"></script>
 <script src="js/i18n.js?v=27"></script>
 </body>

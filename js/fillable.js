@@ -28,8 +28,21 @@
   const addOptRowBtn = document.getElementById('addOptRowBtn');
   const insertDropdownBtn = document.getElementById('insertDropdownBtn');
   const cancelDropdownBtn = document.getElementById('cancelDropdownBtn');
+  const pageSizeSelect = document.getElementById('pageSizeSelect');
+  const pageBreakBtn = document.getElementById('pageBreakBtn');
 
   let fieldCounter = 0;
+  let currentPageSize = 'a4';
+  const PAGE_SIZES_PX = {
+    a4: { w: 794, h: 1123 },
+    letter: { w: 816, h: 1056 },
+    legal: { w: 816, h: 1344 },
+  };
+  const PAGE_SIZES_PT = {
+    a4: { w: 595.28, h: 841.89 },
+    letter: { w: 612, h: 792 },
+    legal: { w: 612, h: 1008 },
+  };
   let savedRange = null;
 
   function setStatus(msg) { statusText.textContent = msg; setTimeout(() => { if (statusText.textContent === msg) statusText.textContent = ''; }, 2000); }
@@ -150,12 +163,7 @@
     if (!e.target.closest('.fb-dropdown-wrap')) fieldMenu.classList.remove('active');
   });
 
-  function wireFieldResize(el) {
-    const handle = document.createElement('span');
-    handle.className = 'fb-field-resize';
-    handle.contentEditable = 'false';
-    el.appendChild(handle);
-
+  function wireFieldResize(el, handle) {
     let resizing = false;
     let startX = 0, startY = 0, startW = 0, startH = 0;
 
@@ -183,55 +191,109 @@
     window.addEventListener('mouseup', up);
   }
 
-  function buildFieldEl(type, opts) {
-    fieldCounter += 1;
-    const el = document.createElement('span');
-    el.className = 'fb-field';
-    el.contentEditable = 'false';
-    el.dataset.fieldType = type;
-    el.dataset.fieldName = `field_${fieldCounter}`;
-    const del = document.createElement('button');
-    del.type = 'button';
-    del.className = 'fb-field-del';
-    del.textContent = '✕';
-    del.addEventListener('click', (ev) => { ev.stopPropagation(); el.remove(); });
-    el.appendChild(del);
-
-    if (type === 'text' || type === 'email') {
-      el.appendChild(document.createTextNode(type === 'email' ? 'email field' : 'text field'));
-      el.style.width = '140px';
-      el.style.height = '22px';
-    } else if (type === 'checkbox') {
-      el.appendChild(document.createTextNode('✕'));
-      el.style.width = '20px';
-      el.style.height = '20px';
-    } else if (type === 'dropdown') {
-      el.dataset.options = JSON.stringify(opts || ['Option 1']);
-      el.appendChild(document.createTextNode(`${(opts || ['Option 1'])[0]} ▾`));
-      el.style.width = '160px';
-      el.style.height = '22px';
-    }
-    wireFieldResize(el);
-    return el;
+  function getCurrentFontSizePx() {
+    const sel = window.getSelection();
+    let node = sel && sel.anchorNode;
+    if (!node) return 16;
+    if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+    if (!node || !page.contains(node)) return 16;
+    return parseFloat(window.getComputedStyle(node).fontSize) || 16;
   }
 
-  function insertFieldAtSelection(el) {
+  function escapeAttr(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function buildFieldHtml(type, opts, fontSizePx) {
+    fieldCounter += 1;
+    const name = `field_${fieldCounter}`;
+    const scale = Math.max(0.6, fontSizePx / 12);
+    let width, height, content, extraAttr = '';
+    if (type === 'text' || type === 'email') {
+      width = Math.round(140 * scale);
+      height = Math.round(Math.max(18, fontSizePx * 1.6));
+      content = type === 'email' ? 'email field' : 'text field';
+    } else if (type === 'checkbox') {
+      width = height = Math.round(Math.max(14, fontSizePx * 1.4));
+      content = '✕';
+    } else if (type === 'dropdown') {
+      const values = opts || ['Option 1'];
+      width = Math.round(160 * scale);
+      height = Math.round(Math.max(18, fontSizePx * 1.6));
+      extraAttr = ` data-options="${escapeAttr(JSON.stringify(values))}"`;
+      content = `${values[0]} ▾`;
+    }
+    const fieldFontSize = Math.max(9, Math.round(fontSizePx * 0.82));
+    const html = `<span class="fb-field" contenteditable="false" data-field-type="${type}" data-field-name="${name}"${extraAttr} style="width:${width}px;height:${height}px;font-size:${fieldFontSize}px">${content}<button type="button" class="fb-field-del">✕</button><span class="fb-field-resize"></span></span>`;
+    return { name, html };
+  }
+
+  function wireFieldInteractions(el) {
+    if (el.dataset.wired === '1') return;
+    el.dataset.wired = '1';
+    const del = el.querySelector('.fb-field-del');
+    if (del) del.addEventListener('click', (ev) => { ev.stopPropagation(); el.remove(); });
+    const handle = el.querySelector('.fb-field-resize');
+    if (handle) wireFieldResize(el, handle);
+  }
+
+  function rewireAllFields() {
+    const seenNames = new Set();
+    page.querySelectorAll('.fb-field').forEach((el) => {
+      let name = el.dataset.fieldName;
+      if (!name || seenNames.has(name)) {
+        fieldCounter += 1;
+        name = `field_${fieldCounter}`;
+        el.dataset.fieldName = name;
+      }
+      seenNames.add(name);
+      wireFieldInteractions(el);
+    });
+  }
+
+  function insertFieldAtSelection(type, opts) {
     page.focus();
     restoreSelection();
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0) {
-      page.appendChild(el);
-      return;
-    }
-    const range = sel.getRangeAt(0);
-    range.deleteContents();
-    range.insertNode(el);
-    range.setStartAfter(el);
-    range.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(range);
+    const fontSizePx = getCurrentFontSizePx();
+    const { name, html } = buildFieldHtml(type, opts, fontSizePx);
+    document.execCommand('insertHTML', false, html);
+    saveSelection();
+    const inserted = page.querySelector(`[data-field-name="${name}"]`);
+    if (inserted) wireFieldInteractions(inserted);
+  }
+
+  page.addEventListener('paste', () => {
+    setTimeout(rewireAllFields, 0);
+  });
+
+  // ---- page size ----
+
+  function applyPageSize() {
+    const size = PAGE_SIZES_PX[currentPageSize];
+    page.style.width = `${size.w}px`;
+    page.style.minHeight = `${size.h}px`;
+  }
+  pageSizeSelect.addEventListener('change', () => {
+    currentPageSize = pageSizeSelect.value;
+    applyPageSize();
+  });
+  applyPageSize();
+
+  // ---- manual page break ----
+
+  function insertPageBreak() {
+    page.focus();
+    restoreSelection();
+    document.execCommand('insertHTML', false, '<div class="fb-page-break" contenteditable="false">&#8203;</div><p>&#8203;</p>');
     saveSelection();
   }
+  pageBreakBtn.addEventListener('click', insertPageBreak);
+  page.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
+      e.preventDefault();
+      insertPageBreak();
+    }
+  });
 
   fieldMenu.querySelectorAll('button[data-field]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -241,7 +303,7 @@
         openDropdownModal();
         return;
       }
-      insertFieldAtSelection(buildFieldEl(type));
+      insertFieldAtSelection(type);
     });
   });
 
@@ -277,7 +339,7 @@
     const values = Array.from(optRows.querySelectorAll('input')).map((i) => i.value.trim()).filter(Boolean);
     dropdownModal.classList.remove('active');
     if (!values.length) return;
-    insertFieldAtSelection(buildFieldEl('dropdown', values));
+    insertFieldAtSelection('dropdown', values);
   });
 
   // ---- PDF export ----
@@ -319,8 +381,9 @@
       return font;
     }
 
-    const pageWidthPt = 595.28;
-    const pageHeightPt = 841.89;
+    const selectedSize = PAGE_SIZES_PT[currentPageSize] || PAGE_SIZES_PT.a4;
+    const pageWidthPt = selectedSize.w;
+    const pageHeightPt = selectedSize.h;
     const marginX = 72;
     const marginTop = 76;
     const marginBottom = 72;
@@ -362,8 +425,10 @@
     function alignFor(el) {
       let node = el;
       while (node && node !== page) {
+        const inline = node.style && node.style.textAlign;
+        if (inline) return inline === 'start' ? 'left' : inline === 'end' ? 'right' : inline;
         const ta = window.getComputedStyle(node).textAlign;
-        if (ta && ta !== 'start' && ta !== '') return ta;
+        if (ta && ta !== 'start' && ta !== '') return ta === 'end' ? 'right' : ta;
         node = node.parentElement;
       }
       return 'left';
@@ -518,6 +583,10 @@
 
     Array.from(page.children).forEach((child) => {
       if (child.nodeType !== Node.ELEMENT_NODE) return;
+      if (child.classList && child.classList.contains('fb-page-break')) {
+        newPage();
+        return;
+      }
       processBlock(child);
     });
 

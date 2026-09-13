@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Fillable PDF — VeloraPDF</title>
+<meta name="description" content="Write a formatted document and add fillable form fields, then export as a real fillable PDF.">
+<link rel="icon" href="/favicon.ico?v=2" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png?v=2">
+<link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16.png?v=2">
+<link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=2">
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body { overflow-x: hidden; }
+  .fb-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .fb-header .back-link { font-size: 13px; color: var(--mist); white-space: nowrap; }
+  .fb-header .back-link:hover { color: var(--blueprint); }
+  .fb-doc-name {
+    background: transparent;
+    border: none;
+    color: var(--paper);
+    font-family: var(--font-display);
+    font-size: 16px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    max-width: 220px;
+  }
+  .fb-doc-name:hover, .fb-doc-name:focus { background: var(--surface-hi); outline: none; }
+  .fb-header-actions { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+  .fb-status { font-family: var(--font-mono); font-size: 11px; color: var(--mist); }
+
+  /* ---- toolbar ---- */
+  .fb-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    padding: 8px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 57px;
+    z-index: 49;
+  }
+  .fb-toolbar select, .fb-toolbar .fb-btn, .fb-toolbar .fb-swatch-btn {
+    height: 30px;
+    background: var(--ink);
+    color: var(--paper-dim);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    font-size: 12px;
+    padding: 0 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .fb-toolbar select:hover, .fb-toolbar .fb-btn:hover { border-color: var(--blueprint-dim); }
+  .fb-toolbar .fb-btn { width: 30px; justify-content: center; font-size: 13px; }
+  .fb-toolbar .fb-btn.active { background: var(--blueprint); color: var(--paper); border-color: var(--blueprint); }
+  .fb-sep { width: 1px; height: 20px; background: var(--line); margin: 0 4px; }
+  .fb-toolbar input[type="color"] {
+    width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 5px;
+    background: var(--ink); cursor: pointer; padding: 2px;
+  }
+  .fb-color-label { font-size: 9px; color: var(--mist); display: block; text-align: center; margin-top: -2px; }
+  .fb-color-group { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+
+  .fb-dropdown-wrap { position: relative; }
+  .fb-dropdown-panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    padding: 6px;
+    min-width: 180px;
+    z-index: 60;
+  }
+  .fb-dropdown-panel.active { display: block; }
+  .fb-dropdown-panel button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    color: var(--paper-dim);
+    padding: 8px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+  }
+  .fb-dropdown-panel button:hover { background: var(--surface-hi); color: var(--paper); }
+
+  /* ---- page canvas ---- */
+  .fb-scroll { padding: 32px 20px 120px; display: flex; justify-content: center; }
+  .fb-page {
+    width: 794px;
+    min-height: 1123px;
+    background: #ffffff;
+    color: #16140f;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+    padding: 76px 72px;
+    outline: none;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 12pt;
+    line-height: 1.5;
+  }
+  .fb-page[contenteditable]:focus { outline: 2px solid var(--blueprint-dim); outline-offset: 4px; }
+  .fb-page h1 { font-size: 26pt; font-weight: 700; margin: 0 0 10px; }
+  .fb-page h2 { font-size: 20pt; font-weight: 700; margin: 18px 0 8px; }
+  .fb-page h3 { font-size: 16pt; font-weight: 700; margin: 16px 0 6px; }
+  .fb-page h4 { font-size: 13pt; font-weight: 700; margin: 14px 0 6px; }
+  .fb-page .fb-subtitle { font-size: 15pt; font-style: italic; color: #4a4536; margin: 0 0 14px; }
+  .fb-page p.fb-title { font-size: 26pt; font-weight: 700; margin: 0 0 10px; font-style: normal; }
+  .fb-page p { margin: 0 0 10px; }
+  .fb-page ul, .fb-page ol { margin: 0 0 10px; padding-left: 26px; }
+
+  /* ---- inline form field widgets ---- */
+  .fb-field {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    border: 1.5px dashed #6f97c9;
+    background: rgba(111,151,201,0.08);
+    color: #3d6693;
+    font-family: var(--font-mono);
+    font-size: 10.5pt;
+    padding: 2px 8px;
+    border-radius: 3px;
+    margin: 0 2px;
+    user-select: none;
+    cursor: default;
+    position: relative;
+  }
+  .fb-field[data-field-type="text"] { min-width: 120px; resize: horizontal; overflow: hidden; }
+  .fb-field[data-field-type="checkbox"] { width: 20px; height: 20px; padding: 0; font-size: 13px; }
+  .fb-field .fb-field-del {
+    position: absolute;
+    top: -9px;
+    right: -9px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #c1502e;
+    color: #fff;
+    border: none;
+    font-size: 10px;
+    line-height: 1;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .fb-field:hover .fb-field-del { display: flex; }
+
+  /* ---- dropdown field option editor modal ---- */
+  .fb-modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .fb-modal-backdrop.active { display: flex; }
+  .fb-modal {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px;
+    width: 340px;
+  }
+  .fb-modal h3 { font-family: var(--font-display); font-size: 16px; margin: 0 0 12px; }
+  .fb-modal-opt-row { display: flex; gap: 6px; margin-bottom: 8px; }
+  .fb-modal-opt-row input {
+    flex: 1;
+    background: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    color: var(--paper);
+    padding: 7px 9px;
+    font-size: 13px;
+  }
+  .fb-modal-opt-row button { background: none; border: none; color: var(--stamp); cursor: pointer; font-size: 14px; }
+  .fb-modal-actions { display: flex; gap: 10px; margin-top: 14px; }
+
+  @media (max-width: 860px) {
+    .fb-page { width: 100%; padding: 40px 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="top-accent" aria-hidden="true"></div>
+
+<div class="fb-header">
+  <a class="back-link" href="new.html">&larr; Back</a>
+  <input type="text" class="fb-doc-name" id="docName" value="Untitled document">
+  <div class="fb-header-actions">
+    <span class="fb-status" id="statusText"></span>
+    <button class="btn btn-primary" id="downloadBtn">Download PDF</button>
+  </div>
+</div>
+
+<div class="fb-toolbar" id="toolbar">
+  <select id="blockStyleSelect" title="Paragraph style">
+    <option value="p">Normal text</option>
+    <option value="title">Title</option>
+    <option value="subtitle">Subtitle</option>
+    <option value="h1">Heading 1</option>
+    <option value="h2">Heading 2</option>
+    <option value="h3">Heading 3</option>
+    <option value="h4">Heading 4</option>
+  </select>
+
+  <select id="fontFamilySelect" title="Font">
+    <option value="Georgia, 'Times New Roman', serif">Georgia</option>
+    <option value="Arial, Helvetica, sans-serif">Arial</option>
+    <option value="'Times New Roman', Times, serif">Times New Roman</option>
+    <option value="'Courier New', Courier, monospace">Courier New</option>
+    <option value="Verdana, Geneva, sans-serif">Verdana</option>
+    <option value="'Hind Siliguri', Georgia, serif">Hind Siliguri (বাংলা)</option>
+  </select>
+
+  <select id="fontSizeSelect" title="Font size">
+    <option value="8">8</option>
+    <option value="9">9</option>
+    <option value="10">10</option>
+    <option value="11">11</option>
+    <option value="12" selected>12</option>
+    <option value="14">14</option>
+    <option value="16">16</option>
+    <option value="18">18</option>
+    <option value="24">24</option>
+    <option value="30">30</option>
+    <option value="36">36</option>
+  </select>
+
+  <div class="fb-sep"></div>
+
+  <button class="fb-btn" id="boldBtn" title="Bold"><b>B</b></button>
+  <button class="fb-btn" id="italicBtn" title="Italic"><i>I</i></button>
+  <button class="fb-btn" id="underlineBtn" title="Underline"><u>U</u></button>
+
+  <div class="fb-sep"></div>
+
+  <div class="fb-color-group">
+    <input type="color" id="fontColorInput" value="#16140f" title="Text color">
+    <span class="fb-color-label">A</span>
+  </div>
+  <div class="fb-color-group">
+    <input type="color" id="fontBgColorInput" value="#fff3b0" title="Text highlight color">
+    <span class="fb-color-label">Hl</span>
+  </div>
+  <div class="fb-color-group">
+    <input type="color" id="pageBgColorInput" value="#ffffff" title="Page background color">
+    <span class="fb-color-label">Pg</span>
+  </div>
+
+  <div class="fb-sep"></div>
+
+  <button class="fb-btn" id="alignLeftBtn" title="Align left">⇤</button>
+  <button class="fb-btn" id="alignCenterBtn" title="Align center">⇔</button>
+  <button class="fb-btn" id="alignRightBtn" title="Align right">⇥</button>
+
+  <div class="fb-sep"></div>
+
+  <button class="fb-btn" id="bulletListBtn" title="Bulleted list">•≡</button>
+  <button class="fb-btn" id="numberListBtn" title="Numbered list">1≡</button>
+
+  <div class="fb-sep"></div>
+
+  <div class="fb-dropdown-wrap">
+    <button class="fb-btn" id="insertFieldBtn" style="width:auto;padding:0 10px;" title="Insert form field">+ Field ▾</button>
+    <div class="fb-dropdown-panel" id="fieldMenu">
+      <button type="button" data-field="text">📝 Text field (resizable)</button>
+      <button type="button" data-field="email">✉️ Email field</button>
+      <button type="button" data-field="checkbox">☑️ Checkbox</button>
+      <button type="button" data-field="dropdown">▾ Dropdown (multi-line options)</button>
+    </div>
+  </div>
+</div>
+
+<div class="fb-scroll">
+  <div class="fb-page" id="page" contenteditable="true">
+    <p>Start typing your document here…</p>
+  </div>
+</div>
+
+<div class="fb-modal-backdrop" id="dropdownModal">
+  <div class="fb-modal">
+    <h3>Dropdown options</h3>
+    <div id="optRows"></div>
+    <button class="btn btn-ghost" id="addOptRowBtn" type="button" style="font-size:12px;">+ Add option</button>
+    <div class="fb-modal-actions">
+      <button class="btn btn-primary" id="insertDropdownBtn">Insert</button>
+      <button class="btn btn-ghost" id="cancelDropdownBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/@cantoo/pdf-lib@2.7.1/dist/pdf-lib.min.js"></script>
+<script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
+<script src="js/fillable.js?v=1"></script>
+<script src="js/nav.js?v=13"></script>
+<script src="js/i18n.js?v=27"></script>
+</body>
+</html>

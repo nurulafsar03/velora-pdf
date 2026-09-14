@@ -217,11 +217,11 @@
     return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  function buildFieldHtml(type, opts, fontSizePx) {
+  function buildFieldElement(type, opts, fontSizePx) {
     fieldCounter += 1;
     const name = `field_${fieldCounter}`;
     const scale = Math.max(0.6, fontSizePx / 12);
-    let width, height, content, extraAttr = '';
+    let width, height, content;
     if (type === 'text' || type === 'email') {
       width = Math.round(140 * scale);
       height = Math.round(Math.max(18, fontSizePx * 1.6));
@@ -233,12 +233,36 @@
       const values = opts || ['Option 1'];
       width = Math.round(160 * scale);
       height = Math.round(Math.max(18, fontSizePx * 1.6));
-      extraAttr = ` data-options="${escapeAttr(JSON.stringify(values))}"`;
       content = `${values[0]} ▾`;
     }
     const fieldFontSize = Math.max(9, Math.round(fontSizePx * 0.82));
-    const html = `<span class="fb-field" draggable="true" contenteditable="false" data-field-type="${type}" data-field-name="${name}"${extraAttr} style="width:${width}px;height:${height}px;line-height:${height}px;font-size:${fieldFontSize}px">${content}<button type="button" class="fb-field-del" draggable="false">✕</button><span class="fb-field-resize" draggable="false"></span></span>`;
-    return { name, html };
+
+    const el = document.createElement('span');
+    el.className = 'fb-field';
+    el.setAttribute('draggable', 'true');
+    el.setAttribute('contenteditable', 'false');
+    el.dataset.fieldType = type;
+    el.dataset.fieldName = name;
+    if (type === 'dropdown') el.dataset.options = JSON.stringify(opts || ['Option 1']);
+    el.style.width = `${width}px`;
+    el.style.height = `${height}px`;
+    el.style.lineHeight = `${height}px`;
+    el.style.fontSize = `${fieldFontSize}px`;
+    el.appendChild(document.createTextNode(content));
+
+    const del = document.createElement('button');
+    del.type = 'button';
+    del.className = 'fb-field-del';
+    del.setAttribute('draggable', 'false');
+    del.textContent = '✕';
+    el.appendChild(del);
+
+    const handle = document.createElement('span');
+    handle.className = 'fb-field-resize';
+    handle.setAttribute('draggable', 'false');
+    el.appendChild(handle);
+
+    return { name, el, delBtn: del, resizeHandle: handle };
   }
 
   let draggedField = null;
@@ -330,11 +354,29 @@
     page.focus();
     restoreSelection();
     const fontSizePx = getCurrentFontSizePx();
-    const { name, html } = buildFieldHtml(type, opts, fontSizePx);
-    document.execCommand('insertHTML', false, html);
+    const { el } = buildFieldElement(type, opts, fontSizePx);
+
+    const sel = window.getSelection();
+    let range;
+    if (sel && sel.rangeCount > 0 && page.contains(sel.getRangeAt(0).startContainer)) {
+      range = sel.getRangeAt(0);
+    } else {
+      range = document.createRange();
+      range.selectNodeContents(page);
+      range.collapse(false);
+    }
+    range.deleteContents();
+    range.insertNode(el);
+
+    // Move the cursor to just after the inserted field.
+    const after = document.createRange();
+    after.setStartAfter(el);
+    after.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(after);
     saveSelection();
-    const inserted = page.querySelector(`[data-field-name="${name}"]`);
-    if (inserted) wireFieldInteractions(inserted);
+
+    wireFieldInteractions(el);
   }
 
   page.addEventListener('paste', () => {
@@ -359,7 +401,35 @@
   function insertPageBreak() {
     page.focus();
     restoreSelection();
-    document.execCommand('insertHTML', false, '<div class="fb-page-break" contenteditable="false">&#8203;</div><p>&#8203;</p>');
+    const sel = window.getSelection();
+    let range;
+    if (sel && sel.rangeCount > 0 && page.contains(sel.getRangeAt(0).startContainer)) {
+      range = sel.getRangeAt(0);
+    } else {
+      range = document.createRange();
+      range.selectNodeContents(page);
+      range.collapse(false);
+    }
+    range.deleteContents();
+
+    const marker = document.createElement('div');
+    marker.className = 'fb-page-break';
+    marker.setAttribute('contenteditable', 'false');
+    marker.textContent = '\u200b';
+    range.insertNode(marker);
+
+    const newPara = document.createElement('p');
+    newPara.innerHTML = '<br>';
+    const afterMarker = document.createRange();
+    afterMarker.setStartAfter(marker);
+    afterMarker.collapse(true);
+    afterMarker.insertNode(newPara);
+
+    const cursorRange = document.createRange();
+    cursorRange.setStart(newPara, 0);
+    cursorRange.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(cursorRange);
     saveSelection();
   }
   pageBreakBtn.addEventListener('click', insertPageBreak);

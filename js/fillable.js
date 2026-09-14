@@ -620,7 +620,7 @@
       return runs;
     }
 
-    function drawRuns(runs, align) {
+    function drawRuns(runs, align, lineHeightPt) {
       // Word-wrap runs into lines, each line is an array of {text/field, style, width}
       const words = [];
       runs.forEach((run) => {
@@ -656,7 +656,8 @@
       if (lines.length === 0) lines.push([]);
 
       lines.forEach((line) => {
-        const lineHeight = Math.max(14, ...(line.map((w) => w.kind === 'field' ? Math.max(14, (w.heightPt || 16) - 3 + 6) : (w.sizePt || 12) * 1.35)), 14);
+        const textLineHeight = lineHeightPt || (line[0] ? (line[0].sizePt || 12) * 1.5 : 16.8);
+        const lineHeight = Math.max(14, textLineHeight, ...(line.map((w) => w.kind === 'field' ? Math.max(14, (w.heightPt || 16) - 3 + 6) : 0)));
         ensureSpace(lineHeight);
         const lineWidth = line.reduce((sum, w) => sum + w.width, 0);
         let x = marginX;
@@ -712,28 +713,45 @@
       });
     }
 
+    function computeLineHeightPt(el) {
+      const cs = window.getComputedStyle(el);
+      const lh = cs.lineHeight;
+      if (lh === 'normal') return parseFloat(cs.fontSize) * 1.2 * pxToPt;
+      if (lh.endsWith('px')) return parseFloat(lh) * pxToPt;
+      const n = parseFloat(lh);
+      return isNaN(n) ? parseFloat(cs.fontSize) * 1.2 * pxToPt : n * parseFloat(cs.fontSize) * pxToPt;
+    }
+
     function processBlock(el) {
       const tag = el.tagName;
       if (tag === 'UL' || tag === 'OL') {
         Array.from(el.children).forEach((li, i) => {
           const bullet = tag === 'OL' ? `${i + 1}. ` : '•  ';
           const runs = [{ kind: 'text', text: bullet, sizePt: fontSizePtFor(li), color: colorFor(li), bold: false, italic: false, underline: false, highlight: 'transparent' }, ...collectRuns(li)];
-          drawRuns(runs, alignFor(li));
+          drawRuns(runs, alignFor(li), computeLineHeightPt(li));
         });
         return;
       }
       const runs = collectRuns(el);
-      if (!runs.length) { y -= 14; return; }
-      drawRuns(runs, alignFor(el));
+      if (!runs.length) { y -= computeLineHeightPt(el); return; }
+      drawRuns(runs, alignFor(el), computeLineHeightPt(el));
     }
 
-    Array.from(page.children).forEach((child) => {
+    let pendingMarginBottomPt = 0;
+    Array.from(page.children).forEach((child, idx) => {
       if (child.nodeType !== Node.ELEMENT_NODE) return;
       if (child.classList && child.classList.contains('fb-page-break')) {
         newPage();
+        pendingMarginBottomPt = 0;
         return;
       }
+      const cs = window.getComputedStyle(child);
+      const marginTopPt = (parseFloat(cs.marginTop) || 0) * pxToPt;
+      const marginBottomPt = (parseFloat(cs.marginBottom) || 0) * pxToPt;
+      const gap = idx === 0 ? marginTopPt : Math.max(pendingMarginBottomPt, marginTopPt);
+      y -= gap;
       processBlock(child);
+      pendingMarginBottomPt = marginBottomPt;
     });
 
     // Each field's addToPage() call already generates its own default

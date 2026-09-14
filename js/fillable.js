@@ -181,8 +181,10 @@
       const dy = e.clientY - startY;
       const minW = el.dataset.fieldType === 'checkbox' ? 14 : 40;
       const minH = el.dataset.fieldType === 'checkbox' ? 14 : 18;
+      const newH = Math.max(minH, startH + dy);
       el.style.width = `${Math.max(minW, startW + dx)}px`;
-      el.style.height = `${Math.max(minH, startH + dy)}px`;
+      el.style.height = `${newH}px`;
+      el.style.lineHeight = `${newH}px`;
     }
     function up() { resizing = false; }
 
@@ -224,9 +226,11 @@
       content = `${values[0]} ▾`;
     }
     const fieldFontSize = Math.max(9, Math.round(fontSizePx * 0.82));
-    const html = `<span class="fb-field" contenteditable="false" data-field-type="${type}" data-field-name="${name}"${extraAttr} style="width:${width}px;height:${height}px;font-size:${fieldFontSize}px">${content}<button type="button" class="fb-field-del">✕</button><span class="fb-field-resize"></span></span>`;
+    const html = `<span class="fb-field" draggable="true" contenteditable="false" data-field-type="${type}" data-field-name="${name}"${extraAttr} style="width:${width}px;height:${height}px;line-height:${height}px;font-size:${fieldFontSize}px">${content}<button type="button" class="fb-field-del" draggable="false">✕</button><span class="fb-field-resize" draggable="false"></span></span>`;
     return { name, html };
   }
+
+  let draggedField = null;
 
   function wireFieldInteractions(el) {
     if (el.dataset.wired === '1') return;
@@ -235,7 +239,46 @@
     if (del) del.addEventListener('click', (ev) => { ev.stopPropagation(); el.remove(); });
     const handle = el.querySelector('.fb-field-resize');
     if (handle) wireFieldResize(el, handle);
+
+    el.addEventListener('dragstart', (ev) => {
+      if (ev.target !== el) { ev.preventDefault(); return; }
+      draggedField = el;
+      el.classList.add('dragging');
+      ev.dataTransfer.effectAllowed = 'move';
+      ev.dataTransfer.setData('text/plain', el.dataset.fieldName || '');
+    });
+    el.addEventListener('dragend', () => {
+      el.classList.remove('dragging');
+      draggedField = null;
+    });
   }
+
+  page.addEventListener('dragover', (e) => {
+    if (!draggedField) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  });
+
+  page.addEventListener('drop', (e) => {
+    if (!draggedField) return;
+    e.preventDefault();
+    let range = null;
+    if (document.caretRangeFromPoint) {
+      range = document.caretRangeFromPoint(e.clientX, e.clientY);
+    } else if (document.caretPositionFromPoint) {
+      const pos = document.caretPositionFromPoint(e.clientX, e.clientY);
+      if (pos) {
+        range = document.createRange();
+        range.setStart(pos.offsetNode, pos.offset);
+        range.collapse(true);
+      }
+    }
+    if (range && page.contains(range.startContainer)) {
+      range.insertNode(draggedField);
+    }
+    draggedField.classList.remove('dragging');
+    draggedField = null;
+  });
 
   function rewireAllFields() {
     const seenNames = new Set();
@@ -527,7 +570,7 @@
             try {
               if (w.fieldType === 'checkbox') {
                 const cb = form.createCheckBox(w.fieldName);
-                cb.addToPage(pdfPage, { x, y: fy, width: fh, height: fh });
+                cb.addToPage(pdfPage, { x, y: fy, width: fw, height: fh });
               } else if (w.fieldType === 'dropdown') {
                 const dd = form.createDropdown(w.fieldName);
                 dd.addOptions(w.options || ['Option 1']);
@@ -591,7 +634,9 @@
       processBlock(child);
     });
 
-    form.updateFieldAppearances(font);
+    // Each field's addToPage() call already generates its own default
+    // appearance; forcing one shared font/appearance update here risks
+    // breaking checkbox/dropdown widgets that need their own symbol fonts.
     return pdfDoc.save();
   }
 

@@ -134,22 +134,25 @@
 
   /* ---- inline form field widgets ---- */
   .fb-field {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    display: inline-block;
+    box-sizing: border-box;
+    text-align: center;
     vertical-align: baseline;
     border: 1.5px dashed #6f97c9;
     background: rgba(111,151,201,0.08);
     color: #3d6693;
     font-family: var(--font-mono);
     font-size: 10.5pt;
-    padding: 2px 8px;
+    padding: 0 4px;
     border-radius: 3px;
     margin: 0 2px;
     user-select: none;
-    cursor: default;
+    cursor: grab;
     position: relative;
+    overflow: hidden;
+    white-space: nowrap;
   }
+  .fb-field.dragging { opacity: 0.4; }
   .fb-field[data-field-type="text"], .fb-field[data-field-type="email"] { min-width: 60px; }
   .fb-field[data-field-type="checkbox"] { width: 20px; height: 20px; padding: 0; font-size: 13px; min-width: 14px; min-height: 14px; }
   .fb-field .fb-field-resize {
@@ -362,7 +365,7 @@
 
 <script src="https://unpkg.com/@cantoo/pdf-lib@2.7.1/dist/pdf-lib.min.js"></script>
 <script src="https://unpkg.com/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js"></script>
-<script src="js/fillable.js?v=5"></script>
+<script src="js/fillable.js?v=6"></script>
 <script src="js/nav.js?v=13"></script>
 <script src="js/i18n.js?v=27"></script>
 </body>

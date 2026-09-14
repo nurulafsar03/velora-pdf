@@ -30,6 +30,16 @@
   const cancelDropdownBtn = document.getElementById('cancelDropdownBtn');
   const pageSizeSelect = document.getElementById('pageSizeSelect');
   const pageBreakBtn = document.getElementById('pageBreakBtn');
+  const addPageBtn = document.getElementById('addPageBtn');
+  const undoBtn = document.getElementById('undoBtn');
+  const redoBtn = document.getElementById('redoBtn');
+  const headerFooterBtn = document.getElementById('headerFooterBtn');
+  const hfModal = document.getElementById('hfModal');
+  const headerTextInput = document.getElementById('headerTextInput');
+  const footerTextInput = document.getElementById('footerTextInput');
+  const pageNumPosSelect = document.getElementById('pageNumPosSelect');
+  const applyHfBtn = document.getElementById('applyHfBtn');
+  const cancelHfBtn = document.getElementById('cancelHfBtn');
 
   let fieldCounter = 0;
   let currentPageSize = 'a4';
@@ -81,6 +91,64 @@
   document.getElementById('toolbar').addEventListener('mousedown', (e) => {
     if (e.target.closest('button')) e.preventDefault();
   });
+
+  // ---- undo / redo (custom snapshot stack) ----
+
+  const undoStack = [page.innerHTML];
+  let undoIndex = 0;
+  let undoTimer = null;
+  let restoringHistory = false;
+
+  function updateUndoRedoButtons() {
+    undoBtn.disabled = undoIndex <= 0;
+    redoBtn.disabled = undoIndex >= undoStack.length - 1;
+  }
+
+  function pushSnapshot() {
+    if (restoringHistory) return;
+    const html = page.innerHTML;
+    if (html === undoStack[undoIndex]) return;
+    undoStack.splice(undoIndex + 1);
+    undoStack.push(html);
+    undoIndex = undoStack.length - 1;
+    if (undoStack.length > 100) { undoStack.shift(); undoIndex -= 1; }
+    updateUndoRedoButtons();
+  }
+
+  function scheduleSnapshot() {
+    clearTimeout(undoTimer);
+    undoTimer = setTimeout(pushSnapshot, 500);
+  }
+
+  function restoreSnapshot(index) {
+    restoringHistory = true;
+    page.innerHTML = undoStack[index];
+    undoIndex = index;
+    page.querySelectorAll('.fb-field').forEach((el) => { delete el.dataset.wired; });
+    rewireAllFields();
+    placeCursorAtEnd();
+    updateUndoRedoButtons();
+    restoringHistory = false;
+  }
+
+  function doUndo() {
+    clearTimeout(undoTimer);
+    pushSnapshot();
+    if (undoIndex > 0) restoreSnapshot(undoIndex - 1);
+  }
+  function doRedo() {
+    if (undoIndex < undoStack.length - 1) restoreSnapshot(undoIndex + 1);
+  }
+
+  page.addEventListener('input', scheduleSnapshot);
+  undoBtn.addEventListener('click', doUndo);
+  redoBtn.addEventListener('click', doRedo);
+  page.addEventListener('keydown', (e) => {
+    const mod = e.ctrlKey || e.metaKey;
+    if (mod && e.key.toLowerCase() === 'z' && !e.shiftKey) { e.preventDefault(); doUndo(); }
+    else if (mod && (e.key.toLowerCase() === 'y' || (e.key.toLowerCase() === 'z' && e.shiftKey))) { e.preventDefault(); doRedo(); }
+  });
+  updateUndoRedoButtons();
 
   // ---- basic formatting via execCommand ----
 
@@ -377,6 +445,7 @@
     saveSelection();
 
     wireFieldInteractions(el);
+    pushSnapshot();
   }
 
   page.addEventListener('paste', () => {
@@ -395,6 +464,26 @@
     applyPageSize();
   });
   applyPageSize();
+
+  // ---- header / footer / page numbers ----
+
+  let headerText = '';
+  let footerText = '';
+  let pageNumPosition = 'none';
+
+  headerFooterBtn.addEventListener('click', () => {
+    headerTextInput.value = headerText;
+    footerTextInput.value = footerText;
+    pageNumPosSelect.value = pageNumPosition;
+    hfModal.classList.add('active');
+  });
+  cancelHfBtn.addEventListener('click', () => hfModal.classList.remove('active'));
+  applyHfBtn.addEventListener('click', () => {
+    headerText = headerTextInput.value.trim();
+    footerText = footerTextInput.value.trim();
+    pageNumPosition = pageNumPosSelect.value;
+    hfModal.classList.remove('active');
+  });
 
   // ---- manual page break ----
 
@@ -431,8 +520,20 @@
     sel.removeAllRanges();
     sel.addRange(cursorRange);
     saveSelection();
+    pushSnapshot();
   }
   pageBreakBtn.addEventListener('click', insertPageBreak);
+  addPageBtn.addEventListener('click', () => {
+    page.focus();
+    const range = document.createRange();
+    range.selectNodeContents(page);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    saveSelection();
+    insertPageBreak();
+  });
   page.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
       e.preventDefault();
@@ -543,11 +644,14 @@
     const pxToPt = 72 / 96; // browser CSS px -> PDF points
 
     const form = pdfDoc.getForm();
+    const allPdfPages = [];
     let pdfPage = pdfDoc.addPage([pageWidthPt, pageHeightPt]);
+    allPdfPages.push(pdfPage);
     let y = pageHeightPt - marginTop;
 
     function newPage() {
       pdfPage = pdfDoc.addPage([pageWidthPt, pageHeightPt]);
+      allPdfPages.push(pdfPage);
       y = pageHeightPt - marginTop;
     }
     function ensureSpace(lineHeight) {
@@ -766,6 +870,37 @@
     // Each field's addToPage() call already generates its own default
     // appearance; forcing one shared font/appearance update here risks
     // breaking checkbox/dropdown widgets that need their own symbol fonts.
+
+    if (headerText || footerText || pageNumPosition !== 'none') {
+      const hfSize = 9;
+      const hfFont = BENGALI_RANGE.test(headerText + footerText) ? (bnFont || font) : font;
+      const hfColor = rgb(0.45, 0.42, 0.36);
+      allPdfPages.forEach((pdfPageItem, i) => {
+        if (headerText) {
+          const w = hfFont.widthOfTextAtSize(headerText, hfSize);
+          pdfPageItem.drawText(headerText, {
+            x: marginX + (maxWidth - w) / 2, y: pageHeightPt - 40, size: hfSize, font: hfFont, color: hfColor,
+          });
+        }
+        if (footerText) {
+          const w = hfFont.widthOfTextAtSize(footerText, hfSize);
+          pdfPageItem.drawText(footerText, {
+            x: marginX + (maxWidth - w) / 2, y: 34, size: hfSize, font: hfFont, color: hfColor,
+          });
+        }
+        if (pageNumPosition !== 'none') {
+          const label = String(i + 1);
+          const w = font.widthOfTextAtSize(label, hfSize);
+          const [vPos, hPos] = pageNumPosition.split('-');
+          const py = vPos === 'top' ? pageHeightPt - 40 : 34;
+          let px = marginX;
+          if (hPos === 'center') px = marginX + (maxWidth - w) / 2;
+          else if (hPos === 'right') px = marginX + maxWidth - w;
+          pdfPageItem.drawText(label, { x: px, y: py, size: hfSize, font, color: hfColor });
+        }
+      });
+    }
+
     return pdfDoc.save();
   }
 

@@ -75,6 +75,13 @@
   page.focus();
   placeCursorAtEnd();
 
+  // Prevent every toolbar button (not selects/inputs) from stealing focus
+  // away from the editable page, so the text selection survives a toolbar
+  // click and formatting/insertion lands exactly where the cursor was.
+  document.getElementById('toolbar').addEventListener('mousedown', (e) => {
+    if (e.target.closest('button')) e.preventDefault();
+  });
+
   // ---- basic formatting via execCommand ----
 
   function exec(cmd, value) {
@@ -154,11 +161,15 @@
 
   // ---- form field insertion ----
 
+  insertFieldBtn.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    saveSelection();
+  });
   insertFieldBtn.addEventListener('click', (e) => {
     e.stopPropagation();
-    saveSelection();
     fieldMenu.classList.toggle('active');
   });
+  fieldMenu.addEventListener('mousedown', (e) => { e.preventDefault(); });
   document.addEventListener('click', (e) => {
     if (!e.target.closest('.fb-dropdown-wrap')) fieldMenu.classList.remove('active');
   });
@@ -259,21 +270,42 @@
     e.dataTransfer.dropEffect = 'move';
   });
 
-  page.addEventListener('drop', (e) => {
-    if (!draggedField) return;
-    e.preventDefault();
+  function findDropRange(x, y) {
     let range = null;
     if (document.caretRangeFromPoint) {
-      range = document.caretRangeFromPoint(e.clientX, e.clientY);
+      range = document.caretRangeFromPoint(x, y);
     } else if (document.caretPositionFromPoint) {
-      const pos = document.caretPositionFromPoint(e.clientX, e.clientY);
+      const pos = document.caretPositionFromPoint(x, y);
       if (pos) {
         range = document.createRange();
         range.setStart(pos.offsetNode, pos.offset);
         range.collapse(true);
       }
     }
-    if (range && page.contains(range.startContainer)) {
+    if (range && page.contains(range.startContainer)) return range;
+
+    // Fallback: find the closest direct block child of the page by
+    // vertical distance, and drop at the end of its content.
+    const blocks = Array.from(page.children).filter((n) => n.nodeType === Node.ELEMENT_NODE);
+    if (!blocks.length) return null;
+    let closest = blocks[0];
+    let closestDist = Infinity;
+    blocks.forEach((b) => {
+      const r = b.getBoundingClientRect();
+      const dist = Math.abs((r.top + r.bottom) / 2 - y);
+      if (dist < closestDist) { closestDist = dist; closest = b; }
+    });
+    const fallbackRange = document.createRange();
+    fallbackRange.selectNodeContents(closest);
+    fallbackRange.collapse(false);
+    return fallbackRange;
+  }
+
+  page.addEventListener('drop', (e) => {
+    if (!draggedField) return;
+    e.preventDefault();
+    const range = findDropRange(e.clientX, e.clientY);
+    if (range) {
       range.insertNode(draggedField);
     }
     draggedField.classList.remove('dragging');

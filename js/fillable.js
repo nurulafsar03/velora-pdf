@@ -512,10 +512,17 @@
     const fontBoldItalic = await pdfDoc.embedFont(StandardFonts.TimesRomanBoldItalic);
 
     let bnFont = null, bnFontBold = null;
-    const fullText = page.innerText || '';
-    if (BENGALI_RANGE.test(fullText)) {
+    const fieldDropdownText = Array.from(page.querySelectorAll('.fb-field[data-field-type="dropdown"]'))
+      .map((el) => el.dataset.options || '')
+      .join(' ');
+    const fullText = (page.innerText || '') + ' ' + fieldDropdownText;
+    const needsBengali = BENGALI_RANGE.test(fullText);
+    if (needsBengali) {
+      // Not subset: form fields may later be filled by the end user with
+      // any Bengali text, so the embedded font must cover the full script,
+      // not just the glyphs used in this document right now.
       const bytes = await fetch(HIND_SILIGURI_URL).then((r) => r.arrayBuffer());
-      bnFont = await pdfDoc.embedFont(bytes, { subset: true });
+      bnFont = await pdfDoc.embedFont(bytes, { subset: false });
       bnFontBold = bnFont;
     }
     function pickFont(bold, italic, text) {
@@ -679,10 +686,12 @@
                 dd.addOptions(w.options || ['Option 1']);
                 dd.select((w.options || ['Option 1'])[0]);
                 dd.addToPage(pdfPage, { x, y: fy, width: fw, height: fh });
+                if (bnFont) dd.updateAppearances(bnFont);
               } else {
                 const tf = form.createTextField(w.fieldName);
                 tf.setText('');
                 tf.addToPage(pdfPage, { x, y: fy, width: fw, height: fh });
+                if (bnFont) tf.updateAppearances(bnFont);
               }
             } catch (err) { console.error('field create failed', err); }
             x += fw;
